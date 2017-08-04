@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+- '8'
+- '6'
+before_install: sudo pip install futoin-cid
+script:
+- nodeVer=$TRAVIS_NODE_VERSION cid prepare
+- nodeVer=$TRAVIS_NODE_VERSION cid run test

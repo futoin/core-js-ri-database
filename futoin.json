@@ -1,0 +1,14 @@
+{
+  "name": "futoin-database",
+  "version": "0.1.0",
+  "vcs": "git",
+  "rms": "npm",
+  "rmsRepo": "ignored",
+  "plugins": {
+    "release": "futoin.cid.misc.releasetool"
+  },
+  "actions": {
+    "test": "@cid tool exec grunt -- test",
+    "upgrade-deps": "@cid tool exec yarn -- upgrade --latest"
+  }
+}

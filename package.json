@@ -1,0 +1,42 @@
+{
+  "name": "futoin-database",
+  "version": "0.1.0",
+  "description": "FutoIn Database Interface - Reference Implementation",
+  "main": "lib/main.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/futoin/core-js-ri-database"
+  },
+  "keywords": [
+    "futoin",
+    "async",
+    "database",
+    "querybuilder"
+  ],
+  "author": {
+    "name": "Andrey Galkin",
+    "email": "andrey@futoin.org"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/futoin/core-js-ri-database/issues",
+    "email": "support@futoin.org"
+  },
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-jshint": "^1.1.0",
+    "futoin-asyncsteps": "^1.5.8",
+    "futoin-invoker": "^1.1.0",
+    "futoin-executor": "^1.1.0",
+    "grunt-jscs": "^3.0.1",
+    "grunt-jsdoc-to-markdown": "^3.0.0",
+    "grunt-mocha-istanbul": "^5.0.2",
+    "grunt-text-replace": "^0.4.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.5.0"
+  }
+}
