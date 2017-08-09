@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "FutoIn Database Interface - Reference Implementation",
   "main": "main.js",
+  "engines" : {
+    "node" : ">=6"
+  },
   "scripts": {
     "test": "grunt test"
   },

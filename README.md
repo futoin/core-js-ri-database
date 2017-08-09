@@ -46,6 +46,9 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#L2Face">L2Face</a></dt>
 <dd><p>Level 2 Database Face</p>
 </dd>
+<dt><a href="#Expression">Expression</a></dt>
+<dd><p>Wrapper for raw expression to prevent escaping of them</p>
+</dd>
 <dt><a href="#IDriver">IDriver</a></dt>
 <dd><p>Basic interface for DB flavour support</p>
 </dd>
@@ -242,6 +245,12 @@ CCM registration helper
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 
+<a name="Expression"></a>
+
+## Expression
+Wrapper for raw expression to prevent escaping of them
+
+**Kind**: global class  
 <a name="IDriver"></a>
 
 ## IDriver
@@ -267,10 +276,12 @@ Neutral query builder
         * [.getDriver()](#QueryBuilder+getDriver) ⇒ [<code>IDriver</code>](#IDriver)
         * [.clone()](#QueryBuilder+clone) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.escape(value)](#QueryBuilder+escape) ⇒ <code>string</code>
-        * [.get(fields)](#QueryBuilder+get) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
-        * [.set(field, value)](#QueryBuilder+set) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
-        * [.where(conditions)](#QueryBuilder+where) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
-        * [.having(conditions)](#QueryBuilder+having) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+        * [.identifier(name)](#QueryBuilder+identifier) ⇒ <code>string</code>
+        * [.raw(expr)](#QueryBuilder+raw) ⇒ [<code>Expression</code>](#Expression)
+        * [.get(fields, [value])](#QueryBuilder+get) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+        * [.set(field, [value])](#QueryBuilder+set) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+        * [.where(conditions, [value])](#QueryBuilder+where) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+        * [.having(conditions, [value])](#QueryBuilder+having) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.group(field_expr)](#QueryBuilder+group) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.order(field_expr, [ascending])](#QueryBuilder+order) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.limit(count, [offset])](#QueryBuilder+limit) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -282,6 +293,7 @@ Neutral query builder
     * _static_
         * [.IDriver](#QueryBuilder.IDriver)
         * [.SQLDriver](#QueryBuilder.SQLDriver)
+        * [.Expression](#QueryBuilder.Expression)
         * [.addDriver(type, module)](#QueryBuilder.addDriver)
         * [.getDriver(type)](#QueryBuilder.getDriver) ⇒ [<code>IDriver</code>](#IDriver)
 
@@ -322,45 +334,75 @@ Escape value for embedding into raw query
 | --- | --- | --- |
 | value | <code>\*</code> | value, array or sub-query to escape |
 
-<a name="QueryBuilder+get"></a>
+<a name="QueryBuilder+identifier"></a>
 
-### queryBuilder.get(fields) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
-Set fields to retrieve.
-
-Can be called multiple times for appending.
-Fields can be a Map or object:
-- keys are field names as is
-- values - any expression which is not being escaped automatically
-
-Value can be another QueryBuilder instance.
+### queryBuilder.identifier(name) ⇒ <code>string</code>
+Escape identifier for embedding into raw query
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
-**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
+**Returns**: <code>string</code> - driver-specific escape  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| fields | <code>Map</code> \| <code>object</code> | see concept for details |
+| name | <code>string</code> | raw identifier to escape |
 
-<a name="QueryBuilder+set"></a>
+<a name="QueryBuilder+raw"></a>
 
-### queryBuilder.set(field, value) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
-Add fields to set in UPDATE query.
+### queryBuilder.raw(expr) ⇒ [<code>Expression</code>](#Expression)
+Wrap raw expression to prevent escaping.
 
-Field can be Map or object to setup multiple fields at once.
-- keys - key name as is, no escape
-- value - any value to be escaped or QueryBuilder instance
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: [<code>Expression</code>](#Expression) - wrapped expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| expr | <code>string</code> | expression to wrap |
+
+<a name="QueryBuilder+get"></a>
+
+### queryBuilder.get(fields, [value]) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+Set fields to retrieve.
+
+Can be called multiple times for appending.
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
 **Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
+**P**: fields can be a Map or object:
+- keys are field names as is
+- values - any expression which is not being escaped automatically  
+**P**: fields can be a list of field names (array)
+- values - field names  
+**P**: fields can be a single string
+- optional @p value is expresion
+
+Value can be another QueryBuilder instance.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| fields | <code>Map</code> \| <code>object</code> \| <code>string</code> \| <code>array</code> | see concept for details |
+| [value] | <code>\*</code> | optional value for |
+
+<a name="QueryBuilder+set"></a>
+
+### queryBuilder.set(field, [value]) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+Add fields to set in UPDATE query.
+
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
+**P**: fields can be Map or object to setup multiple fields at once.
+- keys - key name as is, no escape
+- value - any value to be escaped or QueryBuilder instance
+
+Single field => value can be used as shortcut for object form.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | field | <code>Map</code> \| <code>object</code> \| <code>string</code> | field(s) to assign |
-| value | <code>string</code> \| <code>number</code> \| <code>null</code> \| [<code>QueryBuilder</code>](#QueryBuilder) | value to assign |
+| [value] | <code>string</code> \| <code>number</code> \| <code>null</code> \| [<code>QueryBuilder</code>](#QueryBuilder) | value to assign |
 
 <a name="QueryBuilder+where"></a>
 
-### queryBuilder.where(conditions) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+### queryBuilder.where(conditions, [value]) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
 Control "WHERE" part
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
@@ -369,10 +411,11 @@ Control "WHERE" part
 | Param | Type | Description |
 | --- | --- | --- |
 | conditions | <code>\*</code> | constraints to add |
+| [value] | <code>\*</code> | optional value for single field |
 
 <a name="QueryBuilder+having"></a>
 
-### queryBuilder.having(conditions) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+### queryBuilder.having(conditions, [value]) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
 Control "HAVING" part
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
@@ -382,6 +425,7 @@ Control "HAVING" part
 | Param | Type | Description |
 | --- | --- | --- |
 | conditions | <code>\*</code> | constraints to add |
+| [value] | <code>\*</code> | optional value for single field |
 
 <a name="QueryBuilder+group"></a>
 
@@ -505,6 +549,12 @@ Base for QB Driver implementation
 
 ### QueryBuilder.SQLDriver
 Base for SQL-based QB Driver implementation
+
+**Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
+<a name="QueryBuilder.Expression"></a>
+
+### QueryBuilder.Expression
+Wrapper for raw expressions
 
 **Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
 <a name="QueryBuilder.addDriver"></a>
