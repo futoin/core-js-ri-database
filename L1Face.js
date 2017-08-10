@@ -49,14 +49,14 @@ class L1Face extends PingFace
      */
     getFlavour( as )
     {
-        let db_type = this._db_type;
+        const db_type = this._db_type;
 
         if ( !db_type )
         {
             this.call( as, 'getFlavour' );
             as.add( ( as, res ) =>
             {
-                let db_type = res.flavour;
+                const db_type = res.flavour;
                 this._db_type = db_type;
                 as.success( db_type );
             } );
@@ -136,8 +136,8 @@ class L1Face extends PingFace
      */
     paramQuery( as, q, params={} )
     {
-        const qb = new QueryBuilder( this );
-        q = qb._replaceParams( q, params );
+        const driver = QueryBuilder.getDriver( this._db_type );
+        q = QueryBuilder._replaceParams( driver, q, params );
         this.query( as, q );
     }
 

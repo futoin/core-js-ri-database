@@ -21,6 +21,11 @@ class XferQueryBuilder extends QueryBuilder
         void unsafe_dml;
         throw new Error( 'Please use XferBuilder.execute()' );
     }
+
+    clone()
+    {
+        throw new Error( 'Cloning is not allowed' );
+    }
 }
 
 /**
@@ -143,14 +148,23 @@ class XferBuilder
     /**
      * Execute raw query
      * @param {string} q - raw query
-     * @param {object} [params={}] - named argument=>value pairs
+     * @param {object} [params=null] - named argument=>value pairs
      * @param {QueryOptions} [query_options={}] - constraints
+     * @note Pass null in {@p params}, if you want to use prepare()
      */
-    raw( q, params={}, query_options={} )
+    raw( q, params=null, query_options={} )
     {
-        const qb = this._newBuilder( 'RAW' );
         const item = _cloneDeep( query_options );
-        item.q = qb._replaceParams( q, params );
+
+        if ( params )
+        {
+            const driver = QueryBuilder.getDriver( this._db_type );
+            item.q = QueryBuilder._replaceParams( driver, q, params );
+        }
+        else
+        {
+            item.q = q;
+        }
 
         this._query_list.push( item );
     }
@@ -164,15 +178,7 @@ class XferBuilder
     execute( as, unsafe_dml=false )
     {
         const ql = this._query_list;
-
-        ql.forEach( ( v ) =>
-        {
-            if ( v.q instanceof XferQueryBuilder )
-            {
-                v.q = v.q._toQuery( unsafe_dml );
-            }
-        } );
-
+        this._prepareQueryList( ql, unsafe_dml );
         this._lface.xfer( as, ql, this._iso_level );
     }
 
@@ -186,21 +192,52 @@ class XferBuilder
     executeAssoc( as, unsafe_dml=false )
     {
         this.execute( as, unsafe_dml );
-
-        as.add( ( as, res ) =>
-        {
-            const assoc_res = res.results.map( ( v ) =>
-            {
-                const rows = this._lface.associateResult( v );
-                return {
-                    rows,
-                    affected: v.affected,
-                };
-            } );
-
-            as.success( assoc_res );
-        } );
+        as.add( this.constructor._assocResult( this._lface ) );
     }
+
+
+    /**
+     * Prepare statement for efficient execution multiple times
+     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
+     * @returns {ExecPrepared} closue with prepared statement
+     */
+    prepare( unsafe_dml=false )
+    {
+        const ql = _cloneDeep( this._query_list );
+        const isol = this._iso_level;
+        const db_type = this._db_type;
+        this._prepareQueryList( ql, unsafe_dml );
+
+        return new class extends QueryBuilder.Prepared
+        {
+            execute( as, iface, params=null )
+            {
+                if ( params )
+                {
+                    const driver = QueryBuilder.getDriver( db_type );
+                    const pql = _cloneDeep( ql );
+
+                    pql.forEach( ( v ) =>
+                    {
+                        v.q = QueryBuilder._replaceParams( driver, v.q, params );
+                    } );
+
+                    iface.xfer( as, pql, isol );
+                }
+                else
+                {
+                    iface.xfer( as, ql, isol );
+                }
+            }
+
+            executeAssoc( as, iface, params )
+            {
+                this.execute( as, iface, params );
+                as.add( XferBuilder._assocResult( iface ) );
+            }
+        };
+    }
+
 
     _newBuilder( type, entity=null )
     {
@@ -210,6 +247,38 @@ class XferBuilder
             type,
             entity
         );
+    }
+
+    _prepareQueryList( ql, unsafe_dml )
+    {
+        ql.forEach( ( v ) =>
+        {
+            const qb = v.q;
+
+            if ( qb instanceof XferQueryBuilder )
+            {
+                v.q = qb._toQuery( unsafe_dml );
+                // damage on purpose
+                qb._state = null;
+            }
+        } );
+    }
+
+    static _assocResult( iface )
+    {
+        return function( as, res )
+        {
+            const assoc_res = res.results.map( ( v ) =>
+            {
+                const rows = iface.associateResult( v );
+                return {
+                    rows,
+                    affected: v.affected,
+                };
+            } );
+
+            as.success( assoc_res );
+        };
     }
 }
 

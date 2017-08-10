@@ -43,7 +43,11 @@ describe('QueryBuilder', function() {
         }
         
         query(as, q) {
-            as.add((as) => { as.success(this._result); });
+            if (typeof as === 'function') {
+                as(q);
+            } else {
+                as.add((as) => { as.success(this._result); });
+            }
         }
     }
     
@@ -56,13 +60,9 @@ describe('QueryBuilder', function() {
     beforeEach(function(){
         mockFace._db_type = 'mocksql';
         mockFace._result = {
-            rows: [
-                [1, 'a', true],
-                [2, 'b', false],
-                [3, 'c', null],
-            ],
-            fields: [ 'id', 'alpha', 'val' ],
-            affected_rows: 21,
+            rows: [ [1, 'aaa'], [2, 'bb'], [3, 'c'] ],
+            fields: [ 'id', 'name' ],
+            affected: 123,
         };
     });
     
@@ -364,15 +364,7 @@ describe('QueryBuilder', function() {
         });
     });
     
-    describe('#execute', function(){
-        beforeEach(function(){
-            mockFace._result = {
-                rows: [ [1, 'aaa'], [2, 'bb'], [3, 'c'] ],
-                fields: [ 'id', 'name' ],
-                affected: 123,
-            };
-        });
-        
+    describe('#execute', function(){     
         it('should execute and return raw result', function(done) {
             const as = $as();
             
@@ -572,12 +564,82 @@ describe('QueryBuilder', function() {
         });
     });
     
-    describe('#_replaceParams', function(){
-        if('should properly handle placeholders', function(){
-            let qb = genQB('select');
+    describe('#prepare', function() {
+        it('should create simple reusable statement', function() {
+            const qb = genQB('select')
+                .get(['a', 'b', 'c'])
+                .where('a BETWEEN', [1, 10]);
+            const p = qb.prepare();
+            qb.limit(10);
             
+            for (let i = 0; i < 3; ++i )
+            {
+                p.execute((q) => {
+                    expect(q).to.equal(
+                        'SELECT a,b,c FROM Table '+
+                        'WHERE a BETWEEN 1 AND 10');
+                }, mockFace);
+            }
+        });
+        
+        it('should create parametrized reusable statement', function() {
+            const qb = genQB('select');
+            qb.get(['a', 'b', 'c'])
+                .where('a BETWEEN', [
+                    qb.param('start'),
+                    qb.param('end')
+                ]);
+            const p = qb.prepare();
+            qb.limit(10);
+            
+            for (let i = 0; i < 3; ++i )
+            {
+                p.execute((q) => {
+                    expect(q).to.equal(
+                        'SELECT a,b,c FROM Table '+
+                        `WHERE a BETWEEN ${1+i} AND ${10+i}`);
+                }, mockFace, {
+                    start: 1 + i,
+                    end: 10 + i,
+                });
+            }
+        });
+        
+        it('should execute and return associative result', function(done) {
+            const as = $as();
+            
+            as.add(
+                (as) => {
+                    mockFace.select('SomeTable')
+                        .prepare()
+                        .executeAssoc(as, mockFace);
+                    as.add((as, res, affected) => {
+                        expect(res).to.eql([
+                            { id: 1, name: 'aaa' },
+                            { id: 2, name: 'bb' },
+                            { id: 3, name: 'c' },
+                        ]);
+                        expect(affected, 123);
+                    });
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception || err);
+                }
+            )
+            .add((as) => done())
+            .execute();
+        });
+    });
+    
+    describe('#_replaceParams', function(){
+        it('should properly handle placeholders', function(){
+            const driver = QueryBuilder.getDriver('mocksql');
             expect(
-                qb._replaceParams('Some :v :vv :vvv :v', { v: 3, vv: 2, vvv: 1})
+                QueryBuilder._replaceParams(
+                    driver,
+                    'Some :v :vv :vvv :v',
+                    { v: 3, vv: 2, vvv: 1})
             ).to.equal('Some 3 2 1 3');
         });
     });
@@ -612,7 +674,25 @@ describe('XferBuilder', function() {
     
     beforeEach(function(){
         mockFace._qresult = null;
-        mockFace._xresult = null;
+        mockFace._xresult = {
+            results: [
+                {
+                    rows: [ [1, 'aaa'], [2, 'bb'], [3, 'c'] ],
+                    fields: [ 'id', 'name' ],
+                    affected: 123,
+                },
+                {
+                    rows: null,
+                    fields: null,
+                    affected: 321,
+                },
+                {
+                    rows: [ [1] ],
+                    fields: [ 'a' ],
+                    affected: 321,
+                },
+            ],
+        };
     });
     
     it('should have correct constants', function(){
@@ -648,26 +728,6 @@ describe('XferBuilder', function() {
     });
     
     it('should return associative results', function(done){
-        mockFace._xresult = {
-            results: [
-                {
-                    rows: [ [1, 'aaa'], [2, 'bb'], [3, 'c'] ],
-                    fields: [ 'id', 'name' ],
-                    affected: 123,
-                },
-                {
-                    rows: null,
-                    fields: null,
-                    affected: 321,
-                },
-                {
-                    rows: [ [1] ],
-                    fields: [ 'a' ],
-                    affected: 321,
-                },
-            ],
-        };
-        
         const as = $as();
         
         as.add(
@@ -710,10 +770,114 @@ describe('XferBuilder', function() {
         });
     });
     
-    it('should forbid direct execute() on QueryBuilder', function() {
+    it('should forbid direct clone()/execute() on QueryBuilder', function() {
+        expect(function(){ mockFace.newXfer('ABC').select().clone() })
+            .to.throw('Cloning is not allowed');
         expect(function(){ mockFace.newXfer('ABC').select().execute($as()) })
             .to.throw('Please use XferBuilder.execute()');
         expect(function(){ mockFace.newXfer('ABC').select().executeAssoc($as()) })
             .to.throw('Please use XferBuilder.execute()');
+    });
+    
+    describe('#prepare', function() {
+        it('should prepare simple transactions', function(){
+            let xb;
+            
+            xb = mockFace.newXfer()
+            xb.select(['Tab', 'T'], {result: true}).get('a', 'RAND()');
+            xb.update('Tab', { affected: 1 }).set('a', mockFace.select('Other').get('b'));
+            xb.insert('Other').set('l', 'ABC');
+            xb.delete('Other').where('l', 'Zzz');
+            xb.call('Prc', [123, 'abc', true]);
+            xb.raw('Something Cazy :b, :a', { a: 1, b: 'c'});
+            let p = xb.prepare(true);
+            xb.raw('Must not be there');
+            
+            p.execute(function(ql, isol){
+                expect(isol).to.equal('RC');
+                expect(ql).to.eql([
+                    { q: 'SELECT RAND() AS a FROM Tab AS T',
+                    result: true },
+                    { q: 'UPDATE Tab SET a=(SELECT b FROM Other)',
+                    affected: 1 },
+                    { q: 'INSERT INTO Other (l) VALUES (^ABC^)' },
+                    { q: 'DELETE FROM Other WHERE l = ^Zzz^' },
+                    { q: 'CALL Prc(123,^abc^,TRUE)' },
+                    { q: 'Something Cazy ^c^, 1' },
+                ]);
+            }, mockFace);
+        });
+        
+        it('should prepare parametrized transactions', function(){
+            let xb;
+            
+            xb = mockFace.newXfer()
+            let xsb = xb.select(['Tab', 'T'], {result: true}).get('a', 'RAND()');
+            xb.update('Tab', { affected: 1 }).set('a', mockFace.select('Other').get('b'));
+            xb.insert('Other').set('l', xsb.param('lset'));
+            xb.delete('Other').where('l', xsb.param('lw'));
+            xb.call('Prc', [123, 'abc', true]);
+            xb.raw('Something Cazy :b, :a');
+            let p = xb.prepare(true);
+            xb.raw('Must not be there');
+            
+            p.execute(function(ql, isol){
+                expect(isol).to.equal('RC');
+                expect(ql).to.eql([
+                    { q: 'SELECT RAND() AS a FROM Tab AS T',
+                    result: true },
+                    { q: 'UPDATE Tab SET a=(SELECT b FROM Other)',
+                    affected: 1 },
+                    { q: 'INSERT INTO Other (l) VALUES (^ABC^)' },
+                    { q: 'DELETE FROM Other WHERE l = ^Zzz^' },
+                    { q: 'CALL Prc(123,^abc^,TRUE)' },
+                    { q: 'Something Cazy ^c^, 1' },
+                ]);
+            }, mockFace, {
+                a: 1,
+                b: 'c',
+                lset: 'ABC',
+                lw: 'Zzz',
+            });
+        });
+        
+        it('should return associative results', function(done){
+            const as = $as();
+            
+            as.add(
+                (as) => {
+                    mockFace.newXfer('ABC')
+                        .prepare()
+                        .executeAssoc(as, mockFace, {});
+                    as.add((as, res, affected) => {
+                        expect(res).to.eql([
+                            {
+                                rows: [
+                                    { id: 1, name: 'aaa' },
+                                    { id: 2, name: 'bb' },
+                                    { id: 3, name: 'c' },
+                                ],
+                                affected: 123
+                            },
+                            {
+                                rows: [],
+                                affected: 321,
+                            },
+                            {
+                                rows: [ { a: 1 } ],
+                                affected: 321,
+                            }
+                        ]);
+                        expect(affected, 123);
+                    });
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception || err);
+                }
+            )
+            .add((as) => done())
+            .execute();
+        });
     });
 });

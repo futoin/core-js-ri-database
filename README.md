@@ -51,6 +51,9 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#Expression">Expression</a></dt>
 <dd><p>Wrapper for raw expression to prevent escaping of them</p>
 </dd>
+<dt><a href="#Prepared">Prepared</a></dt>
+<dd><p>Interface for prepared statement execution</p>
+</dd>
 <dt><a href="#IDriver">IDriver</a></dt>
 <dd><p>Basic interface for DB flavour support</p>
 </dd>
@@ -75,6 +78,15 @@ It&#39;s possible to add result constraints to each query for intermediate check
 <li>result - mark query result to be returned in response list</li>
 </ul>
 </dd>
+</dl>
+
+## Functions
+
+<dl>
+<dt><a href="#execute">execute(as, iface, [params])</a></dt>
+<dd></dd>
+<dt><a href="#executeAsync">executeAsync(as, iface, [params])</a></dt>
+<dd></dd>
 </dl>
 
 <a name="L1Face"></a>
@@ -376,6 +388,12 @@ CCM registration helper
 Wrapper for raw expression to prevent escaping of them
 
 **Kind**: global class  
+<a name="Prepared"></a>
+
+## Prepared
+Interface for prepared statement execution
+
+**Kind**: global class  
 <a name="IDriver"></a>
 
 ## IDriver
@@ -403,6 +421,7 @@ Neutral query builder
         * [.escape(value)](#QueryBuilder+escape) ⇒ <code>string</code>
         * [.identifier(name)](#QueryBuilder+identifier) ⇒ <code>string</code>
         * [.expr(expr)](#QueryBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
+        * [.param(name)](#QueryBuilder+param) ⇒ [<code>Expression</code>](#Expression)
         * [.get(fields, [value])](#QueryBuilder+get) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.set(field, [value])](#QueryBuilder+set) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.where(conditions, [value])](#QueryBuilder+where) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -415,10 +434,12 @@ Neutral query builder
         * [.leftJoin(entity, conditions)](#QueryBuilder+leftJoin) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.execute(as, unsafe_dml)](#QueryBuilder+execute)
         * [.executeAssoc(as, unsafe_dml)](#QueryBuilder+executeAssoc)
+        * [.prepare(unsafe_dml)](#QueryBuilder+prepare) ⇒ <code>ExecPrepared</code>
     * _static_
         * [.IDriver](#QueryBuilder.IDriver)
         * [.SQLDriver](#QueryBuilder.SQLDriver)
         * [.Expression](#QueryBuilder.Expression)
+        * [.Prepared](#QueryBuilder.Prepared)
         * [.addDriver(type, module)](#QueryBuilder.addDriver)
         * [.getDriver(type)](#QueryBuilder.getDriver) ⇒ [<code>IDriver</code>](#IDriver)
 
@@ -482,6 +503,18 @@ Wrap raw expression to prevent escaping.
 | Param | Type | Description |
 | --- | --- | --- |
 | expr | <code>string</code> | expression to wrap |
+
+<a name="QueryBuilder+param"></a>
+
+### queryBuilder.param(name) ⇒ [<code>Expression</code>](#Expression)
+Wrap parameter name to prevent escaping.
+
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: [<code>Expression</code>](#Expression) - wrapped expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | name to wrap |
 
 <a name="QueryBuilder+get"></a>
 
@@ -664,6 +697,18 @@ Complete query and execute through associated interface.
 | as | <code>AsyncSteps</code> |  | steps interface |
 | unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
+<a name="QueryBuilder+prepare"></a>
+
+### queryBuilder.prepare(unsafe_dml) ⇒ <code>ExecPrepared</code>
+Prepare statement for efficient execution multiple times
+
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: <code>ExecPrepared</code> - closue with prepared statement  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+
 <a name="QueryBuilder.IDriver"></a>
 
 ### QueryBuilder.IDriver
@@ -680,6 +725,12 @@ Base for SQL-based QB Driver implementation
 
 ### QueryBuilder.Expression
 Wrapper for raw expressions
+
+**Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
+<a name="QueryBuilder.Prepared"></a>
+
+### QueryBuilder.Prepared
+Interface of Prepared statement
 
 **Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
 <a name="QueryBuilder.addDriver"></a>
@@ -748,6 +799,7 @@ It's possible to add result constraints to each query for intermediate checks:
     * [.raw(q, [params], [query_options])](#XferBuilder+raw)
     * [.execute(as, unsafe_dml)](#XferBuilder+execute)
     * [.executeAssoc(as, unsafe_dml)](#XferBuilder+executeAssoc)
+    * [.prepare(unsafe_dml)](#XferBuilder+prepare) ⇒ <code>ExecPrepared</code>
 
 <a name="XferBuilder+clone"></a>
 
@@ -841,11 +893,12 @@ Add CALL query
 Execute raw query
 
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Note**: Pass null in {@p params}, if you want to use prepare()  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | q | <code>string</code> |  | raw query |
-| [params] | <code>object</code> | <code>{}</code> | named argument=>value pairs |
+| [params] | <code>object</code> | <code></code> | named argument=>value pairs |
 | [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
 
 <a name="XferBuilder+execute"></a>
@@ -877,6 +930,40 @@ Complete query and execute through associated interface.
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | steps interface |
 | unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+
+<a name="XferBuilder+prepare"></a>
+
+### xferBuilder.prepare(unsafe_dml) ⇒ <code>ExecPrepared</code>
+Prepare statement for efficient execution multiple times
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: <code>ExecPrepared</code> - closue with prepared statement  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+
+<a name="execute"></a>
+
+## execute(as, iface, [params])
+**Kind**: global function  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
+| [params] | <code>object</code> | <code></code> | parameters to subsitute |
+
+<a name="executeAsync"></a>
+
+## executeAsync(as, iface, [params])
+**Kind**: global function  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
+| [params] | <code>object</code> | <code></code> | parameters to subsitute |
 
 
 

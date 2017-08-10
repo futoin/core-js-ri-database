@@ -24,6 +24,28 @@ class Expression
 }
 
 /**
+ * Interface for prepared statement execution
+ */
+class Prepared
+{
+    /**
+     * @func
+     * @name execute
+     * @param {AsyncSteps} as - step interface
+     * @param {L1Face} iface - interface instance
+     * @param {object} [params=null] - parameters to subsitute
+     */
+
+    /**
+     * @func
+     * @name executeAsync
+     * @param {AsyncSteps} as - step interface
+     * @param {L1Face} iface - interface instance
+     * @param {object} [params=null] - parameters to subsitute
+     */
+}
+
+/**
  * Basic interface for DB flavour support
  */
 class IDriver
@@ -513,13 +535,20 @@ class QueryBuilder
         return SQLDriver;
     }
 
-
     /**
     * Wrapper for raw expressions
     */
     static get Expression()
     {
         return Expression;
+    }
+
+    /**
+    * Interface of Prepared statement
+    */
+    static get Prepared()
+    {
+        return Prepared;
     }
 
     /**
@@ -656,6 +685,17 @@ class QueryBuilder
     expr( expr )
     {
         return new Expression( this.getDriver().expr( expr ) );
+    }
+
+
+    /**
+     * Wrap parameter name to prevent escaping.
+     * @param {string} name - name to wrap
+     * @return {Expression} wrapped expression
+     */
+    param( name )
+    {
+        return new Expression( this.getDriver().expr( `:${name}` ) );
     }
 
     /**
@@ -948,6 +988,35 @@ class QueryBuilder
         } );
     }
 
+    /**
+     * Prepare statement for efficient execution multiple times
+     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
+     * @returns {ExecPrepared} closue with prepared statement
+     */
+    prepare( unsafe_dml=false )
+    {
+        const q = this._toQuery( unsafe_dml );
+
+        return new class extends Prepared
+        {
+            execute( as, iface, params={} )
+            {
+                iface.paramQuery( as, q, params );
+            }
+
+            executeAssoc( as, iface, params )
+            {
+                iface.paramQuery( as, q, params );
+
+                as.add( ( as, res ) =>
+                {
+                    const rows = iface.associateResult( res );
+                    as.success( rows, res.affected );
+                } );
+            }
+        };
+    }
+
     _toQuery( unsafe_dml=true )
     {
         const state = this._state;
@@ -1043,10 +1112,8 @@ class QueryBuilder
         return this;
     }
 
-    _replaceParams( q, params )
+    static _replaceParams( driver, q, params )
     {
-        const driver = this.getDriver();
-
         for ( let p in params )
         {
             let v = driver.escape( params[p] );
