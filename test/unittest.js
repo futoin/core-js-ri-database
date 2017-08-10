@@ -1,42 +1,45 @@
 
 const expect = require('chai').expect;
+const $as = require('futoin-asyncsteps');
 
-describe('QueryBuilder', function() {
-    const QueryBuilder = require('../QueryBuilder');
-    const L1Face = require('../L1Face');
-    
-    class MockSQLDriver extends QueryBuilder.SQLDriver {
-        _escapeSimple( value )
-        {
-            switch (typeof value) {
-                case 'boolean':
-                    return value ? 'TRUE' : 'FALSE';
-                    
-                case 'string':
-                    return `^${value.replace('^', '\^').replace('\\', '\\\\')}^`;
-                    
-                case 'number':
-                    return `${value}`;
-                    
-                default:
-                    if (value === null) {
-                        return 'NULL';
-                    }
-            
-                    if (value instanceof QueryBuilder.Expression)
-                    {
-                        return value.toQuery();
-                    }
-                    
-                    throw new Error(`Unknown type: ${typeof value}`);
-            }
+const QueryBuilder = require('../QueryBuilder');
+
+class MockSQLDriver extends QueryBuilder.SQLDriver {
+    _escapeSimple( value )
+    {
+        switch (typeof value) {
+            case 'boolean':
+                return value ? 'TRUE' : 'FALSE';
+                
+            case 'string':
+                return `^${value.replace(/\^/g, '\\^').replace(/\\/g, '\\\\')}^`;
+                
+            case 'number':
+                return `${value}`;
+                
+            default:
+                if (value === null) {
+                    return 'NULL';
+                }
+        
+                if (value instanceof QueryBuilder.Expression)
+                {
+                    return value.toQuery();
+                }
+                
+                throw new Error(`Unknown type: ${typeof value}`);
         }
     }
+};
+
+describe('QueryBuilder', function() {
+    const L1Face = require('../L1Face');
     
     const mockFace = new class extends L1Face {
         constructor() {
             super(null, { funcs: {} });
             this._result = null;
+            this._db_type = 'mocksql';
         }
         
         query(as, q) {
@@ -44,12 +47,10 @@ describe('QueryBuilder', function() {
         }
     }
     
-    let qb = null;
-    
     QueryBuilder.addDriver('mocksql', new MockSQLDriver);
     
     const genQB = (type, entity='Table') => {
-        return new QueryBuilder(mockFace, 'mocksql', type, entity);
+        return mockFace.queryBuilder(type, entity);
     }
     
     beforeEach(function(){
@@ -127,7 +128,7 @@ describe('QueryBuilder', function() {
         
         it('should generate complex statement', function() {
             let qb = genQB('inSeRt');
-            let res = qb.set('a', qb.raw('A + B'))._toQuery();
+            let res = qb.set('a', qb.expr('A + B'))._toQuery();
             expect(res).to.equal('INSERT INTO Table (a) VALUES (A + B)');
             
             res = qb.set('b', genQB('select', 'Other'))._toQuery();
@@ -210,7 +211,7 @@ describe('QueryBuilder', function() {
         
         it('should generate complex statement', function() {
             let qb = genQB('upDaTe');
-            let res = qb.set('a', qb.raw('A + B'))._toQuery();
+            let res = qb.set('a', qb.expr('A + B'))._toQuery();
             expect(res).to.equal('UPDATE Table SET a=A + B');
             
             res = qb.set('b', genQB('select', 'Other'))._toQuery();
@@ -309,7 +310,15 @@ describe('QueryBuilder', function() {
                 qb.clone().where('val IS NULL').set('f', 'a')._toQuery();
             }).to.throw('Unused map "toset"');
         });
-    })
+    });
+    
+    describe('CALL', function() {
+        it('should generate simple statement', function() {
+            let qb = genQB('Call', 'Prc')._callParams([123, 'abc', true]);
+            res = qb._toQuery();
+            expect(res).to.equal('CALL Prc(123,^abc^,TRUE)');
+        });
+    });
     
     describe('Conditions', function() {
         it('should generate complex statement', function() {
@@ -348,4 +357,129 @@ describe('QueryBuilder', function() {
                 ' AND ((TRUE AND 1) OR FALSE OR f = (SELECT F() AS res))');
         });
     });
+    
+    describe('#execute', function(){
+        beforeEach(function(){
+            mockFace._result = {
+                rows: [ [1, 'aaa'], [2, 'bb'], [3, 'c'] ],
+                fields: [ 'id', 'name' ],
+                affected: 123,
+            };
+        });
+        
+        it('should execute and return raw result', function(done) {
+            const as = $as();
+            
+            as.add(
+                (as) => {
+                    mockFace.select('SomeTable').execute(as);
+                    as.add((as, res) => {
+                        expect(res).to.eql(mockFace._result);
+                    });
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception || err);
+                }
+            )
+            .add((as) => done())
+            .execute();
+        });
+        
+        
+        it('should execute and return associative result', function(done) {
+            const as = $as();
+            
+            as.add(
+                (as) => {
+                    mockFace.select('SomeTable').executeAssoc(as);
+                    as.add((as, res, affected) => {
+                        expect(res).to.eql([
+                            { id: 1, name: 'aaa' },
+                            { id: 2, name: 'bb' },
+                            { id: 3, name: 'c' },
+                        ]);
+                        expect(affected, 123);
+                    });
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception || err);
+                }
+            )
+            .add((as) => done())
+            .execute();
+        });
+    });
+    
+    describe('#_replaceParams', function(){
+        if('should properly handle placeholders', function(){
+            let qb = genQB('select');
+            
+            expect(
+                qb._replaceParams('Some :v :vv :vvv :v', { v: 3, vv: 2, vvv: 1})
+            ).to.equal('Some 3 2 1 3');
+        });
+    });
+});
+
+describe('XferBuilder', function() {
+    const XferBuilder = require('../XferBuilder');
+    const L2Face = require('../L2Face');
+    
+    const mockFace = new class extends L2Face {
+        constructor() {
+            super(null, { funcs: {} });
+            this._qresult = null;
+            this._xresult = null;
+            this._db_type = 'mocksql';
+        }
+        
+        query(as, q) {
+            as.add((as) => { as.success(this._qresult); });
+        }
+
+        xfer(as, ql, iso_level) {
+            if (typeof as === 'function') {
+                as(ql, iso_level);
+            } else {
+                as.add((as) => { as.success(this._xresult); });
+            }
+        }
+    }
+    
+    QueryBuilder.addDriver('mocksql', new MockSQLDriver);
+    
+    it('should have correct constants', function(){
+        expect(mockFace.READ_UNCOMMITTED).to.equal('RU');
+        expect(mockFace.READ_COMMITTED).to.equal('RC');
+        expect(mockFace.REPEATABL_READ).to.equal('RR');
+        expect(mockFace.SERIALIZABLE).to.equal('SRL');
+    });
+    
+    it('should build transactions', function(){
+        let xb;
+        
+        xb = mockFace.newXfer()
+        xb.select(['Tab', 'T'], {result: true}).get('a', 'RAND()');
+        xb.update('Tab', { affected: 1 }).set('a', mockFace.select('Other').get('b'));
+        xb.insert('Other').set('l', 'ABC');
+        xb.delete('Other').where('l', 'Zzz');
+        xb.call('Prc', [123, 'abc', true]);
+        xb.raw('Something Cazy :b, :a', { a: 1, b: 'c'});
+        xb.execute(function(ql, isol){
+            expect(isol).to.equal('RC');
+            expect(ql).to.eql([
+                { q: 'SELECT RAND() AS a FROM Tab AS T',
+                  result: true },
+                { q: 'UPDATE Tab SET a=(SELECT b FROM Other)',
+                  affected: 1 },
+                { q: 'INSERT INTO Other (l) VALUES (^ABC^)' },
+                { q: 'DELETE FROM Other WHERE l = ^Zzz^' },
+                { q: 'CALL Prc(123,^abc^,TRUE)' },
+                { q: 'Something Cazy ^c^, 1' },
+            ]);
+        }, true);
+    });
+    
 });

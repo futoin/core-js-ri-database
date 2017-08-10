@@ -43,6 +43,8 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#L1Face">L1Face</a></dt>
 <dd><p>Level 1 Database Face</p>
 </dd>
+<dt><a href="#XferQuery">XferQuery</a></dt>
+<dd></dd>
 <dt><a href="#L2Face">L2Face</a></dt>
 <dd><p>Level 2 Database Face</p>
 </dd>
@@ -57,6 +59,21 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 </dd>
 <dt><a href="#QueryBuilder">QueryBuilder</a></dt>
 <dd><p>Neutral query builder</p>
+</dd>
+<dt><a href="#QueryOptions">QueryOptions</a></dt>
+<dd></dd>
+<dt><a href="#XferQueryBuilder">XferQueryBuilder</a></dt>
+<dd><p>Version of QueryBuilder which forbids direct execution.</p>
+</dd>
+<dt><a href="#XferBuilder">XferBuilder</a></dt>
+<dd><p>Transction builder.</p>
+<p>Overall concept is build inividual queries to be executed without delay.
+It&#39;s possible to add result constraints to each query for intermediate checks:</p>
+<ul>
+<li>affected - integer or boolean to check DML result</li>
+<li>selected - integer or boolean to check DQL result</li>
+<li>result - mark query result to be returned in response list</li>
+</ul>
 </dd>
 </dl>
 
@@ -222,12 +239,120 @@ CCM registration helper
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 
+<a name="XferQuery"></a>
+
+## XferQuery
+**Kind**: global class  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| q | <code>string</code> | raw query |
+| affected | <code>interger</code> \| <code>boolean</code> \| <code>null</code> | expected count of rows to be affected |
+| selected | <code>interger</code> \| <code>boolean</code> \| <code>null</code> | expected count of rows to be selected |
+| result | <code>boolean</code> \| <code>null</code> | mark to return result in response |
+
 <a name="L2Face"></a>
 
 ## L2Face
 Level 2 Database Face
 
 **Kind**: global class  
+
+* [L2Face](#L2Face)
+    * _instance_
+        * [.READ_UNCOMMITTED](#L2Face+READ_UNCOMMITTED)
+        * [.READ_COMMITTED](#L2Face+READ_COMMITTED)
+        * [.REPEATABL_READ](#L2Face+REPEATABL_READ)
+        * [.SERIALIZABLE](#L2Face+SERIALIZABLE)
+        * [.xfer](#L2Face+xfer)
+        * [.newXfer([iso_level])](#L2Face+newXfer) ⇒ [<code>XferBuilder</code>](#XferBuilder)
+    * _static_
+        * [.READ_UNCOMMITTED](#L2Face.READ_UNCOMMITTED)
+        * [.READ_COMMITTED](#L2Face.READ_COMMITTED)
+        * [.REPEATABL_READ](#L2Face.REPEATABL_READ)
+        * [.SERIALIZABLE](#L2Face.SERIALIZABLE)
+        * [.register(as, ccm, name, endpoint, [credentials], [options])](#L2Face.register)
+
+<a name="L2Face+READ_UNCOMMITTED"></a>
+
+### l2Face.READ_UNCOMMITTED
+Read Uncomitted isolation level constant
+
+**Kind**: instance property of [<code>L2Face</code>](#L2Face)  
+<a name="L2Face+READ_COMMITTED"></a>
+
+### l2Face.READ_COMMITTED
+Read Comitted isolation level constant
+
+**Kind**: instance property of [<code>L2Face</code>](#L2Face)  
+<a name="L2Face+REPEATABL_READ"></a>
+
+### l2Face.REPEATABL_READ
+Repeatable Read isolation level constant
+
+**Kind**: instance property of [<code>L2Face</code>](#L2Face)  
+<a name="L2Face+SERIALIZABLE"></a>
+
+### l2Face.SERIALIZABLE
+Serializable
+
+**Kind**: instance property of [<code>L2Face</code>](#L2Face)  
+<a name="L2Face+xfer"></a>
+
+### l2Face.xfer
+Execute query list in transaction of specific isolation level
+
+**Kind**: instance property of [<code>L2Face</code>](#L2Face)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| query_list | <code>array</code> | list of XferQuery objects |
+| isolation_level | <code>string</code> | isolation level |
+
+<a name="L2Face+newXfer"></a>
+
+### l2Face.newXfer([iso_level]) ⇒ [<code>XferBuilder</code>](#XferBuilder)
+Get new transcation builder.
+
+**Kind**: instance method of [<code>L2Face</code>](#L2Face)  
+**Returns**: [<code>XferBuilder</code>](#XferBuilder) - transaction builder instance  
+**See**
+
+- L2Face#READ_UNCOMMITTED
+- L2Face#READ_COMMITTED
+- L2Face#REPEATABL_READ
+- L2Face#SERIALIZABLE
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [iso_level] | <code>string</code> | <code>&quot;RC&quot;</code> | RU, RC, RR or SRL |
+
+<a name="L2Face.READ_UNCOMMITTED"></a>
+
+### L2Face.READ_UNCOMMITTED
+Read Uncomitted isolation level constant
+
+**Kind**: static property of [<code>L2Face</code>](#L2Face)  
+<a name="L2Face.READ_COMMITTED"></a>
+
+### L2Face.READ_COMMITTED
+Read Comitted isolation level constant
+
+**Kind**: static property of [<code>L2Face</code>](#L2Face)  
+<a name="L2Face.REPEATABL_READ"></a>
+
+### L2Face.REPEATABL_READ
+Repeatable Read isolation level constant
+
+**Kind**: static property of [<code>L2Face</code>](#L2Face)  
+<a name="L2Face.SERIALIZABLE"></a>
+
+### L2Face.SERIALIZABLE
+Serializable
+
+**Kind**: static property of [<code>L2Face</code>](#L2Face)  
 <a name="L2Face.register"></a>
 
 ### L2Face.register(as, ccm, name, endpoint, [credentials], [options])
@@ -277,7 +402,7 @@ Neutral query builder
         * [.clone()](#QueryBuilder+clone) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.escape(value)](#QueryBuilder+escape) ⇒ <code>string</code>
         * [.identifier(name)](#QueryBuilder+identifier) ⇒ <code>string</code>
-        * [.raw(expr)](#QueryBuilder+raw) ⇒ [<code>Expression</code>](#Expression)
+        * [.expr(expr)](#QueryBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
         * [.get(fields, [value])](#QueryBuilder+get) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.set(field, [value])](#QueryBuilder+set) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.where(conditions, [value])](#QueryBuilder+where) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -346,9 +471,9 @@ Escape identifier for embedding into raw query
 | --- | --- | --- |
 | name | <code>string</code> | raw identifier to escape |
 
-<a name="QueryBuilder+raw"></a>
+<a name="QueryBuilder+expr"></a>
 
-### queryBuilder.raw(expr) ⇒ [<code>Expression</code>](#Expression)
+### queryBuilder.expr(expr) ⇒ [<code>Expression</code>](#Expression)
 Wrap raw expression to prevent escaping.
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
@@ -580,6 +705,178 @@ Get implementation of previously registered driver
 | Param | Type | Description |
 | --- | --- | --- |
 | type | <code>string</code> | type of driver |
+
+<a name="QueryOptions"></a>
+
+## QueryOptions
+**Kind**: global class  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| affected | <code>integer</code> \| <code>boolean</code> \| <code>null</code> | affected rows constaint |
+| selected | <code>integer</code> \| <code>boolean</code> \| <code>null</code> | selected rows constaint |
+| result | <code>boolean</code> \| <code>null</code> | require result in response |
+
+<a name="XferQueryBuilder"></a>
+
+## XferQueryBuilder
+Version of QueryBuilder which forbids direct execution.
+
+**Kind**: global class  
+<a name="XferBuilder"></a>
+
+## XferBuilder
+Transction builder.
+
+Overall concept is build inividual queries to be executed without delay.
+It's possible to add result constraints to each query for intermediate checks:
+- affected - integer or boolean to check DML result
+- selected - integer or boolean to check DQL result
+- result - mark query result to be returned in response list
+
+**Kind**: global class  
+
+* [XferBuilder](#XferBuilder)
+    * [.clone()](#XferBuilder+clone) ⇒ [<code>XferBuilder</code>](#XferBuilder)
+    * [.query(type, entity, [query_options])](#XferBuilder+query) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+    * [.delete(entity, [query_options])](#XferBuilder+delete) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+    * [.insert(entity, [query_options])](#XferBuilder+insert) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+    * [.update(entity, [query_options])](#XferBuilder+update) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+    * [.select(entity, [query_options])](#XferBuilder+select) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+    * [.call(name, [args], [query_options])](#XferBuilder+call)
+    * [.raw(q, [params], [query_options])](#XferBuilder+raw)
+    * [.execute(as, unsafe_dml)](#XferBuilder+execute)
+    * [.executeAssoc(as, unsafe_dml)](#XferBuilder+executeAssoc)
+
+<a name="XferBuilder+clone"></a>
+
+### xferBuilder.clone() ⇒ [<code>XferBuilder</code>](#XferBuilder)
+Get a copy of XferBuilder for independent processing.
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>XferBuilder</code>](#XferBuilder) - transaction builder instance  
+<a name="XferBuilder+query"></a>
+
+### xferBuilder.query(type, entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+Get generic query builder
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| type | <code>string</code> |  | query type |
+| entity | <code>string</code> \| <code>null</code> |  | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+
+<a name="XferBuilder+delete"></a>
+
+### xferBuilder.delete(entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+Get DELETE query builder
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> |  | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+
+<a name="XferBuilder+insert"></a>
+
+### xferBuilder.insert(entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+Get INSERT query builder
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> |  | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+
+<a name="XferBuilder+update"></a>
+
+### xferBuilder.update(entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+Get UPDATE query builder
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> |  | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+
+<a name="XferBuilder+select"></a>
+
+### xferBuilder.select(entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+Get SELECT query builder
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> |  | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+
+<a name="XferBuilder+call"></a>
+
+### xferBuilder.call(name, [args], [query_options])
+Add CALL query
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> |  | stored procedure name |
+| [args] | <code>array</code> | <code>[]</code> | positional arguments |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+
+<a name="XferBuilder+raw"></a>
+
+### xferBuilder.raw(q, [params], [query_options])
+Execute raw query
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| q | <code>string</code> |  | raw query |
+| [params] | <code>object</code> | <code>{}</code> | named argument=>value pairs |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+
+<a name="XferBuilder+execute"></a>
+
+### xferBuilder.execute(as, unsafe_dml)
+Complete query and execute through associated interface.
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**See**: L1Face.query  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | steps interface |
+| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+
+<a name="XferBuilder+executeAssoc"></a>
+
+### xferBuilder.executeAssoc(as, unsafe_dml)
+Complete query and execute through associated interface.
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**See**
+
+- L1Face.query
+- L1Face.associateResult
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | steps interface |
+| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
 
 

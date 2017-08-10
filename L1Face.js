@@ -137,12 +137,7 @@ class L1Face extends PingFace
     paramQuery( as, q, params={} )
     {
         const qb = new QueryBuilder( this );
-
-        for ( let p in params )
-        {
-            q = q.replace( ':'+p, qb.escape( params[p] ) );
-        }
-
+        q = qb._replaceParams( q, params );
         this.query( as, q );
     }
 
@@ -168,12 +163,12 @@ class L1Face extends PingFace
 
         for ( let r of as_result.rows )
         {
-            let ar = new Map();
+            let ar = {};
 
             for ( let i = 0, c = r.length;
                 i < c; ++i )
             {
-                ar.set( fields[i], r[i] );
+                ar[fields[i]] = r[i];
             }
 
             res.push( ar );

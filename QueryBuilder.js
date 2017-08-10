@@ -241,6 +241,7 @@ class SQLDriver extends IDriver
             order: false,
             limit: false,
             joins: false,
+            params: false,
         };
 
         const build_cond = ( c ) =>
@@ -461,6 +462,12 @@ class SQLDriver extends IDriver
             break;
         }
 
+
+        case 'CALL':
+            q.push( `CALL ${entity}(${state.params.join( ',' )})` );
+            use.params = true;
+            break;
+
         default:
             throw new Error( `Unsupported query type ${type}` );
         }
@@ -540,6 +547,7 @@ class QueryBuilder
                 order: [],
                 limit: null,
                 joins: [],
+                params: [],
             };
         }
     }
@@ -632,7 +640,7 @@ class QueryBuilder
      * @param {string} expr - expression to wrap
      * @return {Expression} wrapped expression
      */
-    raw( expr )
+    expr( expr )
     {
         return new Expression( this.getDriver().expr( expr ) );
     }
@@ -916,12 +924,7 @@ class QueryBuilder
      */
     execute( as, unsafe_dml=false )
     {
-        if ( !unsafe_dml && !this._state.where.length )
-        {
-            as.error( 'InternalError', 'Unsafe DML' );
-        }
-
-        const q = this._toQuery();
+        const q = this._toQuery( unsafe_dml );
         this._lface.query( as, q );
     }
 
@@ -937,13 +940,25 @@ class QueryBuilder
         this.execute( as, unsafe_dml );
         as.add( ( as, res ) =>
         {
-            this._lface.associateResult( as, res );
+            const rows = this._lface.associateResult( res );
+            as.success( rows, res.affected );
         } );
     }
 
-    _toQuery()
+    _toQuery( unsafe_dml=true )
     {
-        return this.getDriver().build( this._state );
+        const state = this._state;
+
+        if ( !unsafe_dml &&
+            ( state.type !== 'SELECT' ) &&
+            ( state.type !== 'INSERT' ) &&
+            !state.where.length )
+        {
+            throw new Error( 'Unsafe DML' );
+        }
+
+
+        return this.getDriver().build( state );
     }
 
     _processConditions( target, conditions )
@@ -1015,6 +1030,29 @@ class QueryBuilder
                 throw new Error( `Unknown condition type: ${conditions}` );
             }
         }
+    }
+
+    _callParams( args )
+    {
+        const params = this._state.params;
+        const driver = this.getDriver();
+        args.forEach( ( v ) => params.push( driver.escape( v ) ) );
+        return this;
+    }
+
+    _replaceParams( q, params )
+    {
+        const driver = this.getDriver();
+
+        for ( let p in params )
+        {
+            let v = driver.escape( params[p] );
+            q = q.replace(
+                new RegExp( `(:${p})($|\\W)`, 'g' ),
+                `${v}$2` );
+        }
+
+        return q;
     }
 }
 
