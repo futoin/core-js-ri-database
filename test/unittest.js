@@ -54,6 +54,7 @@ describe('QueryBuilder', function() {
     }
     
     beforeEach(function(){
+        mockFace._db_type = 'mocksql';
         mockFace._result = {
             rows: [
                 [1, 'a', true],
@@ -207,6 +208,9 @@ describe('QueryBuilder', function() {
             
             res = qb.set('a', 'b').set({ d: 'D', c: 'C'})._toQuery();
             expect(res).to.equal('UPDATE Table SET a=^b^,d=^D^,c=^C^');
+            
+            res = qb.set('a', 'b').set(new Map([[ 'd', 'D'], ['c', 'C']]))._toQuery();
+            expect(res).to.equal('UPDATE Table SET a=^b^,d=^D^,c=^C^');
         });
         
         it('should generate complex statement', function() {
@@ -281,24 +285,26 @@ describe('QueryBuilder', function() {
                 .get('ST.*')
                 .get('OtherInner.F')
                 .get('G', 'SUM(OtherLeft.C)')
+                .get(new Map([['M', 'MN'],]))
                 .innerJoin('OtherInner')
                 .leftJoin(['OtherLeft', 'OL'], [ 'OL.X == OtherInner.Y' ])
                 .leftJoin([genQB('select', null).get('f', '1'), 'QL'])
                 .where('OtherInner.SF IN', [1,2,3])
                 .group('ST.G1').group('OtherInner.Y')
                 .having(['OR', 'G IS NULL', { 'G <': 0 } ])
+                .having('ZZ', 123)
                 .order('G').order('RAND()')
                 .limit(10, 1)
                 ._toQuery();
             expect(res).to.equal(
-                'SELECT ST.*,OtherInner.F,SUM(OtherLeft.C) AS G ' +
+                'SELECT ST.*,OtherInner.F,SUM(OtherLeft.C) AS G,MN AS M ' +
                 'FROM SomeTable AS ST ' +
                 'INNER JOIN OtherInner ' +
                 'LEFT JOIN OtherLeft AS OL ON OL.X == OtherInner.Y ' +
                 'LEFT JOIN (SELECT 1 AS f) AS QL '+
                 'WHERE OtherInner.SF IN (1,2,3) ' +
                 'GROUP BY ST.G1,OtherInner.Y ' +
-                'HAVING (G IS NULL OR G < 0) ' +
+                'HAVING (G IS NULL OR G < 0) AND ZZ = 123 ' +
                 'ORDER BY G ASC,RAND() ASC ' +
                 'LIMIT 10 OFFSET 1');
         });
@@ -410,6 +416,160 @@ describe('QueryBuilder', function() {
             .add((as) => done())
             .execute();
         });
+        
+        it('should detect other error', function(){
+            expect( function(){ mockFace.delete(null)._toQuery(); })
+                .to.throw('Entity is not set');
+            expect( function(){ mockFace.insert(null)._toQuery(); })
+                .to.throw('Entity is not set');
+            expect( function(){ mockFace.update(null)._toQuery(); })
+                .to.throw('Entity is not set');
+                
+            expect( function(){ mockFace.update(['a', 'b', 'c']); })
+                .to.throw(`Entity as array format is [name, alias]: ${['a', 'b', 'c']}`);
+            
+            expect( function(){ mockFace.update([mockFace.delete(), 'A']); })
+                .to.throw('Not a SELECT sub-query');
+                
+            expect( () => { mockFace.select().get(123)} )
+                .to.throw('Not supported fields definition: 123')
+            expect( () => { mockFace.select().set(123)} )
+                .to.throw('Not supported set definition: 123')
+
+
+            expect( () => { mockFace.select().get('M', 123)} )
+                .to.throw('Expression must be QueryBuilder or string')
+            expect( () => { mockFace.select().get('M', true)} )
+                .to.throw('Expression must be QueryBuilder or string')
+            expect( () => { mockFace.select().get({'M': true})} )
+                .to.throw('Expression must be QueryBuilder or string')
+            expect( () => { mockFace.select().get(new Map([['M', true]]))} )
+                .to.throw('Expression must be QueryBuilder or string')
+
+            expect( () => { mockFace.select({}) } )
+                .to.throw(`Unknown entity type: ${{}}`)
+                
+            expect( () => { mockFace.select().where('a BETWEEN', 'b') } )
+                .to.throw(`BETWEEN requires array with two elements`)
+            expect( () => { mockFace.select().where('a BETWEEN', [1, 2, 3]) } )
+                .to.throw(`BETWEEN requires array with two elements`)
+                
+            expect( function(){ mockFace.update('Tab').set('a', 1).execute($as()); })
+                .to.throw('Unsafe DML' );
+            expect( function(){ mockFace.delete('Tab').execute($as()); })
+                .to.throw('Unsafe DML' );
+            
+            expect( function(){ mockFace.delete('Tab').where(123); })
+                .to.throw('Unknown condition type: 123' );
+                
+            //--
+            mockFace._db_type = 'mockfail';
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {} );
+            
+            //--
+            expect( () => { mockFace.select('A') } )
+                .to.throw('Not implemented');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( entity ){ return entity; }
+            });
+            mockFace.select('A');
+            
+            //--
+            expect( () => { mockFace.select().escape('a') } )
+                .to.throw('Not implemented');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( v ){ return v; }
+                escape( v ){ return v; }
+            });
+            mockFace.select().escape('a')
+            
+            //--
+            expect( () => { mockFace.select().expr('a') } )
+                .to.throw('Not implemented');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( v ){ return v; }
+                escape( v ){ return v; }
+                expr( v ){ return v; }
+            });
+            mockFace.select().expr('a');
+            
+            //--
+            expect( () => { mockFace.select().identifier('a') } )
+                .to.throw('Not implemented');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( v ){ return v; }
+                escape( v ){ return v; }
+                expr( v ){ return v; }
+                identifier( v ){ return v; }
+            });
+            mockFace.select().identifier('a')
+            
+            //--
+            expect( () => { mockFace.update().get('345') } )
+                .to.throw('Invalid field name: 345');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( v ){ return v; }
+                escape( v ){ return v; }
+                expr( v ){ return v; }
+                identifier( v ){ return v; }
+                checkField( v ){}
+            });
+            mockFace.select().get('345');
+            
+            //--
+            expect( () => { mockFace.select().get('345')._toQuery() } )
+                .to.throw('Not implemented');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( v ){ return v; }
+                escape( v ){ return v; }
+                expr( v ){ return v; }
+                identifier( v ){ return v; }
+                checkField( v ){}
+                build(state) { return state; }
+            });
+            mockFace.select().get('a', '1')._toQuery()
+            //--
+
+
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.SQLDriver {});
+            
+            expect( () => { mockFace.select().escape('a') } )
+                .to.throw('Not implemented');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.SQLDriver {
+                _escapeSimple( v ){ return v; }
+            });
+            mockFace.select().escape('a')
+
+            //--
+            expect( () => { mockFace.queryBuilder('RAW')._toQuery() } )
+                .to.throw('Unsupported query type RAW');
+                
+            //--
+            QueryBuilder.addDriver('mockfail',
+                () => new class extends QueryBuilder.SQLDriver
+                    {
+                        _escapeSimple( v ){ return v; }
+                    });
+            expect(mockFace.select().getDriver())
+                .to.be.an.instanceof(QueryBuilder.IDriver);
+                
+            //---
+            expect(() => QueryBuilder.getDriver('unknown'))
+                .to.throw('Unknown DB type: unknown');
+                
+            //--
+            QueryBuilder.addDriver('mockfail', {});
+            expect(() => mockFace.select())
+                .to.throw( 'Not supported driver definition');
+
+        });
     });
     
     describe('#_replaceParams', function(){
@@ -450,6 +610,11 @@ describe('XferBuilder', function() {
     
     QueryBuilder.addDriver('mocksql', new MockSQLDriver);
     
+    beforeEach(function(){
+        mockFace._qresult = null;
+        mockFace._xresult = null;
+    });
+    
     it('should have correct constants', function(){
         expect(mockFace.READ_UNCOMMITTED).to.equal('RU');
         expect(mockFace.READ_COMMITTED).to.equal('RC');
@@ -467,7 +632,7 @@ describe('XferBuilder', function() {
         xb.delete('Other').where('l', 'Zzz');
         xb.call('Prc', [123, 'abc', true]);
         xb.raw('Something Cazy :b, :a', { a: 1, b: 'c'});
-        xb.execute(function(ql, isol){
+        xb.clone().execute(function(ql, isol){
             expect(isol).to.equal('RC');
             expect(ql).to.eql([
                 { q: 'SELECT RAND() AS a FROM Tab AS T',
@@ -482,4 +647,73 @@ describe('XferBuilder', function() {
         }, true);
     });
     
+    it('should return associative results', function(done){
+        mockFace._xresult = {
+            results: [
+                {
+                    rows: [ [1, 'aaa'], [2, 'bb'], [3, 'c'] ],
+                    fields: [ 'id', 'name' ],
+                    affected: 123,
+                },
+                {
+                    rows: null,
+                    fields: null,
+                    affected: 321,
+                },
+                {
+                    rows: [ [1] ],
+                    fields: [ 'a' ],
+                    affected: 321,
+                },
+            ],
+        };
+        
+        const as = $as();
+        
+        as.add(
+            (as) => {
+                mockFace.newXfer('ABC').executeAssoc(as);
+                as.add((as, res, affected) => {
+                    expect(res).to.eql([
+                        {
+                            rows: [
+                                { id: 1, name: 'aaa' },
+                                { id: 2, name: 'bb' },
+                                { id: 3, name: 'c' },
+                            ],
+                            affected: 123
+                        },
+                        {
+                            rows: [],
+                            affected: 321,
+                        },
+                        {
+                            rows: [ { a: 1 } ],
+                            affected: 321,
+                        }
+                    ]);
+                    expect(affected, 123);
+                });
+            },
+            (as, err) => {
+                console.log(as.state.error_info);
+                done(as.state.last_exception || err);
+            }
+        )
+        .add((as) => done())
+        .execute();
+    });
+    
+    it('should use isolation level', function(){
+        mockFace.newXfer('ABC').execute(function(ql, isol){
+            expect(isol).to.equal('ABC');
+        });
+    });
+    
+    it('should forbid direct execute() on QueryBuilder', function() {
+        expect(function(){ mockFace.newXfer('ABC').select().execute($as()) })
+            .to.throw('Please use XferBuilder.execute()');
+        expect(function(){ mockFace.newXfer('ABC').select().executeAssoc($as()) })
+            .to.throw('Please use XferBuilder.execute()');
+    });
 });

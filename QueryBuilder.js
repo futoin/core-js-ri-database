@@ -217,6 +217,11 @@ class SQLDriver extends IDriver
             return `(${raw_query})`;
         }
 
+        if ( typeof expr !== 'string' )
+        {
+            throw new Error( 'Expression must be QueryBuilder or string' );
+        }
+
         return this._escapeExpr( expr );
     }
 
@@ -586,11 +591,19 @@ class QueryBuilder
         }
         else if ( typeof impl === 'function' )
         {
-            impl = impl();
+            if ( typeof impl.prototype === 'object' &&
+                impl.prototype instanceof IDriver )
+            {
+                impl = new impl;
+            }
+            else
+            {
+                impl = impl();
+            }
         }
         else
         {
-            return new impl;
+            throw new Error( 'Not supported driver definition' );
         }
 
         _driverImpl[type] = impl;
@@ -671,7 +684,7 @@ class QueryBuilder
         if ( value !== undefined )
         {
             driver.checkField( fields );
-            select.set( fields, value );
+            select.set( fields, driver.expr( value ) );
         }
         else if ( fields instanceof Map )
         {
@@ -740,11 +753,6 @@ class QueryBuilder
         }
         else if ( field instanceof Map )
         {
-            if ( value !== undefined )
-            {
-                throw new Error( 'Value parameter is not applicable' );
-            }
-
             for ( let [ f, v ] of field.entries() )
             {
                 driver.checkField( f );
@@ -772,11 +780,6 @@ class QueryBuilder
         }
         else if ( typeof field === 'object' )
         {
-            if ( value !== undefined )
-            {
-                throw new Error( 'Value parameter is not applicable' );
-            }
-
             for ( let f in field )
             {
                 driver.checkField( f );

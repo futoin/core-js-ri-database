@@ -21,12 +21,6 @@ class XferQueryBuilder extends QueryBuilder
         void unsafe_dml;
         throw new Error( 'Please use XferBuilder.execute()' );
     }
-
-    executeAssoc( as, unsafe_dml=false )
-    {
-        void unsafe_dml;
-        throw new Error( 'Please use XferBuilder.executeAssoc()' );
-    }
 }
 
 /**

@@ -159,19 +159,23 @@ class L1Face extends PingFace
     associateResult( as_result )
     {
         const res = [];
+
         const fields = as_result.fields;
 
-        for ( let r of as_result.rows )
+        if ( fields )
         {
-            let ar = {};
-
-            for ( let i = 0, c = r.length;
-                i < c; ++i )
+            for ( let r of as_result.rows )
             {
-                ar[fields[i]] = r[i];
-            }
+                let ar = {};
 
-            res.push( ar );
+                for ( let i = 0, c = r.length;
+                    i < c; ++i )
+                {
+                    ar[fields[i]] = r[i];
+                }
+
+                res.push( ar );
+            }
         }
 
         return res;
