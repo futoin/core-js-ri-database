@@ -125,7 +125,7 @@ L2Face._specs = specs;
 specs['1.0'] = {
     iface : "futoin.db.l2",
     version : "1.0",
-    ftn3rev : "1.6",
+    ftn3rev : "1.7",
     inherit : "futoin.db.l1:1.0",
     types : {
         IntOrBool : [ "integer", "boolean" ],

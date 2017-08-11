@@ -56,9 +56,8 @@ class L1Face extends PingFace
             this.call( as, 'getFlavour' );
             as.add( ( as, res ) =>
             {
-                const db_type = res.flavour;
-                this._db_type = db_type;
-                as.success( db_type );
+                this._db_type = res;
+                as.success( res );
             } );
         }
         else
@@ -190,7 +189,7 @@ L1Face._specs = specs;
 specs['1.0'] = {
     iface : "futoin.db.l1",
     version : "1.0",
-    ftn3rev : "1.6",
+    ftn3rev : "1.7",
     imports : [ "futoin.ping:1.0" ],
     types : {
         Query : {
@@ -221,15 +220,19 @@ specs['1.0'] = {
             type : "Identifier",
             desc : "Actual actual database driver type",
         },
-    },
-    funcs : {
-        query : {
-            params : { q : "Query" },
-            result : {
+        QueryResult : {
+            type : "map",
+            fields : {
                 rows : "Rows",
                 fields : "Fields",
                 affected : "integer",
             },
+        },
+    },
+    funcs : {
+        query : {
+            params : { q : "Query" },
+            result : "QueryResult",
             throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh" ],
         },
         callStored : {
@@ -237,13 +240,9 @@ specs['1.0'] = {
                 name : "Identifier",
                 args : "Row",
             },
-            result : {
-                rows : "Rows",
-                fields : "Fields",
-                affected : "integer",
-            },
+            result : "QueryResult",
             throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh" ],
         },
-        getFlavour : { result : { flavour : "Flavour" } },
+        getFlavour : { result : "Flavour" },
     },
 };
