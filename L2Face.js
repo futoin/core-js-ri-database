@@ -73,12 +73,12 @@ class L2Face extends L1Face
      */
     static register( as, ccm, name, endpoint, credentials=null, options={} )
     {
-        const ifacever = options.version || '1.0';
+        const ifacever = options.version || this.LATEST_VERSION;
         const iface = this.spec( ifacever );
         const l1_iface = L1Face.spec( ifacever );
 
         options.nativeImpl = this;
-        options.specDirs = [ iface, l1_iface, PingFace.spec( '1.0' ) ];
+        options.specDirs = [ iface, l1_iface, PingFace.spec( this.PING_VERSION ) ];
 
         ccm.register(
             as,

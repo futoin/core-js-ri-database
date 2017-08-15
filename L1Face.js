@@ -9,6 +9,22 @@ const QueryBuilder = require ( './QueryBuilder' );
 class L1Face extends PingFace
 {
     /**
+     * Latest supported FTN17 version
+     */
+    static get LATEST_VERSION()
+    {
+        return '1.0';
+    }
+
+    /**
+     * Latest supported FTN4 version
+     */
+    static get PING_VERSION()
+    {
+        return '1.0';
+    }
+
+    /**
      * CCM registration helper
      * 
      * @param {AsyncSteps} as - steps interface
@@ -21,11 +37,11 @@ class L1Face extends PingFace
      */
     static register( as, ccm, name, endpoint, credentials=null, options={} )
     {
-        const ifacever = options.version || '1.0';
+        const ifacever = options.version || this.LATEST_VERSION;
         const iface = this.spec( ifacever );
 
         options.nativeImpl = this;
-        options.specDirs = [ iface, PingFace.spec( '1.0' ) ];
+        options.specDirs = [ iface, PingFace.spec( this.PING_VERSION ) ];
 
         ccm.register(
             as,

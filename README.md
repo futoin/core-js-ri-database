@@ -43,10 +43,28 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#L1Face">L1Face</a></dt>
 <dd><p>Level 1 Database Face</p>
 </dd>
+<dt><a href="#L1Service">L1Service</a></dt>
+<dd><p>Base for Level 1 Database service implementation</p>
+</dd>
 <dt><a href="#XferQuery">XferQuery</a></dt>
 <dd></dd>
 <dt><a href="#L2Face">L2Face</a></dt>
 <dd><p>Level 2 Database Face</p>
+</dd>
+<dt><a href="#L2Service">L2Service</a></dt>
+<dd><p>Base for Level 2 Database service implementation</p>
+</dd>
+<dt><a href="#MySQLDriver">MySQLDriver</a></dt>
+<dd><p>MySQL driver for QueryBuilder</p>
+</dd>
+<dt><a href="#MySQLService">MySQLService</a></dt>
+<dd><p>MySQL service implementation for FutoIn Database interface</p>
+</dd>
+<dt><a href="#PostgreSQLDriver">PostgreSQLDriver</a></dt>
+<dd><p>PostgreSQL driver for QueryBuilder</p>
+</dd>
+<dt><a href="#PostgreSQLService">PostgreSQLService</a></dt>
+<dd><p>PostgreSQL service implementation for FutoIn Database interface</p>
 </dd>
 <dt><a href="#Expression">Expression</a></dt>
 <dd><p>Wrapper for raw expression to prevent escaping of them</p>
@@ -109,6 +127,8 @@ Level 1 Database Face
         * [.paramQuery(as, q, params)](#L1Face+paramQuery)
         * [.associateResult(as_result)](#L1Face+associateResult) ⇒ <code>array</code>
     * _static_
+        * [.LATEST_VERSION](#L1Face.LATEST_VERSION)
+        * [.PING_VERSION](#L1Face.PING_VERSION)
         * [.register(as, ccm, name, endpoint, [credentials], [options])](#L1Face.register)
 
 <a name="L1Face+query"></a>
@@ -234,6 +254,18 @@ Convert raw result into array of associated rows (Maps)
 | --- | --- | --- |
 | as_result | <code>object</code> | $as result of query() call |
 
+<a name="L1Face.LATEST_VERSION"></a>
+
+### L1Face.LATEST_VERSION
+Latest supported FTN17 version
+
+**Kind**: static property of [<code>L1Face</code>](#L1Face)  
+<a name="L1Face.PING_VERSION"></a>
+
+### L1Face.PING_VERSION
+Latest supported FTN4 version
+
+**Kind**: static property of [<code>L1Face</code>](#L1Face)  
 <a name="L1Face.register"></a>
 
 ### L1Face.register(as, ccm, name, endpoint, [credentials], [options])
@@ -250,6 +282,24 @@ CCM registration helper
 | [credentials] | <code>\*</code> | <code></code> | see AdvancedCCM#register |
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+
+<a name="L1Service"></a>
+
+## L1Service
+Base for Level 1 Database service implementation
+
+**Kind**: global class  
+<a name="L1Service.register"></a>
+
+### L1Service.register(as, executor)
+Register futoin.db.l1 interface with Executor
+
+**Kind**: static method of [<code>L1Service</code>](#L1Service)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | steps interface |
+| executor | <code>Executor</code> | executor instance |
 
 <a name="XferQuery"></a>
 
@@ -382,6 +432,50 @@ CCM registration helper
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 
+<a name="L2Service"></a>
+
+## L2Service
+Base for Level 2 Database service implementation
+
+**Kind**: global class  
+<a name="L2Service.register"></a>
+
+### L2Service.register(as, executor)
+Register futoin.db.l2 interface with Executor
+
+**Kind**: static method of [<code>L2Service</code>](#L2Service)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | steps interface |
+| executor | <code>Executor</code> | executor instance |
+
+<a name="MySQLDriver"></a>
+
+## MySQLDriver
+MySQL driver for QueryBuilder
+
+**Kind**: global class  
+**Note**: It is normally automatically added when main.js is executed.  
+<a name="MySQLService"></a>
+
+## MySQLService
+MySQL service implementation for FutoIn Database interface
+
+**Kind**: global class  
+<a name="PostgreSQLDriver"></a>
+
+## PostgreSQLDriver
+PostgreSQL driver for QueryBuilder
+
+**Kind**: global class  
+**Note**: It is normally automatically added when main.js is executed.  
+<a name="PostgreSQLService"></a>
+
+## PostgreSQLService
+PostgreSQL service implementation for FutoIn Database interface
+
+**Kind**: global class  
 <a name="Expression"></a>
 
 ## Expression
