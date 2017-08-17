@@ -31,6 +31,14 @@ module.exports = {
         "block-spacing": ["error"],
         "brace-style": ["error", "allman"],
         "no-trailing-spaces": "error",
+        "no-unused-vars": [
+            "error",
+            {
+                "vars" : "all",
+                "args" : "all",
+                "argsIgnorePattern" : "^(as|err)$"
+            }
+        ],
         "no-useless-concat": "error",
         "no-useless-return": "error",
         "no-useless-escape": "error",

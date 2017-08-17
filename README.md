@@ -43,6 +43,8 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#L1Face">L1Face</a></dt>
 <dd><p>Level 1 Database Face</p>
 </dd>
+<dt><a href="#ServiceOptions">ServiceOptions</a></dt>
+<dd></dd>
 <dt><a href="#L1Service">L1Service</a></dt>
 <dd><p>Base for Level 1 Database service implementation</p>
 </dd>
@@ -58,7 +60,7 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dd><p>MySQL driver for QueryBuilder</p>
 </dd>
 <dt><a href="#MySQLService">MySQLService</a></dt>
-<dd><p>MySQL service implementation for FutoIn Database interface</p>
+<dd><p>MySQL service implementation for FutoIn Database interface.addEventListener()</p>
 </dd>
 <dt><a href="#PostgreSQLDriver">PostgreSQLDriver</a></dt>
 <dd><p>PostgreSQL driver for QueryBuilder</p>
@@ -283,6 +285,62 @@ CCM registration helper
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 
+<a name="ServiceOptions"></a>
+
+## ServiceOptions
+**Kind**: global class  
+
+* [ServiceOptions](#ServiceOptions)
+    * [new ServiceOptions()](#new_ServiceOptions_new)
+    * [.host](#ServiceOptions.host)
+    * [.port](#ServiceOptions.port)
+    * [.database](#ServiceOptions.database)
+    * [.user](#ServiceOptions.user)
+    * [.password](#ServiceOptions.password)
+    * [.conn_limit](#ServiceOptions.conn_limit)
+
+<a name="new_ServiceOptions_new"></a>
+
+### new ServiceOptions()
+Service options object
+
+<a name="ServiceOptions.host"></a>
+
+### ServiceOptions.host
+Host to connect to
+
+**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
+<a name="ServiceOptions.port"></a>
+
+### ServiceOptions.port
+Port to use on host
+
+**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
+<a name="ServiceOptions.database"></a>
+
+### ServiceOptions.database
+Database
+
+**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
+<a name="ServiceOptions.user"></a>
+
+### ServiceOptions.user
+Username
+
+**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
+<a name="ServiceOptions.password"></a>
+
+### ServiceOptions.password
+Password
+
+**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
+<a name="ServiceOptions.conn_limit"></a>
+
+### ServiceOptions.conn_limit
+Connection limit
+
+**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
+**Default**: <code>1</code>  
 <a name="L1Service"></a>
 
 ## L1Service
@@ -291,15 +349,17 @@ Base for Level 1 Database service implementation
 **Kind**: global class  
 <a name="L1Service.register"></a>
 
-### L1Service.register(as, executor)
+### L1Service.register(as, executor, options) ⇒ [<code>L1Service</code>](#L1Service)
 Register futoin.db.l1 interface with Executor
 
 **Kind**: static method of [<code>L1Service</code>](#L1Service)  
+**Returns**: [<code>L1Service</code>](#L1Service) - instance  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | steps interface |
 | executor | <code>Executor</code> | executor instance |
+| options | [<code>ServiceOptions</code>](#ServiceOptions) | options to pass to constructor |
 
 <a name="XferQuery"></a>
 
@@ -440,15 +500,17 @@ Base for Level 2 Database service implementation
 **Kind**: global class  
 <a name="L2Service.register"></a>
 
-### L2Service.register(as, executor)
+### L2Service.register(as, executor, options) ⇒ [<code>L2Service</code>](#L2Service)
 Register futoin.db.l2 interface with Executor
 
 **Kind**: static method of [<code>L2Service</code>](#L2Service)  
+**Returns**: [<code>L2Service</code>](#L2Service) - instance  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | steps interface |
 | executor | <code>Executor</code> | executor instance |
+| options | [<code>ServiceOptions</code>](#ServiceOptions) | options to pass to constructor |
 
 <a name="MySQLDriver"></a>
 
@@ -460,9 +522,10 @@ MySQL driver for QueryBuilder
 <a name="MySQLService"></a>
 
 ## MySQLService
-MySQL service implementation for FutoIn Database interface
+MySQL service implementation for FutoIn Database interface.addEventListener()
 
 **Kind**: global class  
+**Note**: If host is localhost then 'socketPath' is from 'port' option.  
 <a name="PostgreSQLDriver"></a>
 
 ## PostgreSQLDriver

@@ -183,8 +183,8 @@ specs['1.0'] = {
                 ql : "XferQueryList",
                 isol : "IsolationLevel",
             },
-            result : { results : "XferResultList" },
-            throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh" ],
+            result : "XferResultList",
+            throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh", "XferCondition" ],
 
         },
     },
