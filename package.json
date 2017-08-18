@@ -44,8 +44,8 @@
     "test/**"
   ],
   "dependencies": {
-    "futoin-executor": "^1.3.2",
-    "futoin-invoker": "^1.3.1",
+    "futoin-executor": "^1.4.0",
+    "futoin-invoker": "^1.4.0",
     "lodash": "^4.17.4",
     "sqlstring": "^2.2.0"
   },

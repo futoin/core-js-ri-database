@@ -79,6 +79,7 @@ class L2Face extends L1Face
 
         options.nativeImpl = this;
         options.specDirs = [ iface, l1_iface, PingFace.spec( this.PING_VERSION ) ];
+        options.sendOnBehalfOf = options.sendOnBehalfOf || false;
 
         ccm.register(
             as,
@@ -91,7 +92,7 @@ class L2Face extends L1Face
 
         as.add( ( as ) =>
         {
-            this.getFlavour( as );
+            ccm.iface( name ).getFlavour( as );
         } );
     }
 

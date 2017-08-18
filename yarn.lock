@@ -866,22 +866,22 @@ futoin-asyncsteps@^1.6.2:
   dependencies:
     performance-now "^2.1.0"
 
-futoin-executor@^1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.3.2.tgz#4251a2b49de9a27abea665c46397cfcb017d360a"
+futoin-executor@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.4.0.tgz#5d85feb883aa0e786ec74c1887770989f76c9aa3"
   dependencies:
     cookies "^0.7.0"
     detect-node "^2.0.3"
     event-emitter "^0.3.5"
     faye-websocket "^0.11.1"
     futoin-asyncsteps "^1.6.2"
-    futoin-invoker "^1.3.1"
+    futoin-invoker "^1.4.0"
     lodash "^4.17.4"
     performance-now "^2.1.0"
 
-futoin-invoker@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.3.1.tgz#30db4150ae2c2556272355ed7490a022ae2b2502"
+futoin-invoker@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.4.0.tgz#98d9da979a6d9bf9b258d877e92f3d50bbefdb2b"
   dependencies:
     agentkeepalive "^3.3.0"
     detect-node "^2.0.3"

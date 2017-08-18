@@ -120,15 +120,17 @@ class MySQLService extends L2Service
                     as.state.dbConn = conn;
                     as.success( conn );
                 } );
-
-                as.add( callback );
-                as.add( releaseConn );
             },
             ( as, err ) => releaseConn( as )
         );
+        as.add(
+            callback,
+            ( as, err ) => releaseConn( as )
+        );
+        as.add( releaseConn );
     }
 
-    _handleResult( as, dbq, multi=false )
+    _handleResult( as, dbq, multi=false, cb=null )
     {
         as.setCancel( ( as ) => null );
 
@@ -144,7 +146,14 @@ class MySQLService extends L2Service
             {
                 if ( !as.state ) return;
 
-                as.error( 'InvalidQuery', 'More than one result' );
+                try
+                {
+                    as.error( 'InvalidQuery', 'More than one result' );
+                }
+                catch ( e )
+                {
+                    return;
+                }
             }
 
             rows = [];
@@ -165,7 +174,14 @@ class MySQLService extends L2Service
             {
                 if ( !as.state ) return;
 
-                as.error( 'InvalidQuery', 'More than one result' );
+                try
+                {
+                    as.error( 'InvalidQuery', 'More than one result' );
+                }
+                catch ( e )
+                {
+                    return;
+                }
             }
 
             const affected = packet.affectedRows;
@@ -191,7 +207,15 @@ class MySQLService extends L2Service
                 const conn = as.state.dbConn;
                 as.state.dbConn = null;
                 conn.destroy();
-                as.error( 'LimitTooHigh' );
+
+                try
+                {
+                    as.error( 'LimitTooHigh' );
+                }
+                catch ( e )
+                {
+                    // ignore
+                }
             }
         } );
 
@@ -203,20 +227,27 @@ class MySQLService extends L2Service
             as.state.last_exception = err;
             const code = err.code;
 
-            switch ( code )
+            try
             {
-            case 'ER_DUP_ENTRY':
-                as.error( 'Duplicate' );
-                break;
+                switch ( code )
+                {
+                case 'ER_DUP_ENTRY':
+                    as.error( 'Duplicate' );
+                    break;
 
-            case 'ER_EMPTY_QUERY':
-            case 'ER_SYNTAX_ERROR':
-            case 'ER_NOT_ALLOWED_COMMAND':
-                as.error( 'InvalidQuery' );
-                break;
+                case 'ER_EMPTY_QUERY':
+                case 'ER_SYNTAX_ERROR':
+                case 'ER_PARSE_ERROR':
+                    as.error( 'InvalidQuery' );
+                    break;
 
-            default:
-                as.error( 'OtherExecError', code );
+                default:
+                    as.error( 'OtherExecError', code );
+                }
+            }
+            catch ( e )
+            {
+                // ignore
             }
         } );
 
@@ -224,7 +255,12 @@ class MySQLService extends L2Service
         {
             if ( as.state )
             {
-                as.success( multi ? multi_res : res );
+                if ( cb )
+                {
+                    cb( multi ? multi_res : res );
+                }
+
+                as.success();
             }
         } );
     }
@@ -235,7 +271,8 @@ class MySQLService extends L2Service
         {
             conn._futoin_isol = null; // reset for safety reasons
 
-            this._handleResult( as, conn.query( reqinfo.params().q ) );
+            this._handleResult( as, conn.query( reqinfo.params().q ), false,
+                ( res ) => reqinfo.result( res ) );
         } );
     }
 
@@ -248,7 +285,8 @@ class MySQLService extends L2Service
             const p = reqinfo.params();
             const args = p.args.map( ( v ) => conn.escape( v ) ).join( ',' );
             const q = `CALL ${conn.escapeId( p.name )}(${args})`;
-            this._handleResult( as, conn.query( q ) );
+            this._handleResult( as, conn.query( q ), false,
+                ( res ) => reqinfo.result( res ) );
         } );
     }
 
@@ -293,20 +331,18 @@ class MySQLService extends L2Service
                     as.forEach( ql, ( as, stmt_id, xfer ) =>
                     {
                         const dbq = conn.query( xfer.q );
-                        this._handleResult( as, dbq, true );
-
-                        as.add( ( as, qresults ) =>
-                        {
-                            this._xferCommon( as, xfer, qresults, stmt_id, results );
-                        } );
+                        this._handleResult( as, dbq, true,
+                            ( qresults ) => this._xferCommon(
+                                as, xfer, qresults, stmt_id, results )
+                        );
                     } );
 
                     // Commit
                     as.add( ( as ) =>
                     {
+                        reqinfo.result( results );
                         const dbq = conn.commit();
                         this._handleResult( as, dbq );
-                        as.success( results );
                     } );
                 },
                 ( as, err ) =>
