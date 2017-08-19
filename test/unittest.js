@@ -674,8 +674,7 @@ describe('XferBuilder', function() {
     
     beforeEach(function(){
         mockFace._qresult = null;
-        mockFace._xresult = {
-            results: [
+        mockFace._xresult = [
                 {
                     rows: [ [1, 'aaa'], [2, 'bb'], [3, 'c'] ],
                     fields: [ 'id', 'name' ],
@@ -691,8 +690,7 @@ describe('XferBuilder', function() {
                     fields: [ 'a' ],
                     affected: 321,
                 },
-            ],
-        };
+            ];
     });
     
     it('should have correct constants', function(){
@@ -777,6 +775,29 @@ describe('XferBuilder', function() {
             .to.throw('Please use XferBuilder.execute()');
         expect(function(){ mockFace.newXfer('ABC').select().executeAssoc($as()) })
             .to.throw('Please use XferBuilder.execute()');
+    });
+    
+    it('should check query options', function(){
+        expect( function(){ mockFace.newXfer('ABC').select('a', {return: true}); })
+            .to.throw('Invalid query option: return');
+    });
+        
+    it('should support QB shortcuts', function(){
+        expect( mockFace.newXfer('ABC').expr('abc') )
+            .to.be.instanceof(QueryBuilder.Expression);
+        expect( mockFace.newXfer('ABC').expr('abc').toQuery() )
+            .to.equal('abc');
+                
+        expect( mockFace.newXfer('ABC').param('abc') )
+            .to.be.instanceof(QueryBuilder.Expression);
+        expect( mockFace.newXfer('ABC').param('abc').toQuery() )
+            .to.be.equal(':abc');
+            
+        expect( mockFace.newXfer('ABC').escape('ab^c') )
+            .to.be.equal('^ab\\^c^');
+            
+        expect( function(){ mockFace.newXfer('ABC').identifier('abc') } )
+            .to.throw('Not implemented');
     });
     
     describe('#prepare', function() {

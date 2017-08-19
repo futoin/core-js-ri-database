@@ -126,7 +126,7 @@ class MySQLService extends L2Service
         as.add(
             ( as, conn ) =>
             {
-                if ( conn._futoin_isol === null )
+                if ( !conn._futoin_isol )
                 {
                     as.add( ( as ) =>
                     {
@@ -272,6 +272,10 @@ class MySQLService extends L2Service
                     as.error( 'InvalidQuery' );
                     break;
 
+                case 'ER_LOCK_DEADLOCK':
+                    as.error( 'DeadLock' );
+                    break;
+
                 default:
                     as.error( 'OtherExecError', code );
                 }
@@ -288,7 +292,14 @@ class MySQLService extends L2Service
             {
                 if ( cb )
                 {
-                    cb( multi ? multi_res : res );
+                    try
+                    {
+                        cb( multi ? multi_res : res );
+                    }
+                    catch ( e )
+                    {
+                        return;
+                    }
                 }
 
                 as.success();
@@ -338,7 +349,7 @@ class MySQLService extends L2Service
                     // Begin
                     as.add( ( as ) =>
                     {
-                        const dbq = conn.query( 'START TRANSACTION' );
+                        const dbq = conn.beginTransaction();
                         this._handleResult( as, dbq );
                     } );
 

@@ -924,7 +924,7 @@ Get implementation of previously registered driver
 | --- | --- | --- |
 | affected | <code>integer</code> \| <code>boolean</code> \| <code>null</code> | affected rows constaint |
 | selected | <code>integer</code> \| <code>boolean</code> \| <code>null</code> | selected rows constaint |
-| result | <code>boolean</code> \| <code>null</code> | require result in response |
+| return | <code>boolean</code> \| <code>null</code> | return result in response |
 
 <a name="XferQueryBuilder"></a>
 
@@ -947,6 +947,11 @@ It's possible to add result constraints to each query for intermediate checks:
 
 * [XferBuilder](#XferBuilder)
     * [.clone()](#XferBuilder+clone) ⇒ [<code>XferBuilder</code>](#XferBuilder)
+    * [.getDriver()](#XferBuilder+getDriver) ⇒ [<code>IDriver</code>](#IDriver)
+    * [.escape(value)](#XferBuilder+escape) ⇒ <code>string</code>
+    * [.identifier(name)](#XferBuilder+identifier) ⇒ <code>string</code>
+    * [.expr(expr)](#XferBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
+    * [.param(name)](#XferBuilder+param) ⇒ [<code>Expression</code>](#Expression)
     * [.query(type, entity, [query_options])](#XferBuilder+query) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
     * [.delete(entity, [query_options])](#XferBuilder+delete) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
     * [.insert(entity, [query_options])](#XferBuilder+insert) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
@@ -965,6 +970,61 @@ Get a copy of XferBuilder for independent processing.
 
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 **Returns**: [<code>XferBuilder</code>](#XferBuilder) - transaction builder instance  
+<a name="XferBuilder+getDriver"></a>
+
+### xferBuilder.getDriver() ⇒ [<code>IDriver</code>](#IDriver)
+Get related QV driver
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>IDriver</code>](#IDriver) - actual implementation of query builder driver  
+<a name="XferBuilder+escape"></a>
+
+### xferBuilder.escape(value) ⇒ <code>string</code>
+Escape value for embedding into raw query
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: <code>string</code> - driver-specific escape  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>\*</code> | value, array or sub-query to escape |
+
+<a name="XferBuilder+identifier"></a>
+
+### xferBuilder.identifier(name) ⇒ <code>string</code>
+Escape identifier for embedding into raw query
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: <code>string</code> - driver-specific escape  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | raw identifier to escape |
+
+<a name="XferBuilder+expr"></a>
+
+### xferBuilder.expr(expr) ⇒ [<code>Expression</code>](#Expression)
+Wrap raw expression to prevent escaping.
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>Expression</code>](#Expression) - wrapped expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| expr | <code>string</code> | expression to wrap |
+
+<a name="XferBuilder+param"></a>
+
+### xferBuilder.param(name) ⇒ [<code>Expression</code>](#Expression)
+Wrap parameter name to prevent escaping.
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>Expression</code>](#Expression) - wrapped expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | name to wrap |
+
 <a name="XferBuilder+query"></a>
 
 ### xferBuilder.query(type, entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)

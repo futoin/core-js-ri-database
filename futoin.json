@@ -9,7 +9,7 @@
   },
   "actions": {
     "test": "@cid tool exec grunt -- test",
-    "bare_test": "@cid tool exec node -- node_modules/.bin/mocha test/unittest.js",
+    "bare_test": "@cid tool exec node -- node_modules/.bin/mocha test/unittest.js test/mysqltest.js",
     "upgrade-deps": "@cid tool exec yarn -- upgrade --latest"
   }
 }

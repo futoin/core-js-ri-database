@@ -258,7 +258,7 @@ specs['1.0'] = {
                 args : "Row",
             },
             result : "QueryResult",
-            throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh" ],
+            throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh", "DeadLock" ],
         },
         getFlavour : { result : "Flavour" },
     },

@@ -8,7 +8,7 @@ const QueryBuilder = require( './QueryBuilder' );
  * @name QueryOptions
  * @property {integer|boolean|null} affected - affected rows constaint
  * @property {integer|boolean|null} selected - selected rows constaint
- * @property {boolean|null} result - require result in response
+ * @property {boolean|null} return - return result in response
  */
 
 /**
@@ -67,6 +67,57 @@ class XferBuilder
     }
 
     /**
+     * Get related QV driver
+     * @returns {IDriver} actual implementation of query builder driver
+     */
+    getDriver()
+    {
+        return QueryBuilder.getDriver( this._db_type );
+    }
+
+
+    /**
+     * Escape value for embedding into raw query
+     * @param {*} value - value, array or sub-query to escape
+     * @returns {string} driver-specific escape
+     */
+    escape( value )
+    {
+        return this.getDriver().escape( value );
+    }
+
+    /**
+     * Escape identifier for embedding into raw query
+     * @param {string} name - raw identifier to escape
+     * @returns {string} driver-specific escape
+     */
+    identifier( name )
+    {
+        return this.getDriver().identifier( name );
+    }
+
+    /**
+     * Wrap raw expression to prevent escaping.
+     * @param {string} expr - expression to wrap
+     * @return {Expression} wrapped expression
+     */
+    expr( expr )
+    {
+        return new QueryBuilder.Expression( this.getDriver().expr( expr ) );
+    }
+
+
+    /**
+     * Wrap parameter name to prevent escaping.
+     * @param {string} name - name to wrap
+     * @return {Expression} wrapped expression
+     */
+    param( name )
+    {
+        return new QueryBuilder.Expression( this.getDriver().expr( `:${name}` ) );
+    }
+
+    /**
      * Get generic query builder
      * @param {string} type - query type
      * @param {string|null} entity - man subject
@@ -76,6 +127,20 @@ class XferBuilder
     query( type, entity, query_options={} )
     {
         const qb = this._newBuilder( type, entity );
+
+        for ( let qo in query_options )
+        {
+            switch( qo )
+            {
+            case 'affected':
+            case 'result':
+            case 'selected':
+                break;
+
+            default:
+                throw new Error( `Invalid query option: ${qo}` );
+            }
+        }
 
         const item = _cloneDeep( query_options );
         item.q = qb;
@@ -158,7 +223,7 @@ class XferBuilder
 
         if ( params )
         {
-            const driver = QueryBuilder.getDriver( this._db_type );
+            const driver = this.getDriver();
             item.q = QueryBuilder._replaceParams( driver, q, params );
         }
         else
@@ -268,7 +333,7 @@ class XferBuilder
     {
         return function( as, res )
         {
-            const assoc_res = res.results.map( ( v ) =>
+            const assoc_res = res.map( ( v ) =>
             {
                 const rows = iface.associateResult( v );
                 return {

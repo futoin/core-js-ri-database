@@ -144,7 +144,7 @@ specs['1.0'] = {
                     optional : true,
                     desc : "Require selected row count: specific or > 0, if true",
                 },
-                return : {
+                result : {
                     type : "boolean",
                     optional : true,
                     desc : "Return result of the statement",
@@ -185,7 +185,7 @@ specs['1.0'] = {
                 isol : "IsolationLevel",
             },
             result : "XferResultList",
-            throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh", "XferCondition" ],
+            throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh", "DeadLock", "XferCondition" ],
 
         },
     },

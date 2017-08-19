@@ -1,10 +1,9 @@
 const expect = require('chai').expect;
 const $as = require('futoin-asyncsteps');
 
-const { QueryBuilder } = require('../main');
-
 
 describe('MySQLDriver', function() {
+    const { QueryBuilder } = require('../main');
     const drv = QueryBuilder.getDriver('mysql');
 
     it('should escape values correctly', () => {
@@ -61,6 +60,8 @@ describe('MySQLService', () => {
                 });
                 L1Face.register(as, ccm, 'ml1', executor);
                 L2Face.register(as, ccm, 'ml2', executor);
+                ccm.alias('ml1', 'l1');
+                ccm.alias('ml2', 'l2');
             },
             (as, err) => {
                 console.log(as.state.error_info);
@@ -91,6 +92,8 @@ describe('MySQLService', () => {
                                 'name VARCHAR(255) not null unique, ' +
                                 'ts DATETIME' +
                             ') ENGINE=InnoDB');
+                    ccm.iface('ml2').query(as,
+                            'CREATE PROCEDURE test.Proc(IN a INT) BEGIN END');
                     as.add( (as) => done() );
                 },
                 (as, err) => {

@@ -42,6 +42,8 @@ class L2Service extends L1Service
         const res = qresults[0];
         let fail_on_multi = false;
 
+        // Affected checks
+        //---
         if ( typeof xfer.affected === 'boolean' )
         {
             fail_on_multi = true;
@@ -71,20 +73,22 @@ class L2Service extends L1Service
             }
         }
 
-        if ( typeof xfer.affected === 'boolean' )
+        // Selected checks
+        //---
+        if ( typeof xfer.selected === 'boolean' )
         {
             fail_on_multi = true;
 
             if ( xfer.selected )
             {
-                if ( res.length <= 0 )
+                if ( res.rows.length <= 0 )
                 {
                     as.error( 'XferCondition', 'Selected' );
                 }
             }
             else
             {
-                if ( res.length > 0 )
+                if ( res.rows.length > 0 )
                 {
                     as.error( 'XferCondition', 'Selected' );
                 }
@@ -94,19 +98,21 @@ class L2Service extends L1Service
         {
             fail_on_multi = true;
 
-            if ( res.length !== xfer.selected )
+            if ( res.rows.length !== xfer.selected )
             {
                 as.error( 'XferCondition', 'Selected' );
             }
         }
 
+        // Sanity check
         if ( fail_on_multi && qresults.length !== 1 )
         {
             as.error( 'OtherExecError',
                 'Multiple results for conditions' );
         }
 
-        if ( xfer.return )
+        // Return result
+        if ( xfer.result )
         {
             qresults.forEach( ( v ) =>
             {
