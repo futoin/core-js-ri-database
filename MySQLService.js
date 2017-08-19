@@ -64,7 +64,7 @@ class MySQLService extends L2Service
         this._pool.end();
     }
 
-    _withConnection( as, callback )
+    _withConnection( as, isol, callback )
     {
         const releaseConn = ( as ) =>
         {
@@ -124,7 +124,38 @@ class MySQLService extends L2Service
             ( as, err ) => releaseConn( as )
         );
         as.add(
-            callback,
+            ( as, conn ) =>
+            {
+                if ( conn._futoin_isol === null )
+                {
+                    as.add( ( as ) =>
+                    {
+                        const q = 'SET AUTOCOMMIT = 1';
+                        const dbq = conn.query( q );
+                        this._handleResult( as, dbq );
+                    } );
+                }
+
+                if ( conn._futoin_isol !== isol )
+                {
+                    as.add( ( as ) =>
+                    {
+                        const q = `SET SESSION TRANSACTION ISOLATION LEVEL ${IsoLevels[isol]}`;
+                        const dbq = conn.query( q );
+                        this._handleResult( as, dbq );
+                    } );
+
+                    as.add( ( as ) =>
+                    {
+                        conn._futoin_isol = isol;
+                        callback( as, conn );
+                    } );
+                }
+                else
+                {
+                    callback( as, conn );
+                }
+            },
             ( as, err ) => releaseConn( as )
         );
         as.add( releaseConn );
@@ -267,10 +298,8 @@ class MySQLService extends L2Service
 
     query( as, reqinfo )
     {
-        this._withConnection( as, ( as, conn ) =>
+        this._withConnection( as, 'RC', ( as, conn ) =>
         {
-            conn._futoin_isol = null; // reset for safety reasons
-
             this._handleResult( as, conn.query( reqinfo.params().q ), false,
                 ( res ) => reqinfo.result( res ) );
         } );
@@ -278,10 +307,8 @@ class MySQLService extends L2Service
 
     callStored( as, reqinfo )
     {
-        this._withConnection( as, ( as, conn ) =>
+        this._withConnection( as, 'RC', ( as, conn ) =>
         {
-            conn._futoin_isol = null; // reset for safety reasons
-
             const p = reqinfo.params();
             const args = p.args.map( ( v ) => conn.escape( v ) ).join( ',' );
             const q = `CALL ${conn.escapeId( p.name )}(${args})`;
@@ -298,28 +325,16 @@ class MySQLService extends L2Service
 
     xfer( as, reqinfo )
     {
-        this._withConnection( as, ( as, conn ) =>
+        const p = reqinfo.params();
+
+        this._withConnection( as, p.isol, ( as, conn ) =>
         {
-            const p = reqinfo.params();
             const ql = p.ql;
             const results = [];
-            const isol = p.isol;
-
-            if ( conn._futoin_isol !== isol )
-            {
-                as.add( ( as ) =>
-                {
-                    const q = `SET SESSION TRANSACTION ISOLATION LEVEL ${IsoLevels[p.isol]}`;
-                    const dbq = conn.query( q );
-                    this._handleResult( as, dbq );
-                } );
-            }
 
             as.add(
                 ( as ) =>
                 {
-                    conn._futoin_isol = isol; // cache
-
                     // Begin
                     as.add( ( as ) =>
                     {
