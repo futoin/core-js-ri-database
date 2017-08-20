@@ -391,21 +391,7 @@ class SQLDriver extends IDriver
 
             if ( state.select.size )
             {
-                const fields = [];
-
-                for ( let [ f, v ] of state.select.entries() )
-                {
-                    if ( v === f )
-                    {
-                        fields.push( `${f}` );
-                    }
-                    else
-                    {
-                        fields.push( `${v} AS ${f}` );
-                    }
-                }
-
-                q.push( fields.join( ',' ) );
+                q.push( this._build_select_part( state.select ) );
                 use.select = true;
             }
             else
@@ -505,6 +491,25 @@ class SQLDriver extends IDriver
         }
 
         return q.join( '' );
+    }
+
+    _build_select_part( select )
+    {
+        const fields = [];
+
+        for ( let [ f, v ] of select.entries() )
+        {
+            if ( v === f )
+            {
+                fields.push( `${f}` );
+            }
+            else
+            {
+                fields.push( `${v} AS ${f}` );
+            }
+        }
+
+        return fields.join( ',' );
     }
 
     _isLimitOffsetSupport()

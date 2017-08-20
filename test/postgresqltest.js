@@ -25,4 +25,23 @@ describe('PostgreSQLDriver', function() {
         expect( drv.identifier('one.two') ).to.equal('"one"."two"');
         expect( drv.identifier('on"e.t"w"o') ).to.equal('"on""e"."t""w""o"');
     });
+    
+    it('should support RETURNING clause', () => {
+        let qb;
+    
+        qb = new QueryBuilder(null, 'postgresql', 'insert', 'tbl');
+        qb.set('name', 'abc').get(['id', 'ts']);
+        expect( qb._toQuery() )
+            .to.equal('INSERT INTO tbl (name) VALUES (\'abc\') RETURNING id,ts');
+    
+        qb = new QueryBuilder(null, 'postgresql', 'update', 'tbl');
+        qb.set('name', 'abc').get(['id', 'ts']).where('name', 'xyz');
+        expect( qb._toQuery() )
+            .to.equal('UPDATE tbl SET name=\'abc\' WHERE name = \'xyz\' RETURNING id,ts');
+    
+        qb = new QueryBuilder(null, 'postgresql', 'delete', 'tbl');
+        qb.get(['id', 'ts']).where('name', 'xyz');
+        expect( qb._toQuery() )
+            .to.equal('DELETE FROM tbl WHERE name = \'xyz\' RETURNING id,ts');
+    });
 });

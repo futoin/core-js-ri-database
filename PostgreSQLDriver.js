@@ -9,6 +9,24 @@ const QueryBuilder = require( './QueryBuilder' );
  */
 class PostgreSQLDriver extends QueryBuilder.SQLDriver
 {
+    build( state )
+    {
+        if ( state.type !== 'SELECT' && state.select.size )
+        {
+            const pure_state = Object.create( state );
+            pure_state.select = null;
+
+            const q = super.build( pure_state );
+            const select = this._build_select_part( state.select );
+
+            return `${q} RETURNING ${select}`;
+        }
+        else
+        {
+            return super.build( state );
+        }
+    }
+
     _escapeSimple( value )
     {
         switch ( typeof value )
