@@ -45,3 +45,149 @@ describe('PostgreSQLDriver', function() {
             .to.equal('DELETE FROM tbl WHERE name = \'xyz\' RETURNING id,ts');
     });
 });
+
+
+describe('PostgreSQLService', () => {
+    const Executor = require('futoin-executor/Executor');
+    const AdvancedCCM = require('futoin-invoker/AdvancedCCM');
+    const L1Face = require('../L1Face');
+    const L2Face = require('../L2Face');
+    const PostgreSQLService = require('../PostgreSQLService');
+    const $as = require('futoin-asyncsteps');
+    
+    const vars = {
+        as: null,
+        ccm: null,
+        executor: null,
+    };
+    
+    beforeEach(() => {
+        const as = vars.as = $as();
+        const ccm = vars.ccm = new AdvancedCCM();
+        const executor = vars.executor = new Executor(ccm);
+        
+        executor.on('notExpected', function(){
+            console.log(arguments);
+        });
+        
+        as.add(
+            (as) => {
+                PostgreSQLService.register(as, executor, {
+                    host: '127.0.0.1',
+                    port: 5432,
+                    user: 'test',
+                    password: 'test',
+                    database: 'test',
+                    conn_limit: 2,
+                });
+                L1Face.register(as, ccm, 'pl1', executor);
+                L2Face.register(as, ccm, 'pl2', executor);
+                ccm.alias('pl1', 'l1');
+                ccm.alias('pl2', 'l2');
+            },
+            (as, err) => {
+                console.log(as.state.error_info);
+                console.log(as.state.last_exception);
+            }
+        );
+    });
+        
+    afterEach(() => {
+        const ccm = vars.ccm;
+        const executor = vars.executor;
+        ccm.close();
+        executor.close();
+    });
+    
+    describe('specific', function() {
+        it ('should execute basic native queries', (done) => {
+            const as = vars.as;
+            const ccm = vars.ccm;
+            
+            as.add(
+                (as) => {
+                    ccm.iface('pl1').query(as, 'DROP SCHEMA IF EXISTS test CASCADE');
+                    ccm.iface('pl2').query(as, 'CREATE SCHEMA test');
+                    ccm.iface('pl2').query(as,
+                            'CREATE TABLE test.Tbl(' +
+                                'id serial primary key, ' +
+                                'name VARCHAR(255) not null unique, ' +
+                                'ts timestamp' +
+                            ')');
+                    ccm.iface('pl2').query(as,
+                            'CREATE FUNCTION test.Proc(IN a INT) ' +
+                            'RETURNS TABLE (a int, b int, c int) AS ' +
+                            '$$ SELECT 1, 2, 3; $$ LANGUAGE SQL');
+                    as.add( (as) => done() );
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.execute();
+        });
+
+        it ('should catch invalid query', (done) => {
+            const as = vars.as;
+            const ccm = vars.ccm;
+        
+            as.add(
+                (as) => {
+                    const iface = ccm.iface('pl1');
+                    iface.query(as, 'Obviously invalid()');
+                    as.add( (as) => done( 'Fail' ) );
+                },
+                (as, err) => {
+                    if (err === 'InvalidQuery') {
+                        as.success();
+                        return;
+                    }
+                    
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add(
+                (as) => {
+                    const iface = ccm.iface('pl1');
+                    iface.query(as, ' ');
+                    as.add( (as) => done( 'Fail' ) );
+                },
+                (as, err) => {
+                    if (err === 'InvalidQuery') {
+                        as.success();
+                        return;
+                    }
+                    
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add(
+                (as) => {
+                    const iface = ccm.iface('pl1');
+                    iface.query(as, 'SELECT a b c FROM X');
+                    as.add( (as) => done( 'Fail' ) );
+                },
+                (as, err) => {
+                    if (err === 'InvalidQuery') {
+                        done();
+                        as.success();
+                        return;
+                    }
+                    
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.execute();
+        });
+    });
+    
+    require('./commonsuite')(describe, it, vars);
+});

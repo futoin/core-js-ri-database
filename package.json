@@ -51,6 +51,7 @@
   },
   "optionalDependencies": {
     "mysql": "^2.14.1",
-    "pg": "^7.1.2"
+    "pg": "^7.1.2",
+    "pg-cursor": "^1.3.0"
   }
 }
