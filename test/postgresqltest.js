@@ -192,6 +192,63 @@ describe('PostgreSQLService', () => {
             );
             as.execute();
         });
+        
+        it ('should support RETURNING clause', (done) => {
+            const as = vars.as;
+            const ccm = vars.ccm;
+            
+            as.add(
+                (as) => {
+                    ccm.iface('pl1')
+                        .insert('test.Tbl')
+                        .set('name', 'ret1')
+                        .get('name')
+                        .executeAssoc(as);
+                    as.add( (as, res, affected) => {
+                        expect( res ).to.eql([
+                            { name: 'ret1' }
+                        ]);
+                        expect( affected ).to.equal( 1 );
+                    });
+            
+                    ccm.iface('pl2')
+                        .update('test.Tbl')
+                        .set('name', 'ret2')
+                        .where('name', 'ret1')
+                        .get('name')
+                        .executeAssoc(as);
+                    as.add( (as, res, affected) => {
+                        expect( res ).to.eql([
+                            { name: 'ret2' }
+                        ]);
+                        expect( affected ).to.equal( 1 );
+                    });
+        
+                    ccm.iface('pl1')
+                        .delete('test.Tbl')
+                        .where('name', 'ret2')
+                        .get('Name', 'name')
+                        .executeAssoc(as);
+                    as.add( (as, res, affected) => {
+                        expect( res ).to.eql([
+                            { Name: 'ret2' }
+                        ]);
+                        expect( affected ).to.equal( 1 );
+                    });
+                    
+                     ccm.iface('pl2').query(as,
+                            'ALTER SEQUENCE test.Tbl_id_seq RESTART 1');
+    
+                    as.add( (as) => done() );
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.execute();
+        });
     });
     
     require('./commonsuite')(describe, it, vars);
