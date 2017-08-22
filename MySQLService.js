@@ -43,9 +43,11 @@ class MySQLService extends L2Service
 
         for ( let f of [ 'host', 'port', 'user', 'password', 'database' ] )
         {
-            if ( f in options )
+            const val = options[f];
+
+            if ( val )
             {
-                raw[f] = options[f];
+                raw[f] = val;
             }
         }
 
@@ -68,12 +70,13 @@ class MySQLService extends L2Service
     {
         const releaseConn = ( as ) =>
         {
-            const conn = as.state.dbConn;
+            const state = as.state;
+            const conn = state.dbConn;
 
             if ( conn )
             {
                 conn.release();
-                as.state.dbConn = null;
+                state.dbConn = null;
             }
         };
 
@@ -82,12 +85,13 @@ class MySQLService extends L2Service
             {
                 as.setCancel( ( as ) =>
                 {
-                    const conn = as.state.dbConn;
+                    const state = as.state;
+                    const conn = state.dbConn;
 
                     if ( conn )
                     {
                         conn.destroy();
-                        as.state.dbConn = null;
+                        state.dbConn = null;
                     }
                 } );
 
@@ -330,8 +334,7 @@ class MySQLService extends L2Service
 
     getFlavour( as, reqinfo )
     {
-        void reqinfo;
-        return 'mysql';
+        reqinfo.result( 'mysql' );
     }
 
     xfer( as, reqinfo )
