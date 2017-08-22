@@ -100,6 +100,13 @@ It&#39;s possible to add result constraints to each query for intermediate check
 </dd>
 </dl>
 
+## Members
+
+<dl>
+<dt><a href="#AutoConfig">AutoConfig</a></dt>
+<dd></dd>
+</dl>
+
 ## Functions
 
 <dl>
@@ -1159,6 +1166,77 @@ Prepare statement for efficient execution multiple times
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+
+<a name="AutoConfig"></a>
+
+## AutoConfig
+**Kind**: global variable  
+**Brief**: Automatically configure database connections 
+       and related internal Executors.
+
+For each config entry an instance of dedicated
+Executor with registered database service is created and
+related interface is registered on CCM.
+
+Interfaces are registered as "#db.{key}". The "default" one
+is also aliased as "#db".
+
+Env patterns to service configuration:
+- DB_{name}_HOST -> host
+- DB_{name}_PORT -> port
+- DB_{name}_SOCKET -> port (overrides DB_PORT)
+- DB_{name}_USER -> user
+- DB_{name}_PASS -> password
+- DB_{name}_DB -> database
+- DB_{name}_MAXCONN -> conn_limit
+- DB_{name}_TYPE - type of database, fails if mismatch configuration
+Note: the variables names are driven by CodingFuture CFDB Puppet module.
+
+The "default" key also tries env without "{name}_" infix.
+
+Example:
+```javascript
+ AutoConfig(ccm, {
+     "default": {
+         type: ["mysql", "postgresql"],
+         // DB_DEFAULT_TYPE or DB_TYPE must match any of them
+     },
+     readonly: {
+         type: "mysql"
+         // fail, if DB_READONLY_TYPE != mysql
+     },
+     preset: {
+         type: "postgresql",
+         host: "127.0.0.1",
+         port: 5432,
+         user: "test",
+         password: "test",
+         database: "test",
+         conn_limit: 10,
+         // no need to env variables - all is preset
+     },
+ })
+```  
+**Note**: it also monkey patches CCM with #db(name="default") method  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | async steps interface |
+| ccm | <code>AdvancedCCM</code> |  | CCM instance |
+| config | <code>object</code> |  | expected connection key => type map |
+| [env] | <code>object</code> | <code>process.env</code> | source of settings |
+
+<a name="AutoConfig.register"></a>
+
+### AutoConfig.register
+Register database service type.
+
+**Kind**: static property of [<code>AutoConfig</code>](#AutoConfig)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| type | <code>string</code> | type of database |
+| factory | <code>string</code> \| <code>callable</code> \| <code>object</code> | module name, factory method      or direct object with .register() method |
 
 <a name="execute"></a>
 
