@@ -183,15 +183,13 @@ class MySQLService extends L2Service
             }
 
             rows = [];
-            fields = [];
+            fields = packets.map( ( v ) => v.name );
             res = {
                 rows,
                 fields,
                 affected: 0,
             };
             multi_res.push( res );
-
-            packets.map( ( v ) => fields.push( v.name ) );
         } );
 
         dbq.on( 'result', ( packet, stmt_id ) =>

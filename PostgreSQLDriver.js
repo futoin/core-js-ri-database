@@ -49,6 +49,11 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
         return fields.join( ',' );
     }
 
+    _build_call( entity, params )
+    {
+        return `SELECT * FROM ${entity}(${params.join( ',' )})`;
+    }
+
     _escapeSimple( value )
     {
         switch ( typeof value )

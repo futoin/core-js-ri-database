@@ -477,7 +477,7 @@ class SQLDriver extends IDriver
 
 
         case 'CALL':
-            q.push( `CALL ${entity}(${state.params.join( ',' )})` );
+            q.push( this._build_call( entity, state.params ) );
             use.params = true;
             break;
 
@@ -510,6 +510,11 @@ class SQLDriver extends IDriver
         }
 
         return fields.join( ',' );
+    }
+
+    _build_call( entity, params )
+    {
+        return `CALL ${entity}(${params.join( ',' )})`;
     }
 
     _isLimitOffsetSupport()

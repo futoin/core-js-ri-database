@@ -3,13 +3,8 @@
 const _cloneDeep = require( 'lodash/cloneDeep' );
 const _defaults = require( 'lodash/defaults' );
 
-if ( typeof process.env.NODE_PG_FORCE_NATIVE !== 'undefined' )
-{
-    throw new Error( 'pg-cursor does not work with pg-native (NODE_PG_FORCE_NATIVE)' );
-}
-
-const { Pool, types } = require( 'pg' );
-const Cursor = require( 'pg-cursor' );
+const pg = require( 'pg' );
+const Pool = pg.native ? pg.native.Pool : pg.Pool;
 const L2Service = require( './L2Service' );
 
 const IsoLevels = {
@@ -21,9 +16,10 @@ const IsoLevels = {
 
 // Do not wrap dates into Date()
 // See pg-types/lib/textParsers.js
-types.setTypeParser( 1082, ( v ) => v ); // Date
-types.setTypeParser( 1114, ( v ) => v ); // Timestamp
-types.setTypeParser( 1184, ( v ) => v ); // Timestampt with TZ
+const pg_types = pg.types;
+pg_types.setTypeParser( 1082, ( v ) => v ); // Date
+pg_types.setTypeParser( 1114, ( v ) => v ); // Timestamp
+pg_types.setTypeParser( 1184, ( v ) => v ); // Timestampt with TZ
 
 /**
  * PostgreSQL service implementation for FutoIn Database interface
@@ -58,21 +54,6 @@ class PostgreSQLService extends L2Service
         this._pool = pool;
     }
 
-    _cursorBugWorkaround( conn )
-    {
-        // Workaround for pg-cursor#31: 
-        // https://github.com/brianc/node-pg-cursor/issues/31
-        const raw_conn = conn.connection;
-        const rd_listeners = raw_conn.listeners( 'rowDescription' );
-
-        for ( let i = rd_listeners.length - 1; i > 0; --i )
-        {
-            raw_conn.removeListener(
-                'rowDescription',
-                rd_listeners[i] );
-        }
-    }
-
     _withConnection( as, callback )
     {
         const isol = 'RC';
@@ -84,11 +65,8 @@ class PostgreSQLService extends L2Service
 
             if ( release )
             {
-                const conn = state.dbConn;
                 state.dbConn = null;
                 state.dbRelease = null;
-
-                this._cursorBugWorkaround( conn );
 
                 release();
             }
@@ -147,7 +125,7 @@ class PostgreSQLService extends L2Service
                             'TRANSACTION ISOLATION '+
                             `LEVEL ${IsoLevels[isol]}`
                         );
-                        const dbq = conn.query( new Cursor( q ) );
+                        const dbq = conn.query( q );
                         this._handleResult( as, dbq );
                     } );
 
@@ -167,99 +145,88 @@ class PostgreSQLService extends L2Service
         as.add( releaseConn );
     }
 
-    _handleCursorRead( as, err, rows, result, cb )
+    _handleResult( as, dbq, cb=null )
     {
-        // Cancel
-        if ( !as.state )
-        {
-            return;
-        }
+        as.setCancel( ( as ) => null );
 
-        // Fail
-        if ( err )
-        {
-            try
+        dbq
+            .then( ( r ) =>
             {
-                switch ( err.code )
+                if ( !as.state )
                 {
-                case '23505':
-                    as.error( 'Duplicate' );
-                    break;
-
-                case '42601':
-                    as.error( 'InvalidQuery' );
-                    break;
-
-                case '40P01':
-                    as.error( 'DeadLock' );
-                    break;
-
-                default:
-                    as.error( 'OtherExecError',
-                        `${err.code}: ${err.message}` );
+                    return;
                 }
-            }
-            catch ( e )
-            {
-                return;
-            }
-        }
 
-        if ( rows.length > this.MAX_ROWS )
-        {
-            try
-            {
-                as.error( 'LimitTooHigh' );
-            }
-            catch ( e )
-            {
-                return;
-            }
-        }
+                if ( cb )
+                {
+                    const rows = r.rows;
 
-        // OK
-        if ( cb )
-        {
-            const fields = result.fields.map( ( v ) => v.name );
-            const res = {
-                rows,
-                fields,
-                affected: result.rowCount || 0,
-            };
-            cb( res );
-        }
+                    if ( rows.length > this.MAX_ROWS )
+                    {
+                        try
+                        {
+                            as.error( 'LimitTooHigh' );
+                        }
+                        catch ( e )
+                        {
+                            return;
+                        }
+                    }
 
-        as.success();
-    }
+                    const fields = r.fields.map( ( v ) => v.name );
+                    const affected = ( r.command === 'SELECT' ) ? 0 : ( r.rowCount || 0 );
+                    const res = {
+                        rows,
+                        fields,
+                        affected,
+                    };
 
-    _handleResult( as, cursor, cb=null )
-    {
-        as.setCancel( ( as ) =>
-        {
-            if ( cursor.state === 'busy' )
-            {
-                cursor.end();
-            }
-        } );
+                    try
+                    {
+                        cb( res );
+                    }
+                    catch ( e )
+                    {
+                        return;
+                    }
+                }
 
-        cursor.read( this.MAX_ROWS + 1, ( err, rows, result ) =>
-        {
-            try
+                as.success();
+            } )
+            .catch( ( err ) =>
             {
-                this._handleCursorRead( as, err, rows, result, cb );
-            }
-            catch ( e )
-            {
+                if ( !as.state ) return;
+
+                as.state.last_db_error= err;
+                as.state.last_exception = err;
+                const code = err.code;
+
                 try
                 {
-                    as.error( 'OtherExecError', `${e}` );
+                    switch ( code )
+                    {
+                    case '23505':
+                        as.error( 'Duplicate', err.message );
+                        break;
+
+                    case '42601':
+                        as.error( 'InvalidQuery', err.message );
+                        break;
+
+                    case '40P01':
+                        as.error( 'DeadLock', err.message );
+                        break;
+
+                    default:
+                        as.error( 'OtherExecError',
+                            `${code}: ${err.message}` );
+                    }
                 }
                 catch ( e )
                 {
-                    // pass
+                    // ignore
                 }
-            }
-        } );
+            } );
     }
 
     query( as, reqinfo )
@@ -273,8 +240,10 @@ class PostgreSQLService extends L2Service
 
         this._withConnection( as, ( as, conn ) =>
         {
-            const c = new Cursor( q, null, { rowMode: 'array' } );
-            const dbq = conn.query( c );
+            const dbq = conn.query( {
+                text: q,
+                rowMode: 'array',
+            } );
             this._handleResult( as, dbq, ( res ) => reqinfo.result( res ) );
         } );
     }
@@ -287,8 +256,11 @@ class PostgreSQLService extends L2Service
             const args = p.args;
             const placeholders = args.map( ( _v, i ) => `$${i+1}` ).join( ',' );
             const q = `SELECT * FROM ${p.name}(${placeholders})`;
-            const c = new Cursor( q, args, { rowMode: 'array' } );
-            const dbq = conn.query( c );
+            const dbq = conn.query( {
+                text: q,
+                values: args,
+                rowMode: 'array',
+            } );
             this._handleResult( as, dbq, ( res ) => reqinfo.result( res ) );
         } );
     }
@@ -316,21 +288,20 @@ class PostgreSQLService extends L2Service
                             'START TRANSACTION ' +
                             `ISOLATION LEVEL ${IsoLevels[p.isol]}`
                         );
-                        const c = new Cursor( q );
-                        const dbq = conn.query( c );
+                        const dbq = conn.query( q );
                         this._handleResult( as, dbq );
                     } );
 
                     // Loop through query list
                     as.forEach( ql, ( as, stmt_id, xfer ) =>
                     {
-                        this._cursorBugWorkaround( conn );
-
-                        const c = new Cursor( xfer.q, null, { rowMode: 'array' } );
-                        const dbq = conn.query( c );
+                        const dbq = conn.query( {
+                            text: xfer.q,
+                            rowMode: 'array',
+                        } );
                         this._handleResult( as, dbq,
-                            ( res ) => this._xferCommon(
-                                as, xfer, [ res ], stmt_id, results )
+                            ( qres ) => this._xferCommon(
+                                as, xfer, [ qres ], stmt_id, results )
                         );
                     } );
 
@@ -339,13 +310,13 @@ class PostgreSQLService extends L2Service
                     {
                         reqinfo.result( results );
 
-                        const dbq = conn.query( new Cursor( 'COMMIT' ) );
+                        const dbq = conn.query( 'COMMIT' );
                         this._handleResult( as, dbq );
                     } );
                 },
                 ( as, err ) =>
                 {
-                    const dbq = conn.query( new Cursor( 'ROLLBACK' ) );
+                    const dbq = conn.query( 'ROLLBACK' );
                     this._handleResult( as, dbq );
                 }
             );
