@@ -36,7 +36,7 @@ module.exports = {
             {
                 "vars" : "all",
                 "args" : "all",
-                "argsIgnorePattern" : "^(as|err)$"
+                "argsIgnorePattern" : "^(as|err|_.*)$"
             }
         ],
         "no-useless-concat": "error",

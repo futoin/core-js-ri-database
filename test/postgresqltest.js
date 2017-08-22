@@ -30,19 +30,22 @@ describe('PostgreSQLDriver', function() {
         let qb;
     
         qb = new QueryBuilder(null, 'postgresql', 'insert', 'tbl');
-        qb.set('name', 'abc').get(['id', 'ts']);
+        qb.set('name', 'abc').get(['id', 'tS']);
         expect( qb._toQuery() )
-            .to.equal('INSERT INTO tbl (name) VALUES (\'abc\') RETURNING id,ts');
+            .to.equal('INSERT INTO tbl (name) VALUES (\'abc\') ' +
+                      'RETURNING id,tS AS "tS"');
     
         qb = new QueryBuilder(null, 'postgresql', 'update', 'tbl');
-        qb.set('name', 'abc').get(['id', 'ts']).where('name', 'xyz');
+        qb.set('name', 'abc').get(['ID', 'ts']).where('name', 'xyz');
         expect( qb._toQuery() )
-            .to.equal('UPDATE tbl SET name=\'abc\' WHERE name = \'xyz\' RETURNING id,ts');
+            .to.equal('UPDATE tbl SET name=\'abc\' WHERE name = \'xyz\' ' +
+                      'RETURNING ID AS "ID",ts');
     
         qb = new QueryBuilder(null, 'postgresql', 'delete', 'tbl');
         qb.get(['id', 'ts']).where('name', 'xyz');
         expect( qb._toQuery() )
-            .to.equal('DELETE FROM tbl WHERE name = \'xyz\' RETURNING id,ts');
+            .to.equal('DELETE FROM tbl WHERE name = \'xyz\' ' +
+                      'RETURNING id,ts');
     });
 });
 
@@ -54,11 +57,13 @@ describe('PostgreSQLService', () => {
     const L2Face = require('../L2Face');
     const PostgreSQLService = require('../PostgreSQLService');
     const $as = require('futoin-asyncsteps');
+    const moment = require('moment');
     
     const vars = {
         as: null,
         ccm: null,
         executor: null,
+        formatDate: (d) => moment(d).format('YYYY-MM-DD HH:mm:ss'),
     };
     
     beforeEach(() => {

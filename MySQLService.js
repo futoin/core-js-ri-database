@@ -84,16 +84,7 @@ class MySQLService extends L2Service
             ( as ) =>
             {
                 as.setCancel( ( as ) =>
-                {
-                    const state = as.state;
-                    const conn = state.dbConn;
-
-                    if ( conn )
-                    {
-                        conn.destroy();
-                        state.dbConn = null;
-                    }
-                } );
+                {} );
 
                 this._pool.getConnection( ( err, conn ) =>
                 {

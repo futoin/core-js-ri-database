@@ -1,6 +1,7 @@
 'use strict';
 
 const expect = require('chai').expect;
+process.on('warning', e => console.warn(e.stack));
 
 module.exports = function(describe, it, vars)
 {
@@ -15,10 +16,10 @@ module.exports = function(describe, it, vars)
                     iface.insert('test.Tbl').set('name', 'aaa').execute(as);
                     iface.insert('test.Tbl')
                         .set('name', 'bbb')
-                        .set('ts', '2017-08-08 12:00:00')
+                        .set('ts', vars.formatDate(new Date('2017-08-08T12:00:00Z')))
                         .execute(as);
                     iface.update('test.Tbl')
-                        .set('ts', '2017-08-08 12:30:00')
+                        .set('ts', vars.formatDate(new Date('2017-08-08T12:30:00Z')))
                         .where('name', 'bbb')
                         .execute(as);
                     iface.insert('test.Tbl').set('name', 'ccc').execute(as);
@@ -34,7 +35,8 @@ module.exports = function(describe, it, vars)
                     as.add( (as, res, affected) => {
                         expect(res).to.eql([
                             { id: 1, name: 'aaa', ts: null },
-                            { id: 2, name: 'bbb', ts: '2017-08-08 12:30:00' },
+                            { id: 2, name: 'bbb',
+                              ts: vars.formatDate(new Date('2017-08-08T12:30:00Z')) },
                         ]);
                         expect(affected).to.equal(0);
                     });
@@ -197,7 +199,7 @@ module.exports = function(describe, it, vars)
                 (as) => {
                     for ( let isol of ['RU', 'RC', 'RR', 'SRL'] ) {
                         const xfer = vars.ccm.iface('l2').newXfer(isol);
-                        xfer.select('test.Tbl').where('name', 123);
+                        xfer.select('test.Tbl').where('name', '123');
                         xfer.execute(as);
                     }
                 },

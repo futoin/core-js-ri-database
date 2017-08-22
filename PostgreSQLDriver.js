@@ -1,6 +1,7 @@
 'use strict';
 
 const QueryBuilder = require( './QueryBuilder' );
+const NO_ESCAPE_RE = /^[a-z][a-z_]*(\.[a-z][a-z_])*$/;
 
 /**
  * PostgreSQL driver for QueryBuilder
@@ -25,6 +26,27 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
         {
             return super.build( state );
         }
+    }
+
+    _build_select_part( select )
+    {
+        const fields = [];
+
+        for ( let [ f, v ] of select.entries() )
+        {
+            // PostgreSQL forces lower case for not escaped identifiers
+            if ( v === f && f.match( NO_ESCAPE_RE ) )
+            {
+                fields.push( `${f}` );
+            }
+            else
+            {
+                f = this.identifier( f );
+                fields.push( `${v} AS ${f}` );
+            }
+        }
+
+        return fields.join( ',' );
     }
 
     _escapeSimple( value )
