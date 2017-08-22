@@ -41,6 +41,7 @@ class L2Service extends L1Service
     {
         const res = qresults[0];
         let fail_on_multi = false;
+        let cond_error = null;
 
         // Affected checks
         //---
@@ -48,19 +49,10 @@ class L2Service extends L1Service
         {
             fail_on_multi = true;
 
-            if ( xfer.affected )
+            if ( ( xfer.affected && ( res.affected <= 0 ) ) ||
+                 ( !xfer.affected && ( res.affected > 0 ) ) )
             {
-                if ( res.affected <= 0 )
-                {
-                    as.error( 'XferCondition', 'Affected' );
-                }
-            }
-            else
-            {
-                if ( res.affected > 0 )
-                {
-                    as.error( 'XferCondition', 'Affected' );
-                }
+                cond_error = `Affected ${stmt_id}: ${res.affected}`;
             }
         }
         else if ( typeof xfer.affected === 'number' )
@@ -69,7 +61,7 @@ class L2Service extends L1Service
 
             if ( res.affected !== xfer.affected )
             {
-                as.error( 'XferCondition', 'Affected' );
+                cond_error = `Affected ${stmt_id}: ${res.affected} != ${xfer.affected}`;
             }
         }
 
@@ -79,19 +71,10 @@ class L2Service extends L1Service
         {
             fail_on_multi = true;
 
-            if ( xfer.selected )
+            if ( ( xfer.selected && ( res.rows.length <= 0 ) ) ||
+                 ( !xfer.selected && ( res.rows.length > 0 ) ) )
             {
-                if ( res.rows.length <= 0 )
-                {
-                    as.error( 'XferCondition', 'Selected' );
-                }
-            }
-            else
-            {
-                if ( res.rows.length > 0 )
-                {
-                    as.error( 'XferCondition', 'Selected' );
-                }
+                cond_error = `Selected ${stmt_id}: ${res.rows.length}`;
             }
         }
         else if ( typeof xfer.selected === 'number' )
@@ -100,8 +83,13 @@ class L2Service extends L1Service
 
             if ( res.rows.length !== xfer.selected )
             {
-                as.error( 'XferCondition', 'Selected' );
+                cond_error = `Selected ${res.rows.length} != ${xfer.selected}`;
             }
+        }
+
+        if ( cond_error )
+        {
+            as.error( 'XferCondition', cond_error );
         }
 
         // Sanity check
