@@ -80,7 +80,7 @@ describe('PostgreSQLService', () => {
                 PostgreSQLService.register(as, executor, {
                     host: '127.0.0.1',
                     port: 5432,
-                    user: 'test',
+                    user: 'ftntest',
                     password: 'test',
                     database: 'test',
                     conn_limit: 2,

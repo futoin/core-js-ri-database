@@ -57,7 +57,7 @@ describe('MySQLService', () => {
                 MySQLService.register(as, executor, {
                     host: '127.0.0.1',
                     port: 3306,
-                    user: 'root',
+                    user: 'ftntest',
                     password: '',
                     database: 'mysql',
                     conn_limit: 2,
