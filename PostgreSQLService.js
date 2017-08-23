@@ -4,7 +4,15 @@ const _cloneDeep = require( 'lodash/cloneDeep' );
 const _defaults = require( 'lodash/defaults' );
 
 const pg = require( 'pg' );
-const Pool = pg.native ? pg.native.Pool : pg.Pool;
+// const Pool = pg.native ? pg.native.Pool : pg.Pool;
+const Pool = pg.Pool;
+
+if ( typeof process.env.NODE_PG_FORCE_NATIVE !== 'undefined' )
+{
+    throw new Error( 'NODE_PG_FORCE_NATIVE is not supported yet' );
+}
+
+
 const L2Service = require( './L2Service' );
 
 const IsoLevels = {
