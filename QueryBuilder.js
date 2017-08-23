@@ -773,6 +773,29 @@ class QueryBuilder
         return this;
     }
 
+
+    /**
+     * Database neutral way to request last insert ID
+     * 
+     * For databases without RETURNING or OUTPUT clause in INSERT it
+     * is expected to always return '$id' field on insert.
+     * 
+     * For others, it would build a valid RETURNING/OUTPUT clause.
+     * 
+     * @param {string} field - field name with auto-generated value
+     * @returns {QueryBuilder} self
+     */
+    getInsertID( field )
+    {
+        const select = this._state.select;
+        const driver = this.getDriver();
+
+        driver.checkField( field );
+        select.set( '$id', field );
+
+        return this;
+    }
+
     /**
      * Add fields to set in UPDATE query.
      * 

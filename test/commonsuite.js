@@ -14,10 +14,19 @@ module.exports = function(describe, it, vars)
                 (as) => {
                     const iface = ccm.iface('l1');
                     iface.insert('test.Tbl').set('name', 'aaa').execute(as);
+                    
                     iface.insert('test.Tbl')
                         .set('name', 'bbb')
                         .set('ts', vars.formatDate(new Date('2017-08-08T12:00:00Z')))
-                        .execute(as);
+                        .getInsertID('id')
+                        .executeAssoc(as);
+                    as.add( (as, res, affected) => {
+                        expect(res).to.eql([
+                            { $id: 2 }
+                        ]);
+                        expect(affected).to.equal(1);
+                    });
+                    
                     iface.update('test.Tbl')
                         .set('ts', vars.formatDate(new Date('2017-08-08T12:30:00Z')))
                         .where('name', 'bbb')

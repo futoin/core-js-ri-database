@@ -225,6 +225,15 @@ class MySQLService extends L2Service
                     fields: [],
                     affected,
                 };
+
+                const insert_id = packet.insertId;
+
+                if ( insert_id )
+                {
+                    res.rows.push( [ insert_id ] );
+                    res.fields[0] = '$id';
+                }
+
                 multi_res.push( res );
             }
             else if ( rows.length <= MAX_ROWS )

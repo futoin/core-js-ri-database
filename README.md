@@ -587,6 +587,7 @@ Neutral query builder
         * [.expr(expr)](#QueryBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
         * [.param(name)](#QueryBuilder+param) ⇒ [<code>Expression</code>](#Expression)
         * [.get(fields, [value])](#QueryBuilder+get) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+        * [.getInsertID(field)](#QueryBuilder+getInsertID) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.set(field, [value])](#QueryBuilder+set) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.where(conditions, [value])](#QueryBuilder+where) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.having(conditions, [value])](#QueryBuilder+having) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -703,6 +704,23 @@ Value can be another QueryBuilder instance.
 | --- | --- | --- |
 | fields | <code>Map</code> \| <code>object</code> \| <code>string</code> \| <code>array</code> | see concept for details |
 | [value] | <code>\*</code> | optional value for |
+
+<a name="QueryBuilder+getInsertID"></a>
+
+### queryBuilder.getInsertID(field) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+Database neutral way to request last insert ID
+
+For databases without RETURNING or OUTPUT clause in INSERT it
+is expected to always return '$id' field on insert.
+
+For others, it would build a valid RETURNING/OUTPUT clause.
+
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| field | <code>string</code> | field name with auto-generated value |
 
 <a name="QueryBuilder+set"></a>
 

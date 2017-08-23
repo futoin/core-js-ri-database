@@ -10,6 +10,23 @@ const SqlString = require( 'sqlstring' );
  */
 class MySQLDriver extends QueryBuilder.SQLDriver
 {
+    build( state )
+    {
+        if ( state.type === 'INSERT' &&
+             state.select.size === 1 &&
+             state.select.keys().next().value === '$id' )
+        {
+            const pure_state = Object.create( state );
+            pure_state.select = null;
+
+            return super.build( pure_state );
+        }
+        else
+        {
+            return super.build( state );
+        }
+    }
+
     _escapeSimple( value )
     {
         switch ( typeof value )
