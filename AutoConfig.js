@@ -11,6 +11,10 @@ const L2Face = require( './L2Face' );
 const L1Service = require( './L1Service' );
 const L2Service = require( './L2Service' );
 
+// auto-configure QueryBuilder drivers
+const main = require( './main' );
+void main;
+
 const serviceImpl = {
     mysql : './MySQLService',
     postgresql : './PostgreSQLService',
@@ -32,14 +36,14 @@ function create( as, ccm, name, options )
     {
         service = require( factory );
     }
+    else if ( typeof factory === "function" &&
+              factory.prototype instanceof L1Service )
+    {
+        service = factory;
+    }
     else if ( typeof factory === "function" )
     {
         service = factory();
-    }
-    else if ( typeof factory === "object" &&
-              factory instanceof L1Service )
-    {
-        service = factory;
     }
     else
     {
@@ -80,7 +84,7 @@ function create( as, ccm, name, options )
          */
         ccm.db = function( name )
         {
-            return this.iface( '#db' + ( name || "default" ) );
+            return this.iface( '#db.' + ( name || "default" ) );
         };
     }
 }
@@ -136,13 +140,15 @@ function create( as, ccm, name, options )
  * @name AutoConfig
  * @param {AsyncSteps} as - async steps interface
  * @param {AdvancedCCM} ccm - CCM instance
- * @param {object} config - expected connection key => type map
+ * @param {object} [config=null] - expected connection key => type map
  * @param {object} [env=process.env] - source of settings
  * 
  * @note it also monkey patches CCM with #db(name="default") method
  */
-module.exports = function( as, ccm, config, env=process.env )
+module.exports = function( as, ccm, config=null, env=process.env )
 {
+    config = config || { default: {} };
+
     for ( let name in config )
     {
         let uname = name.toUpperCase();
@@ -203,7 +209,7 @@ module.exports = function( as, ccm, config, env=process.env )
  * @name AutoConfig.register
  * @param {string} type - type of database
  * @param {string|callable|object} factory - module name, factory method
- *      or direct object with .register() method
+ *      or a subclass of L1Service
  */
 module.exports.register = function( type, factory )
 {

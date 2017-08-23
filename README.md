@@ -1223,7 +1223,7 @@ Example:
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | async steps interface |
 | ccm | <code>AdvancedCCM</code> |  | CCM instance |
-| config | <code>object</code> |  | expected connection key => type map |
+| [config] | <code>object</code> | <code></code> | expected connection key => type map |
 | [env] | <code>object</code> | <code>process.env</code> | source of settings |
 
 <a name="AutoConfig.register"></a>
@@ -1236,7 +1236,7 @@ Register database service type.
 | Param | Type | Description |
 | --- | --- | --- |
 | type | <code>string</code> | type of database |
-| factory | <code>string</code> \| <code>callable</code> \| <code>object</code> | module name, factory method      or direct object with .register() method |
+| factory | <code>string</code> \| <code>callable</code> \| <code>object</code> | module name, factory method      or a subclass of L1Service |
 
 <a name="execute"></a>
 
