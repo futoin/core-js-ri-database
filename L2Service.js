@@ -23,7 +23,11 @@ class L2Service extends L1Service
         const iface = L2Face.spec( L1Face.LATEST_VERSION );
         const ifacever = iface.iface + ':' + iface.version;
         const impl = new this( options );
-        const spec_dirs = [ iface, L1Face.spec( L1Face.LATEST_VERSION ), PingFace.spec( L1Face.PING_VERSION ) ];
+        const spec_dirs = [
+            iface,
+            L1Face.spec( L1Face.LATEST_VERSION ),
+            PingFace.spec( L1Face.PING_VERSION ),
+        ];
 
         executor.register( as, ifacever, impl, spec_dirs );
         executor.once( 'close', () => impl._close() );

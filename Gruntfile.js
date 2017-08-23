@@ -40,7 +40,11 @@ module.exports = function( grunt )
     grunt.registerTask( 'check', [ 'eslint' ] );
 
     grunt.registerTask( 'node', [ 'mocha_istanbul' ] );
-    grunt.registerTask( 'test', [ 'check', 'node', 'doc' ] );
+    grunt.registerTask( 'test', [
+        'check',
+        'node',
+        'doc',
+    ] );
 
     grunt.loadNpmTasks( 'grunt-jsdoc-to-markdown' );
     grunt.loadNpmTasks( 'grunt-text-replace' );

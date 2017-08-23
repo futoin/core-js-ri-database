@@ -41,7 +41,13 @@ class MySQLService extends L2Service
                     mysql.TRANSACTIONS;
         raw.connectionLimit = options.conn_limit || 1;
 
-        for ( let f of [ 'host', 'port', 'user', 'password', 'database' ] )
+        for ( let f of [
+            'host',
+            'port',
+            'user',
+            'password',
+            'database',
+        ] )
         {
             const val = options[f];
 

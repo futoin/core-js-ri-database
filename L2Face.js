@@ -78,7 +78,11 @@ class L2Face extends L1Face
         const l1_iface = L1Face.spec( ifacever );
 
         options.nativeImpl = this;
-        options.specDirs = [ iface, l1_iface, PingFace.spec( this.PING_VERSION ) ];
+        options.specDirs = [
+            iface,
+            l1_iface,
+            PingFace.spec( this.PING_VERSION ),
+        ];
         options.sendOnBehalfOf = options.sendOnBehalfOf || false;
 
         ccm.register(
@@ -174,7 +178,12 @@ specs['1.0'] = {
         },
         IsolationLevel : {
             type : "enum",
-            items : [ "RU", "RC", "RR", "SRL" ],
+            items : [
+                "RU",
+                "RC",
+                "RR",
+                "SRL",
+            ],
             desc : "Refers to standard ISO isolation levels",
         },
     },
@@ -185,7 +194,14 @@ specs['1.0'] = {
                 isol : "IsolationLevel",
             },
             result : "XferResultList",
-            throws : [ "InvalidQuery", "Duplicate", "OtherExecError", "LimitTooHigh", "DeadLock", "XferCondition" ],
+            throws : [
+                "InvalidQuery",
+                "Duplicate",
+                "OtherExecError",
+                "LimitTooHigh",
+                "DeadLock",
+                "XferCondition",
+            ],
 
         },
     },

@@ -1090,7 +1090,12 @@ class QueryBuilder
                     op = m[2];
                 }
 
-                return [ COND, f, op, driver.escape( v, op ) ];
+                return [
+                    COND,
+                    f,
+                    op,
+                    driver.escape( v, op ),
+                ];
             };
 
             if ( conditions instanceof Map )
