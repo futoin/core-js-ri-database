@@ -153,6 +153,11 @@ specs['1.0'] = {
                     optional : true,
                     desc : "Return result of the statement",
                 },
+                template : {
+                    type : "boolean",
+                    optional : true,
+                    desc : "Process value back references",
+                },
             },
         },
         XferQueryList : {

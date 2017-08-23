@@ -26,6 +26,12 @@ class XferQueryBuilder extends QueryBuilder
     {
         throw new Error( 'Cloning is not allowed' );
     }
+
+    resref( xqb, field, multi=false )
+    {
+        this._state.template = true;
+        return this.getDriver().resref( xqb._seq_id, field, multi );
+    }
 }
 
 /**
@@ -306,12 +312,14 @@ class XferBuilder
 
     _newBuilder( type, entity=null )
     {
-        return new XferQueryBuilder(
+        const res = new XferQueryBuilder(
             this._lface,
             this._db_type,
             type,
             entity
         );
+        res._seq_id = this._query_list.length;
+        return res;
     }
 
     _prepareQueryList( ql, unsafe_dml )
@@ -323,6 +331,12 @@ class XferBuilder
             if ( qb instanceof XferQueryBuilder )
             {
                 v.q = qb._toQuery( unsafe_dml );
+
+                if ( qb._state.template )
+                {
+                    v.template = true;
+                }
+
                 // damage on purpose
                 qb._state = null;
             }

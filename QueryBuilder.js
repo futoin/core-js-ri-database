@@ -80,6 +80,14 @@ class IDriver
         throw new Error( 'Not implemented' );
     }
 
+    resref( query_id, field, multi )
+    {
+        void query_id;
+        void field;
+        void multi;
+        throw new Error( 'Not implemented' );
+    }
+
     checkField( field )
     {
         if ( typeof field !== 'string' || !field.match( FIELD_RE ) )
@@ -250,6 +258,14 @@ class SQLDriver extends IDriver
     _escapeExpr( expr )
     {
         return expr;
+    }
+
+    resref( query_id, field, multi )
+    {
+        if ( field !== '$id' ) this.checkField( field );
+
+        multi = multi ? 's' : 'm';
+        return new Expression( `$'${query_id}:${field}:${multi}'$` );
     }
 
     build( state )

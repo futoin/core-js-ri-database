@@ -14,6 +14,7 @@ if ( typeof process.env.NODE_PG_FORCE_NATIVE !== 'undefined' )
 
 
 const L2Service = require( './L2Service' );
+const PostgreSQLDriver = require( './PostgreSQLDriver' );
 
 const IsoLevels = {
     RU: 'READ UNCOMMITTED',
@@ -66,6 +67,7 @@ class PostgreSQLService extends L2Service
         const pool = new Pool( raw );
 
         this._pool = pool;
+        this._driver = new PostgreSQLDriver;
     }
 
     _withConnection( as, callback )
@@ -293,6 +295,7 @@ class PostgreSQLService extends L2Service
                 {
                     const p = reqinfo.params();
                     const ql = p.ql;
+                    const prev_results = [];
                     const results = [];
 
                     // Begin
@@ -309,13 +312,18 @@ class PostgreSQLService extends L2Service
                     // Loop through query list
                     as.forEach( ql, ( as, stmt_id, xfer ) =>
                     {
+                        const q = this._xferTemplate( as, xfer, prev_results );
                         const dbq = conn.query( {
-                            text: xfer.q,
+                            text: q,
                             rowMode: 'array',
                         } );
                         this._handleResult( as, dbq,
-                            ( qres ) => this._xferCommon(
-                                as, xfer, [ qres ], stmt_id, results )
+                            ( qres ) =>
+                            {
+                                prev_results.push( qres );
+                                this._xferCommon(
+                                    as, xfer, [ qres ], stmt_id, results );
+                            }
                         );
                     } );
 

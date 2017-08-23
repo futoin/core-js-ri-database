@@ -4,6 +4,7 @@ const _cloneDeep = require( 'lodash/cloneDeep' );
 const _defaults = require( 'lodash/defaults' );
 const mysql = require( 'mysql' );
 const L2Service = require( './L2Service' );
+const MySQLDriver = require( './MySQLDriver' );
 
 const IsoLevels = {
     RU: 'READ UNCOMMITTED',
@@ -65,6 +66,7 @@ class MySQLService extends L2Service
         const pool = mysql.createPool( raw );
 
         this._pool = pool;
+        this._driver = new MySQLDriver;
     }
 
     _close()
@@ -348,6 +350,7 @@ class MySQLService extends L2Service
         this._withConnection( as, p.isol, ( as, conn ) =>
         {
             const ql = p.ql;
+            const prev_results = [];
             const results = [];
 
             as.add(
@@ -363,10 +366,15 @@ class MySQLService extends L2Service
                     // Loop through query list
                     as.forEach( ql, ( as, stmt_id, xfer ) =>
                     {
-                        const dbq = conn.query( xfer.q );
+                        const q = this._xferTemplate( as, xfer, prev_results );
+                        const dbq = conn.query( q );
                         this._handleResult( as, dbq, true,
-                            ( qresults ) => this._xferCommon(
-                                as, xfer, qresults, stmt_id, results )
+                            ( qresults ) =>
+                            {
+                                prev_results.push( qresults[0] );
+                                this._xferCommon(
+                                    as, xfer, qresults, stmt_id, results );
+                            }
                         );
                     } );
 

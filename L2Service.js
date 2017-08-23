@@ -113,6 +113,58 @@ class L2Service extends L1Service
             } );
         }
     }
+
+    get _xferTemplatePattern()
+    {
+        return /^\$'([0-9]+):([$a-z_]+):(s|m)'\$$/;
+    }
+
+    _xferTemplate( as, xfer, prev_results )
+    {
+        if ( !xfer.template )
+        {
+            return xfer.q;
+        }
+
+        return xfer.q.replace(
+            this._xferTemplatePattern,
+            ( m, query_id, field, mode ) =>
+            {
+                void m;
+
+                if ( query_id >= prev_results.length )
+                {
+                    as.result( 'OtherExecError',
+                        `Invalid template query ID: ${query_id}` );
+                }
+
+                const qres = prev_results[query_id];
+
+                if ( !qres.rows.length )
+                {
+                    as.result( 'OtherExecError',
+                        `Empty query result for #${query_id}` );
+                }
+
+                const field_id = qres.fields.indexOf( field );
+
+                if ( field_id < 0 )
+                {
+                    as.result( 'OtherExecError',
+                        `Invalid template field: ${field}` );
+                }
+
+                if ( mode === 's' )
+                {
+                    return this._driver.escape( qres.rows[0][field_id] );
+                }
+                else
+                {
+                    return this._driver.escape( qres.rows.map( v => v[field_id] ) );
+                }
+            }
+        );
+    }
 }
 
 module.exports = L2Service;
