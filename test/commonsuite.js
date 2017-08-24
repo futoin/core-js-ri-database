@@ -469,5 +469,71 @@ module.exports = function(describe, it, vars)
             as.add((as) => done());
             as.execute();
         });
+        
+        it ('should execute template transaction', function(done) {
+            this.timeout(10e3);
+            const as = vars.as;
+
+            as.add(
+                (as) => {
+                    const iface = vars.ccm.iface('l2');
+                    let xfer = iface.newXfer();
+                    
+                    xfer.select('test.Tbl', {result: true})
+                        .where('id IN', [7, 9, 10, 20]);
+                    
+                    const s1 = xfer.select('test.Tbl')
+                        .where('id', '7');
+                    const s2 = xfer.select('test.Tbl')
+                        .get('name').get('RowID', 'id')
+                        .where('id', '9');
+                    const s3 = xfer.select('test.Tbl', {selected: 2})
+                        .get('RID', 'id')
+                        .where('id IN', [10, 20]);
+                        
+                    const u1 = xfer.update('test.Tbl');
+                    u1.set('name', u1.backref(s2, 'name'))
+                        .where('id', u1.backref(s2, 'RowID'));
+                        
+                    const u2 = xfer.update('test.Tbl', { affected: 2 });
+                    u2.set('id', u2.expr( 'id + 10000 + ' + u2.backref(s2, 'RowID')) )
+                        .where('id IN', u2.backref(s3, 'RID', true));
+                        
+                    xfer.select('test.Tbl', {result: true})
+                        .where('id IN', [7, 9, 10019, 10029]);
+
+                    xfer.executeAssoc(as);
+                    as.add( (as, res) => {
+                        expect(res).to.eql([
+                            {
+                                rows: [
+                                    { id: 7, name: '3', ts: null },
+                                    { id: 9, name: '5', ts: null },
+                                    { id: 10, name: '6', ts: null },
+                                    { id: 20, name: '16', ts: null },
+                                ],
+                                affected: 0,
+                            },
+                            {
+                                rows: [
+                                    { id: 7, name: '3', ts: null },
+                                    { id: 9, name: '5', ts: null },
+                                    { id: 10019, name: '6', ts: null },
+                                    { id: 10029, name: '16', ts: null },
+                                ],
+                                affected: 0,
+                            },
+                        ]);
+                    });
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done());
+            as.execute();
+        });
     });
 };

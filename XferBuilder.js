@@ -27,10 +27,10 @@ class XferQueryBuilder extends QueryBuilder
         throw new Error( 'Cloning is not allowed' );
     }
 
-    resref( xqb, field, multi=false )
+    backref( xqb, field, multi=false )
     {
         this._state.template = true;
-        return this.getDriver().resref( xqb._seq_id, field, multi );
+        return this.getDriver().backref( xqb._seq_id, field, multi );
     }
 }
 
@@ -330,12 +330,13 @@ class XferBuilder
 
             if ( qb instanceof XferQueryBuilder )
             {
-                v.q = qb._toQuery( unsafe_dml );
-
                 if ( qb._state.template )
                 {
                     v.template = true;
+                    qb._state.template = undefined;
                 }
+
+                v.q = qb._toQuery( unsafe_dml );
 
                 // damage on purpose
                 qb._state = null;

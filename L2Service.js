@@ -116,7 +116,7 @@ class L2Service extends L1Service
 
     get _xferTemplatePattern()
     {
-        return /^\$'([0-9]+):([$a-z_]+):(s|m)'\$$/;
+        return /\$'([0-9]+):([$A-Za-z_]+):(s|m)'\$/g;
     }
 
     _xferTemplate( as, xfer, prev_results )
@@ -134,7 +134,7 @@ class L2Service extends L1Service
 
                 if ( query_id >= prev_results.length )
                 {
-                    as.result( 'OtherExecError',
+                    as.error( 'OtherExecError',
                         `Invalid template query ID: ${query_id}` );
                 }
 
@@ -142,7 +142,7 @@ class L2Service extends L1Service
 
                 if ( !qres.rows.length )
                 {
-                    as.result( 'OtherExecError',
+                    as.error( 'OtherExecError',
                         `Empty query result for #${query_id}` );
                 }
 
@@ -150,12 +150,18 @@ class L2Service extends L1Service
 
                 if ( field_id < 0 )
                 {
-                    as.result( 'OtherExecError',
-                        `Invalid template field: ${field}` );
+                    as.error( 'OtherExecError',
+                        `Invalid template field "${field}" for #${query_id}` );
                 }
 
                 if ( mode === 's' )
                 {
+                    if ( qres.rows.length > 1 )
+                    {
+                        as.error( 'OtherExecError',
+                            `More than one row in result #${query_id}` );
+                    }
+
                     return this._driver.escape( qres.rows[0][field_id] );
                 }
                 else

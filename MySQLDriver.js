@@ -16,6 +16,7 @@ class MySQLDriver extends QueryBuilder.SQLDriver
              state.select.size === 1 &&
              state.select.keys().next().value === '$id' )
         {
+            // last insert ID is always selected as '$id'
             const pure_state = Object.create( state );
             pure_state.select = null;
 

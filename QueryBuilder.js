@@ -21,6 +21,11 @@ class Expression
     {
         return this._expr;
     }
+
+    toString()
+    {
+        return this._expr;
+    }
 }
 
 /**
@@ -80,7 +85,7 @@ class IDriver
         throw new Error( 'Not implemented' );
     }
 
-    resref( query_id, field, multi )
+    backref( query_id, field, multi )
     {
         void query_id;
         void field;
@@ -260,11 +265,11 @@ class SQLDriver extends IDriver
         return expr;
     }
 
-    resref( query_id, field, multi )
+    backref( query_id, field, multi )
     {
         if ( field !== '$id' ) this.checkField( field );
 
-        multi = multi ? 's' : 'm';
+        multi = multi === true ? 'm' : 's';
         return new Expression( `$'${query_id}:${field}:${multi}'$` );
     }
 
