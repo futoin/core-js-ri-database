@@ -615,49 +615,98 @@ module.exports = function(describe, it, vars)
         });
     });
     
-    it ('should cancel queries', function(done) {
-        const as = vars.as;
+    describe('Jois', function() {
+        it ('should use proper join', function(done) {
+            const as = vars.as;
             
-        as.add(
-            (as) => {
-                as.setTimeout(0.2);
-                const p = as.parallel();
+            as.add( (as) => {
+                const iface = vars.ccm.iface('l1');
                 
-                for ( let i = 0; i < 3; ++i ) {
-                    p.add((as) => {
-                        vars.ccm.iface('l1').callStored(as, 'CancelTest', []);
-                    });
-                }
-            },
-            (as, err) => {
-                if (err === 'Timeout')
-                {
-                    as.success();
-                    return;
-                }
+                const s = iface.select('test.Tbl');
+                s.get('ref_id', 'id')
+                    .get('ts', s.escape(vars.formatDate(new Date())))
+                    .get('data', s.escape('\x01\x02\x03'))
+                    .order('id')
+                    .limit(10);
+                iface.insert('test.Snd').set(s).execute(as);
                 
+                iface.select('test.Tbl')
+                    .get('C', 'COUNT(*)')
+                    .executeAssoc(as);
+                as.add((as, res) => as.state.TblC = res[0].C );
+                
+                iface.select('test.Snd')
+                    .get('C', 'COUNT(*)')
+                    .executeAssoc(as);
+                as.add((as, res) => as.state.SndC = res[0].C );
+                
+                iface.select('test.Tbl')
+                    .leftJoin('test.Snd', 'test.Snd.ref_id = test.Tbl.id')
+                    .get('C', 'COUNT(*)')
+                    .executeAssoc(as);
+                as.add((as, res) => expect(res[0].C).to.equal(as.state.TblC));
+                
+                iface.select('test.Tbl')
+                    .innerJoin('test.Snd', ['test.Snd.ref_id = test.Tbl.id'])
+                    .get('C', 'COUNT(*)')
+                    .executeAssoc(as);
+                as.add((as, res) => expect(res[0].C).to.equal(as.state.SndC));
+                
+            }, (as, err) => {
                 console.log(as.state.error_info);
                 console.log(as.state.last_exception);
                 done(as.state.last_exception);
-            }
-        );
-        as.add(
-            (as) => {
-                const p = as.parallel();
+            });
+            as.add((as) => done());
+            as.execute();
+        });
+    });
+    
+    describe('Call abort', function() {
+        it ('should cancel queries', function(done) {
+            const as = vars.as;
                 
-                for ( let i = 0; i < 3; ++i ) {
-                    p.add((as) => {
-                        vars.ccm.iface('l1').callStored(as, 'test.Proc', [1]);
-                    });
+            as.add(
+                (as) => {
+                    as.setTimeout(0.2);
+                    const p = as.parallel();
+                    
+                    for ( let i = 0; i < 3; ++i ) {
+                        p.add((as) => {
+                            vars.ccm.iface('l1').callStored(as, 'CancelTest', []);
+                        });
+                    }
+                },
+                (as, err) => {
+                    if (err === 'Timeout')
+                    {
+                        as.success();
+                        return;
+                    }
+                    
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
                 }
-            },
-            (as, err) => {
-                console.log(as.state.error_info);
-                console.log(as.state.last_exception);
-                done(as.state.last_exception);
-            }
-        );
-        as.add( (as) => done() );
-        as.execute();
+            );
+            as.add(
+                (as) => {
+                    const p = as.parallel();
+                    
+                    for ( let i = 0; i < 3; ++i ) {
+                        p.add((as) => {
+                            vars.ccm.iface('l1').callStored(as, 'test.Proc', [1]);
+                        });
+                    }
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add( (as) => done() );
+            as.execute();
+        });
     });
 };

@@ -6,7 +6,7 @@ node_js:
 
 before_install:
 - sudo pip install futoin-cid
-- bash test/db_config.sh
+- sudo bash test/db_config.sh
 script:
 - nodeVer=$TRAVIS_NODE_VERSION cid prepare
 - nodeVer=$TRAVIS_NODE_VERSION cid run test

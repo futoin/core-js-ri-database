@@ -102,6 +102,13 @@ describe('MySQLService', () => {
                                 'ts DATETIME' +
                             ') ENGINE=InnoDB');
                     ccm.iface('ml2').query(as,
+                            'CREATE TABLE test.Snd(' +
+                                'snd_id INT auto_increment primary key, ' +
+                                'ref_id INT, ' +
+                                'data BLOB not null, ' +
+                                'ts DATETIME' +
+                            ') ENGINE=InnoDB');
+                    ccm.iface('ml2').query(as,
                             'CREATE PROCEDURE test.Proc(IN a INT) BEGIN select 1, 2, 3; END');
                     ccm.iface('ml2').query(as,
                             'CREATE PROCEDURE test.MultiRes(IN a INT) BEGIN select 1; select 2; END');

@@ -125,6 +125,13 @@ describe('PostgreSQLService', () => {
                                 'ts timestamp' +
                             ')');
                     ccm.iface('pl2').query(as,
+                            'CREATE TABLE test.Snd(' +
+                                'snd_id serial primary key, ' +
+                                'ref_id int not null REFERENCES test.Tbl(id), ' +
+                                'data bytea not null, ' +
+                                'ts timestamp ' +
+                            ')');
+                    ccm.iface('pl2').query(as,
                             'CREATE FUNCTION test.Proc(IN a INT) ' +
                             'RETURNS TABLE (a int, b int, c int) AS ' +
                             '$$ SELECT 1, 2, 3; $$ LANGUAGE SQL');
