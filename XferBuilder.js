@@ -16,9 +16,8 @@ const QueryBuilder = require( './QueryBuilder' );
  */
 class XferQueryBuilder extends QueryBuilder
 {
-    execute( as, unsafe_dml=false )
+    execute( as, _unsafe_dml=false )
     {
-        void unsafe_dml;
         throw new Error( 'Please use XferBuilder.execute()' );
     }
 
@@ -287,11 +286,21 @@ class XferBuilder
                 {
                     const driver = QueryBuilder.getDriver( db_type );
                     const pql = _cloneDeep( ql );
+                    const used_params = {};
 
                     pql.forEach( ( v ) =>
                     {
-                        v.q = QueryBuilder._replaceParams( driver, v.q, params );
+                        v.q = QueryBuilder._replaceParams(
+                            driver, v.q, params, used_params );
                     } );
+
+                    for ( let p in params )
+                    {
+                        if ( !used_params[p] )
+                        {
+                            throw new Error( `Unused param "${p}"` );
+                        }
+                    }
 
                     iface.xfer( as, pql, isol );
                 }

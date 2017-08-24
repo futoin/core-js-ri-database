@@ -101,9 +101,8 @@ class IDriver
         }
     }
 
-    build( state )
+    build( _state )
     {
-        void state;
         throw new Error( 'Not implemented' );
     }
 
@@ -213,9 +212,8 @@ class SQLDriver extends IDriver
         return this._escapeSimple( value );
     }
 
-    _escapeSimple( value )
+    _escapeSimple( _value )
     {
-        void value;
         throw new Error( 'Not implemented' );
 
         /*
@@ -1171,14 +1169,25 @@ class QueryBuilder
         return this;
     }
 
-    static _replaceParams( driver, q, params )
+    static _replaceParams( driver, q, params, used_params=null )
     {
         for ( let p in params )
         {
             let v = driver.escape( params[p] );
-            q = q.replace(
+            let nq = q.replace(
                 new RegExp( `(:${p})($|\\W)`, 'g' ),
                 `${v}$2` );
+
+            if ( nq === q )
+            {
+                if ( !used_params ) throw new Error( `Unused param "${p}"` );
+            }
+            else if ( used_params )
+            {
+                used_params[p] = true;
+            }
+
+            q = nq;
         }
 
         return q;

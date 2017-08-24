@@ -467,7 +467,7 @@ describe('QueryBuilder', function() {
                 entity( entity ){ return entity; }
             });
             mockFace.select('A');
-            
+
             //--
             expect( () => { mockFace.select().escape('a') } )
                 .to.throw('Not implemented');
@@ -642,6 +642,16 @@ describe('QueryBuilder', function() {
                     'Some :v :vv :vvv :v',
                     { v: 3, vv: 2, vvv: 1})
             ).to.equal('Some 3 2 1 3');
+        });
+        
+        it('should detected unused params', function(){
+            const driver = QueryBuilder.getDriver('mocksql');
+            expect( function() {
+                QueryBuilder._replaceParams(
+                    driver,
+                    'Some :v :vvv :v',
+                    { v: 3, vv: 2, vvv: 1})
+            } ).to.throw('Unused param "vv"');
         });
     });
 });
@@ -901,6 +911,26 @@ describe('XferBuilder', function() {
             .add((as) => done())
             .execute();
         });
+        
+        it('should detect other error', function(){
+            //--
+            mockFace._db_type = 'mockfail';
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( entity ){ return entity; }
+            });
+            
+            //--
+            expect( () => { mockFace.newXfer().select('A').backref(1, 'f', true) } )
+                .to.throw('Not implemented');
+                
+            QueryBuilder.addDriver('mockfail', class extends QueryBuilder.IDriver {
+                entity( entity ){ return entity; }
+                backref( ...args ){ return args; }
+            });
+            mockFace.newXfer().select('A').backref(1, 'f', true);
+        });
+   
     });
 });
 

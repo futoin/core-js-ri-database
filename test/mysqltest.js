@@ -25,6 +25,11 @@ describe('MySQLDriver', function() {
         expect( drv.identifier('one.two') ).to.equal('`one`.`two`');
         expect( drv.identifier('on`e.t`w`o') ).to.equal('`on``e`.`t``w``o`');
     });
+    
+    it('should create xfer back references', () => {
+        expect( drv.backref(3, 'field').toQuery() ).to.equal("$'3:field:s'$");
+        expect( drv.backref(3, 'field', true).toQuery() ).to.equal("$'3:field:m'$");
+    });
 });
 
 describe('MySQLService', () => {
@@ -97,7 +102,9 @@ describe('MySQLService', () => {
                                 'ts DATETIME' +
                             ') ENGINE=InnoDB');
                     ccm.iface('ml2').query(as,
-                            'CREATE PROCEDURE test.Proc(IN a INT) BEGIN END');
+                            'CREATE PROCEDURE test.Proc(IN a INT) BEGIN select 1, 2, 3; END');
+                    ccm.iface('ml2').query(as,
+                            'CREATE PROCEDURE test.MultiRes(IN a INT) BEGIN select 1; select 2; END');
                     as.add( (as) => done() );
                 },
                 (as, err) => {
@@ -165,6 +172,60 @@ describe('MySQLService', () => {
                     done(as.state.last_exception);
                 }
             );
+            as.execute();
+        });
+        
+        it ('query multi res', (done) => {
+            const as = vars.as;
+            const ccm = vars.ccm;
+        
+            as.add(
+                (as) => {
+                    const xfer = ccm.iface('l2').callStored(as, 'test.MultiRes', [1]);
+                    as.add( (as) => done( 'Fail' ) );
+                },
+                (as, err) => {
+                    if (err === 'InvalidQuery' &&
+                        as.state.error_info === 'More than one result'
+                    ) {
+                        as.success();
+                        return;
+                    }
+                    
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done());
+            as.execute();
+        });
+        
+        it ('xfer multi res for selected condition', (done) => {
+            const as = vars.as;
+            const ccm = vars.ccm;
+        
+            as.add(
+                (as) => {
+                    const xfer = ccm.iface('l2').newXfer();
+                    xfer.raw('CALL test.MultiRes(1)', null, {selected: 1});
+                    xfer.execute(as);
+                    as.add( (as) => done( 'Fail' ) );
+                },
+                (as, err) => {
+                    if (err === 'XferCondition' &&
+                        as.state.error_info === 'Multiple results for conditions'
+                    ) {
+                        as.success();
+                        return;
+                    }
+                    
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done());
             as.execute();
         });
     });

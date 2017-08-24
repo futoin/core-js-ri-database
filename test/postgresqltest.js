@@ -25,6 +25,11 @@ describe('PostgreSQLDriver', function() {
         expect( drv.identifier('one.two') ).to.equal('"one"."two"');
         expect( drv.identifier('on"e.t"w"o') ).to.equal('"on""e"."t""w""o"');
     });
+        
+    it('should create xfer back references', () => {
+        expect( drv.backref(3, 'field').toQuery() ).to.equal("$'3:field:s'$");
+        expect( drv.backref(3, 'field', true).toQuery() ).to.equal("$'3:field:m'$");
+    });
     
     it('should support RETURNING clause', () => {
         let qb;

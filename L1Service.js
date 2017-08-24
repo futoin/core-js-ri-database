@@ -79,22 +79,19 @@ class L1Service extends PingService
     {
     }
 
-    query( as, reqinfo )
+    query( as, _reqinfo )
     {
         as.error( FutoInError.NotImplemented );
-        void reqinfo;
     }
 
-    callStored( as, reqinfo )
+    callStored( as, _reqinfo )
     {
         as.error( FutoInError.NotImplemented );
-        void reqinfo;
     }
 
-    getFlavour( as, reqinfo )
+    getFlavour( as, _reqinfo )
     {
         as.error( FutoInError.NotImplemented );
-        void reqinfo;
     }
 }
 

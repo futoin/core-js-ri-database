@@ -202,21 +202,14 @@ class MySQLService extends L2Service
 
         dbq.on( 'result', ( packet, stmt_id ) =>
         {
-            if ( stmt_id && !multi )
-            {
-                if ( !as.state ) return;
-
-                try
-                {
-                    as.error( 'InvalidQuery', 'More than one result' );
-                }
-                catch ( e )
-                {
-                    return;
-                }
-            }
-
             const affected = packet.affectedRows;
+
+            // OK packet for CALL procedure case
+            if ( stmt_id && !multi && ( affected !== undefined ) )
+            {
+                res.affected = affected;
+                return;
+            }
 
             if ( affected !== undefined )
             {

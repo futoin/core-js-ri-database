@@ -35,10 +35,9 @@ class L2Service extends L1Service
         return impl;
     }
 
-    xfer( as, reqinfo )
+    xfer( as, _reqinfo )
     {
         as.error( FutoInError.NotImplemented );
-        void reqinfo;
     }
 
     _xferCommon( as, xfer, qresults, stmt_id, results )
@@ -99,7 +98,7 @@ class L2Service extends L1Service
         // Sanity check
         if ( fail_on_multi && qresults.length !== 1 )
         {
-            as.error( 'OtherExecError',
+            as.error( 'XferCondition',
                 'Multiple results for conditions' );
         }
 
@@ -128,13 +127,11 @@ class L2Service extends L1Service
 
         return xfer.q.replace(
             this._xferTemplatePattern,
-            ( m, query_id, field, mode ) =>
+            ( _m, query_id, field, mode ) =>
             {
-                void m;
-
                 if ( query_id >= prev_results.length )
                 {
-                    as.error( 'OtherExecError',
+                    as.error( 'XferBackRef',
                         `Invalid template query ID: ${query_id}` );
                 }
 
@@ -142,7 +139,7 @@ class L2Service extends L1Service
 
                 if ( !qres.rows.length )
                 {
-                    as.error( 'OtherExecError',
+                    as.error( 'XferBackRef',
                         `Empty query result for #${query_id}` );
                 }
 
@@ -150,7 +147,7 @@ class L2Service extends L1Service
 
                 if ( field_id < 0 )
                 {
-                    as.error( 'OtherExecError',
+                    as.error( 'XferBackRef',
                         `Invalid template field "${field}" for #${query_id}` );
                 }
 
@@ -158,7 +155,7 @@ class L2Service extends L1Service
                 {
                     if ( qres.rows.length > 1 )
                     {
-                        as.error( 'OtherExecError',
+                        as.error( 'XferBackRef',
                             `More than one row in result #${query_id}` );
                     }
 

@@ -308,6 +308,10 @@ module.exports = function(describe, it, vars)
                     xfer.call('test.Proc', [123]);
                     const pxfer = xfer.prepare();
                     
+                    expect(function() {
+                        pxfer.executeAssoc(as, iface, { nm: 'xfer5', unused: '2' });
+                    }).to.throw('Unused param "unused"')
+                    
                     // Run sequentially
                     as.repeat(3, (as, i) => {
                         pxfer.executeAssoc(as, iface, { nm: 'xfer5' });
@@ -504,26 +508,17 @@ module.exports = function(describe, it, vars)
 
                     xfer.executeAssoc(as);
                     as.add( (as, res) => {
-                        expect(res).to.eql([
+                        expect(res[1]).to.eql(
                             {
                                 rows: [
-                                    { id: 7, name: '3', ts: null },
-                                    { id: 9, name: '5', ts: null },
-                                    { id: 10, name: '6', ts: null },
-                                    { id: 20, name: '16', ts: null },
+                                    { id: 7, name: res[0].rows[0].name, ts: null },
+                                    { id: 9, name: res[0].rows[1].name, ts: null },
+                                    { id: 10019, name: res[0].rows[2].name, ts: null },
+                                    { id: 10029, name: res[0].rows[3].name, ts: null },
                                 ],
                                 affected: 0,
-                            },
-                            {
-                                rows: [
-                                    { id: 7, name: '3', ts: null },
-                                    { id: 9, name: '5', ts: null },
-                                    { id: 10019, name: '6', ts: null },
-                                    { id: 10029, name: '16', ts: null },
-                                ],
-                                affected: 0,
-                            },
-                        ]);
+                            }
+                        );
                     });
                 },
                 (as, err) => {
@@ -532,6 +527,89 @@ module.exports = function(describe, it, vars)
                     done(as.state.last_exception);
                 }
             );
+            as.add((as) => done());
+            as.execute();
+        });
+        
+        it ('should detect xfer back reference errors', function(done) {
+            const as = vars.as;
+
+            as.add( (as) => {
+                as.add(
+                    (as) => {
+                        let xfer = vars.ccm.iface('l2').newXfer();
+                        const x1 = xfer.select('test.Tbl');
+                        const x2 = xfer.select('test.Tbl')
+                            .get('id')
+                            .where('id', '7');
+                        x1.where('id', x1.backref(x2, 'id'));
+                        xfer.execute(as);
+                        as.add((as) => as.error('Fail'));
+                    },
+                    (as, err) => {
+                        if ( err === 'XferBackRef') {
+                            expect(as.state.error_info)
+                                .to.equal('Invalid template query ID: 1');
+                            as.success();
+                        }
+                    }
+                );
+                as.add(
+                    (as) => {
+                        let xfer = vars.ccm.iface('l2').newXfer();
+                        const x1 = xfer.select('test.Tbl').where('name', 'not existing');
+                        const x2 = xfer.select('test.Tbl');
+                        x2.get('id').where('id', x2.backref(x1, 'id'));
+                        xfer.execute(as);
+                        as.add((as) => as.error('Fail'));
+                    },
+                    (as, err) => {
+                        if ( err === 'XferBackRef') {
+                            expect(as.state.error_info)
+                                .to.equal('Empty query result for #0');
+                            as.success();
+                        }
+                    }
+                );
+                as.add(
+                    (as) => {
+                        let xfer = vars.ccm.iface('l2').newXfer();
+                        const x1 = xfer.select('test.Tbl').limit(10);
+                        const x2 = xfer.select('test.Tbl');
+                        x2.get('id').where('id', x2.backref(x1, 'Missing'));
+                        xfer.execute(as);
+                        as.add((as) => as.error('Fail'));
+                    },
+                    (as, err) => {
+                        if ( err === 'XferBackRef') {
+                            expect(as.state.error_info)
+                                .to.equal('Invalid template field "Missing" for #0');
+                            as.success();
+                        }
+                    }
+                );
+                as.add(
+                    (as) => {
+                        let xfer = vars.ccm.iface('l2').newXfer();
+                        const x1 = xfer.select('test.Tbl').limit(10);
+                        const x2 = xfer.select('test.Tbl');
+                        x2.get('id').where('id', x2.backref(x1, 'id'));
+                        xfer.execute(as);
+                        as.add((as) => as.error('Fail'));
+                    },
+                    (as, err) => {
+                        if ( err === 'XferBackRef') {
+                            expect(as.state.error_info)
+                                .to.equal('More than one row in result #0');
+                            as.success();
+                        }
+                    }
+                );
+            }, (as, err) => {
+                console.log(as.state.error_info);
+                console.log(as.state.last_exception);
+                done(as.state.last_exception);
+            });
             as.add((as) => done());
             as.execute();
         });
