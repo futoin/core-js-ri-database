@@ -128,6 +128,10 @@ describe('PostgreSQLService', () => {
                             'CREATE FUNCTION test.Proc(IN a INT) ' +
                             'RETURNS TABLE (a int, b int, c int) AS ' +
                             '$$ SELECT 1, 2, 3; $$ LANGUAGE SQL');
+                    ccm.iface('pl2').query(as,
+                            'CREATE FUNCTION test.CancelTest() ' +
+                            'RETURNS void AS ' +
+                            '$$ SELECT pg_sleep(10); $$ LANGUAGE SQL');
                     as.add( (as) => done() );
                 },
                 (as, err) => {

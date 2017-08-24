@@ -614,4 +614,50 @@ module.exports = function(describe, it, vars)
             as.execute();
         });
     });
+    
+    it ('should cancel queries', function(done) {
+        const as = vars.as;
+            
+        as.add(
+            (as) => {
+                as.setTimeout(0.2);
+                const p = as.parallel();
+                
+                for ( let i = 0; i < 3; ++i ) {
+                    p.add((as) => {
+                        vars.ccm.iface('l1').callStored(as, 'CancelTest', []);
+                    });
+                }
+            },
+            (as, err) => {
+                if (err === 'Timeout')
+                {
+                    as.success();
+                    return;
+                }
+                
+                console.log(as.state.error_info);
+                console.log(as.state.last_exception);
+                done(as.state.last_exception);
+            }
+        );
+        as.add(
+            (as) => {
+                const p = as.parallel();
+                
+                for ( let i = 0; i < 3; ++i ) {
+                    p.add((as) => {
+                        vars.ccm.iface('l1').callStored(as, 'test.Proc', [1]);
+                    });
+                }
+            },
+            (as, err) => {
+                console.log(as.state.error_info);
+                console.log(as.state.last_exception);
+                done(as.state.last_exception);
+            }
+        );
+        as.add( (as) => done() );
+        as.execute();
+    });
 };

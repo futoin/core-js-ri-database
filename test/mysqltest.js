@@ -105,6 +105,8 @@ describe('MySQLService', () => {
                             'CREATE PROCEDURE test.Proc(IN a INT) BEGIN select 1, 2, 3; END');
                     ccm.iface('ml2').query(as,
                             'CREATE PROCEDURE test.MultiRes(IN a INT) BEGIN select 1; select 2; END');
+                    ccm.iface('ml2').query(as,
+                            'CREATE PROCEDURE test.CancelTest() BEGIN CALL SLEEP(10); END');
                     as.add( (as) => done() );
                 },
                 (as, err) => {
