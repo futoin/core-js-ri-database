@@ -180,6 +180,12 @@ class SQLDriver extends IDriver
         {
             return null;
         }
+        else if ( entity instanceof QueryBuilder )
+        {
+            throw new Error(
+                `Entity as sub-query format is [QB, alias]: ${entity}`
+            );
+        }
         else
         {
             throw new Error( `Unknown entity type: ${entity}` );

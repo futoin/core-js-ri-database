@@ -316,6 +316,10 @@ describe('QueryBuilder', function() {
             expect(() => {
                 qb.clone().where('val IS NULL').set('f', 'a')._toQuery();
             }).to.throw('Unused map "toset"');
+            
+            expect(() => {
+                qb.clone().innerJoin(genQB('select').get('a'))
+            }).to.throw('Entity as sub-query format is [QB, alias]: SELECT a FROM Table')
         });
     });
     
