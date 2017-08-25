@@ -15,7 +15,13 @@ class L2Service extends L1Service
      * Register futoin.db.l2 interface with Executor
      * @param {AsyncSteps} as - steps interface
      * @param {Executor} executor - executor instance
-     * @param {ServiceOptions} options - options to pass to constructor
+     * @param {object} options - options to pass to constructor
+     * @param {string} options.host - database host
+     * @param {string} options.port - database port
+     * @param {string} options.database - database name
+     * @param {string} options.user - database user
+     * @param {string} options.password - database password
+     * @param {string} options.conn_limit - max connections
      * @returns {L2Service} instance
      */
     static register( as, executor, options )

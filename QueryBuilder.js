@@ -8,7 +8,7 @@ const COND_RE = /^(.+)\s(=|<>|!=|>|>=|<|<=|IN|NOT IN|BETWEEN|NOT BETWEEN|LIKE|NO
 const IS_DEBUG = process && process.env.NODE_ENV !== 'production';
 
 /**
- * Wrapper for raw expression to prevent escaping of them
+ * Wrapper for raw expression to prevent escaping
  */
 class Expression
 {
@@ -22,6 +22,10 @@ class Expression
         return this._expr;
     }
 
+    /**
+     * Allows easy joining with raw query
+     * @returns {string} as is
+     */
     toString()
     {
         return this._expr;
@@ -35,7 +39,7 @@ class Prepared
 {
     /**
      * @func
-     * @name execute
+     * @name Prepared#execute
      * @param {AsyncSteps} as - step interface
      * @param {L1Face} iface - interface instance
      * @param {object} [params=null] - parameters to subsitute
@@ -43,7 +47,7 @@ class Prepared
 
     /**
      * @func
-     * @name executeAsync
+     * @name Prepared#executeAsync
      * @param {AsyncSteps} as - step interface
      * @param {L1Face} iface - interface instance
      * @param {object} [params=null] - parameters to subsitute
@@ -52,6 +56,7 @@ class Prepared
 
 /**
  * Basic interface for DB flavour support
+ * @private
  */
 class IDriver
 {
@@ -136,6 +141,7 @@ class IDriver
 
 /**
  * Basic logic for SQL-based databases
+ * @private
  */
 class SQLDriver extends IDriver
 {

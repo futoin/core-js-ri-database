@@ -7,6 +7,7 @@ const NO_ESCAPE_RE = /^[a-z][a-z_]*(\.[a-z][a-z_])*$/;
  * PostgreSQL driver for QueryBuilder
  * 
  * @note It is normally automatically added when main.js is executed.
+ * @private
  */
 class PostgreSQLDriver extends QueryBuilder.SQLDriver
 {

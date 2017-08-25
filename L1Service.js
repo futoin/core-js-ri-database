@@ -5,45 +5,6 @@ const PingFace = require( 'futoin-invoker/PingFace' );
 const L1Face = require( './L1Face' );
 const { FutoInError } = require( 'futoin-asyncsteps' );
 
-/**
- * Service options object
- * @class
- */
-const ServiceOptions =
-{
-    /**
-     * Host to connect to
-     */
-    host : null,
-
-    /**
-     * Port to use on host
-     */
-    port : null,
-
-    /**
-     * Database
-     */
-    database : null,
-
-    /**
-     * Username
-     */
-    user : null,
-
-    /**
-     * Password
-     */
-    password : null,
-
-    /**
-     * Connection limit
-     * @default
-     */
-    conn_limit : 1,
-};
-
-void ServiceOptions;
 
 /**
  * Base for Level 1 Database service implementation
@@ -54,7 +15,13 @@ class L1Service extends PingService
      * Register futoin.db.l1 interface with Executor
      * @param {AsyncSteps} as - steps interface
      * @param {Executor} executor - executor instance
-     * @param {ServiceOptions} options - options to pass to constructor
+     * @param {object} options - options to pass to constructor
+     * @param {string} options.host - database host
+     * @param {string} options.port - database port
+     * @param {string} options.database - database name
+     * @param {string} options.user - database user
+     * @param {string} options.password - database password
+     * @param {string} options.conn_limit - max connections
      * @returns {L1Service} instance
      */
     static register( as, executor, options )

@@ -7,6 +7,7 @@ const SqlString = require( 'sqlstring' );
  * MySQL driver for QueryBuilder
  * 
  * @note It is normally automatically added when main.js is executed.
+ * @private
  */
 class MySQLDriver extends QueryBuilder.SQLDriver
 {

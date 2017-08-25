@@ -19,8 +19,9 @@ Reference implementation of:
 
 # About
 
-TBD.
+Database neutral microservice interface with advanced Query and revolutionary Transaction builder.
 
+Auto-configuration based on process environment variables and connection pooling by design.
 
 # Installation for Node.js
 
@@ -29,9 +30,74 @@ Command line:
 $ npm install futoin-database --save
 ```
 
+# Concept
+
+Interface is split into several levels which are combined in inheritance chain.
+
+Fundamental difference from traditional interfaces is lack of large
+result set support, cursors and explicit transaction control. This is
+done by intention to forbid undesired database operation patterns.
+
+## Level 1
+
+The very basic level for query execution with minimal safety requirements.
+
+## Level 2
+
+Transaction execution abstraction with "single call" pattern.
+
+The overall idea is to execute a list of statements on DB side in single transaction
+one-by-one. After each xfer, trivial validation is done like amount of affected rows
+or count of rows in result. This allows creating complex intermediate checks in
+native DB query. Such pattern avoids blocking on usually expensive DB connection
+and forces to execute transaction with no client-side delays. Also, proper release
+of connection to DB connection pool is ensured.
+
+If at any step an error occurs then whole transaction is rolled back.
+
+*Note: internally, it's assumed that there is a limited number of simultaneous
+DB connection allowed which are managed in connection pool for performance reasons,
+but such details are absolutely hidden from clients.*
+
+## 2.3. Level 3
+
+Large result streaming through BiDirectional channel.
+Database metadata and ORM-like abstraction. TBD.
+
 # Examples
 
-TBD.
+## 1. Raw queries
+
+```javascript
+/**
+ * DB_USER
+ * DB_
+ */
+```
+
+## 2. Query Builder
+
+```javascript
+
+```
+
+## 3. Efficient Query Builder (prepared)
+
+```javascript
+
+```
+
+## 4. Transaction Builder
+
+```javascript
+
+```
+
+## 5. Efficient Transaction Builder (prepared)
+
+```javascript
+
+```
     
 # API documentation
 
@@ -43,8 +109,6 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#L1Face">L1Face</a></dt>
 <dd><p>Level 1 Database Face</p>
 </dd>
-<dt><a href="#ServiceOptions">ServiceOptions</a></dt>
-<dd></dd>
 <dt><a href="#L1Service">L1Service</a></dt>
 <dd><p>Base for Level 1 Database service implementation</p>
 </dd>
@@ -56,29 +120,17 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#L2Service">L2Service</a></dt>
 <dd><p>Base for Level 2 Database service implementation</p>
 </dd>
-<dt><a href="#MySQLDriver">MySQLDriver</a></dt>
-<dd><p>MySQL driver for QueryBuilder</p>
-</dd>
 <dt><a href="#MySQLService">MySQLService</a></dt>
 <dd><p>MySQL service implementation for FutoIn Database interface.addEventListener()</p>
-</dd>
-<dt><a href="#PostgreSQLDriver">PostgreSQLDriver</a></dt>
-<dd><p>PostgreSQL driver for QueryBuilder</p>
 </dd>
 <dt><a href="#PostgreSQLService">PostgreSQLService</a></dt>
 <dd><p>PostgreSQL service implementation for FutoIn Database interface</p>
 </dd>
 <dt><a href="#Expression">Expression</a></dt>
-<dd><p>Wrapper for raw expression to prevent escaping of them</p>
+<dd><p>Wrapper for raw expression to prevent escaping</p>
 </dd>
 <dt><a href="#Prepared">Prepared</a></dt>
 <dd><p>Interface for prepared statement execution</p>
-</dd>
-<dt><a href="#IDriver">IDriver</a></dt>
-<dd><p>Basic interface for DB flavour support</p>
-</dd>
-<dt><a href="#SQLDriver">SQLDriver</a></dt>
-<dd><p>Basic logic for SQL-based databases</p>
 </dd>
 <dt><a href="#QueryBuilder">QueryBuilder</a></dt>
 <dd><p>Neutral query builder</p>
@@ -104,15 +156,6 @@ It&#39;s possible to add result constraints to each query for intermediate check
 
 <dl>
 <dt><a href="#AutoConfig">AutoConfig</a></dt>
-<dd></dd>
-</dl>
-
-## Functions
-
-<dl>
-<dt><a href="#execute">execute(as, iface, [params])</a></dt>
-<dd></dd>
-<dt><a href="#executeAsync">executeAsync(as, iface, [params])</a></dt>
 <dd></dd>
 </dl>
 
@@ -292,62 +335,6 @@ CCM registration helper
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 
-<a name="ServiceOptions"></a>
-
-## ServiceOptions
-**Kind**: global class  
-
-* [ServiceOptions](#ServiceOptions)
-    * [new ServiceOptions()](#new_ServiceOptions_new)
-    * [.host](#ServiceOptions.host)
-    * [.port](#ServiceOptions.port)
-    * [.database](#ServiceOptions.database)
-    * [.user](#ServiceOptions.user)
-    * [.password](#ServiceOptions.password)
-    * [.conn_limit](#ServiceOptions.conn_limit)
-
-<a name="new_ServiceOptions_new"></a>
-
-### new ServiceOptions()
-Service options object
-
-<a name="ServiceOptions.host"></a>
-
-### ServiceOptions.host
-Host to connect to
-
-**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
-<a name="ServiceOptions.port"></a>
-
-### ServiceOptions.port
-Port to use on host
-
-**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
-<a name="ServiceOptions.database"></a>
-
-### ServiceOptions.database
-Database
-
-**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
-<a name="ServiceOptions.user"></a>
-
-### ServiceOptions.user
-Username
-
-**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
-<a name="ServiceOptions.password"></a>
-
-### ServiceOptions.password
-Password
-
-**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
-<a name="ServiceOptions.conn_limit"></a>
-
-### ServiceOptions.conn_limit
-Connection limit
-
-**Kind**: static property of [<code>ServiceOptions</code>](#ServiceOptions)  
-**Default**: <code>1</code>  
 <a name="L1Service"></a>
 
 ## L1Service
@@ -366,7 +353,13 @@ Register futoin.db.l1 interface with Executor
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | steps interface |
 | executor | <code>Executor</code> | executor instance |
-| options | [<code>ServiceOptions</code>](#ServiceOptions) | options to pass to constructor |
+| options | <code>object</code> | options to pass to constructor |
+| options.host | <code>string</code> | database host |
+| options.port | <code>string</code> | database port |
+| options.database | <code>string</code> | database name |
+| options.user | <code>string</code> | database user |
+| options.password | <code>string</code> | database password |
+| options.conn_limit | <code>string</code> | max connections |
 
 <a name="XferQuery"></a>
 
@@ -517,15 +510,14 @@ Register futoin.db.l2 interface with Executor
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | steps interface |
 | executor | <code>Executor</code> | executor instance |
-| options | [<code>ServiceOptions</code>](#ServiceOptions) | options to pass to constructor |
+| options | <code>object</code> | options to pass to constructor |
+| options.host | <code>string</code> | database host |
+| options.port | <code>string</code> | database port |
+| options.database | <code>string</code> | database name |
+| options.user | <code>string</code> | database user |
+| options.password | <code>string</code> | database password |
+| options.conn_limit | <code>string</code> | max connections |
 
-<a name="MySQLDriver"></a>
-
-## MySQLDriver
-MySQL driver for QueryBuilder
-
-**Kind**: global class  
-**Note**: It is normally automatically added when main.js is executed.  
 <a name="MySQLService"></a>
 
 ## MySQLService
@@ -533,13 +525,6 @@ MySQL service implementation for FutoIn Database interface.addEventListener()
 
 **Kind**: global class  
 **Note**: If host is localhost then 'socketPath' is from 'port' option.  
-<a name="PostgreSQLDriver"></a>
-
-## PostgreSQLDriver
-PostgreSQL driver for QueryBuilder
-
-**Kind**: global class  
-**Note**: It is normally automatically added when main.js is executed.  
 <a name="PostgreSQLService"></a>
 
 ## PostgreSQLService
@@ -549,27 +534,49 @@ PostgreSQL service implementation for FutoIn Database interface
 <a name="Expression"></a>
 
 ## Expression
-Wrapper for raw expression to prevent escaping of them
+Wrapper for raw expression to prevent escaping
 
 **Kind**: global class  
+<a name="Expression+toString"></a>
+
+### expression.toString() ⇒ <code>string</code>
+Allows easy joining with raw query
+
+**Kind**: instance method of [<code>Expression</code>](#Expression)  
+**Returns**: <code>string</code> - as is  
 <a name="Prepared"></a>
 
 ## Prepared
 Interface for prepared statement execution
 
 **Kind**: global class  
-<a name="IDriver"></a>
 
-## IDriver
-Basic interface for DB flavour support
+* [Prepared](#Prepared)
+    * [.execute(as, iface, [params])](#Prepared+execute)
+    * [.executeAsync(as, iface, [params])](#Prepared+executeAsync)
 
-**Kind**: global class  
-<a name="SQLDriver"></a>
+<a name="Prepared+execute"></a>
 
-## SQLDriver
-Basic logic for SQL-based databases
+### prepared.execute(as, iface, [params])
+**Kind**: instance method of [<code>Prepared</code>](#Prepared)  
 
-**Kind**: global class  
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
+| [params] | <code>object</code> | <code></code> | parameters to subsitute |
+
+<a name="Prepared+executeAsync"></a>
+
+### prepared.executeAsync(as, iface, [params])
+**Kind**: instance method of [<code>Prepared</code>](#Prepared)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
+| [params] | <code>object</code> | <code></code> | parameters to subsitute |
+
 <a name="QueryBuilder"></a>
 
 ## QueryBuilder
@@ -580,7 +587,7 @@ Neutral query builder
 * [QueryBuilder](#QueryBuilder)
     * [new QueryBuilder(qb_or_lface, db_type, type, entity)](#new_QueryBuilder_new)
     * _instance_
-        * [.getDriver()](#QueryBuilder+getDriver) ⇒ [<code>IDriver</code>](#IDriver)
+        * [.getDriver()](#QueryBuilder+getDriver) ⇒ <code>IDriver</code>
         * [.clone()](#QueryBuilder+clone) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.escape(value)](#QueryBuilder+escape) ⇒ <code>string</code>
         * [.identifier(name)](#QueryBuilder+identifier) ⇒ <code>string</code>
@@ -606,7 +613,7 @@ Neutral query builder
         * [.Expression](#QueryBuilder.Expression)
         * [.Prepared](#QueryBuilder.Prepared)
         * [.addDriver(type, module)](#QueryBuilder.addDriver)
-        * [.getDriver(type)](#QueryBuilder.getDriver) ⇒ [<code>IDriver</code>](#IDriver)
+        * [.getDriver(type)](#QueryBuilder.getDriver) ⇒ <code>IDriver</code>
 
 <a name="new_QueryBuilder_new"></a>
 
@@ -621,11 +628,11 @@ Neutral query builder
 
 <a name="QueryBuilder+getDriver"></a>
 
-### queryBuilder.getDriver() ⇒ [<code>IDriver</code>](#IDriver)
+### queryBuilder.getDriver() ⇒ <code>IDriver</code>
 Get related QB driver
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
-**Returns**: [<code>IDriver</code>](#IDriver) - actual implementation of query builder driver  
+**Returns**: <code>IDriver</code> - actual implementation of query builder driver  
 <a name="QueryBuilder+clone"></a>
 
 ### queryBuilder.clone() ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -925,15 +932,15 @@ Register query builder driver implementation
 | Param | Type | Description |
 | --- | --- | --- |
 | type | <code>string</code> | type of driver |
-| module | [<code>IDriver</code>](#IDriver) \| <code>function</code> \| <code>string</code> \| <code>object</code> | implementation |
+| module | <code>IDriver</code> \| <code>function</code> \| <code>string</code> \| <code>object</code> | implementation |
 
 <a name="QueryBuilder.getDriver"></a>
 
-### QueryBuilder.getDriver(type) ⇒ [<code>IDriver</code>](#IDriver)
+### QueryBuilder.getDriver(type) ⇒ <code>IDriver</code>
 Get implementation of previously registered driver
 
 **Kind**: static method of [<code>QueryBuilder</code>](#QueryBuilder)  
-**Returns**: [<code>IDriver</code>](#IDriver) - actual implementation of query builder driver  
+**Returns**: <code>IDriver</code> - actual implementation of query builder driver  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1006,7 +1013,7 @@ It's possible to add result constraints to each query for intermediate checks:
 
 * [XferBuilder](#XferBuilder)
     * [.clone()](#XferBuilder+clone) ⇒ [<code>XferBuilder</code>](#XferBuilder)
-    * [.getDriver()](#XferBuilder+getDriver) ⇒ [<code>IDriver</code>](#IDriver)
+    * [.getDriver()](#XferBuilder+getDriver) ⇒ <code>IDriver</code>
     * [.escape(value)](#XferBuilder+escape) ⇒ <code>string</code>
     * [.identifier(name)](#XferBuilder+identifier) ⇒ <code>string</code>
     * [.expr(expr)](#XferBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
@@ -1031,11 +1038,11 @@ Get a copy of XferBuilder for independent processing.
 **Returns**: [<code>XferBuilder</code>](#XferBuilder) - transaction builder instance  
 <a name="XferBuilder+getDriver"></a>
 
-### xferBuilder.getDriver() ⇒ [<code>IDriver</code>](#IDriver)
+### xferBuilder.getDriver() ⇒ <code>IDriver</code>
 Get related QV driver
 
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
-**Returns**: [<code>IDriver</code>](#IDriver) - actual implementation of query builder driver  
+**Returns**: <code>IDriver</code> - actual implementation of query builder driver  
 <a name="XferBuilder+escape"></a>
 
 ### xferBuilder.escape(value) ⇒ <code>string</code>
@@ -1289,28 +1296,6 @@ Register database service type.
 | --- | --- | --- |
 | type | <code>string</code> | type of database |
 | factory | <code>string</code> \| <code>callable</code> \| <code>object</code> | module name, factory method      or a subclass of L1Service |
-
-<a name="execute"></a>
-
-## execute(as, iface, [params])
-**Kind**: global function  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | step interface |
-| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
-| [params] | <code>object</code> | <code></code> | parameters to subsitute |
-
-<a name="executeAsync"></a>
-
-## executeAsync(as, iface, [params])
-**Kind**: global function  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | step interface |
-| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
-| [params] | <code>object</code> | <code></code> | parameters to subsitute |
 
 
 
