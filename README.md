@@ -19,7 +19,7 @@ Reference implementation of:
 
 # About
 
-TBD.
+TBD. Preparing for first release.
 
 
 # Installation for Node.js
