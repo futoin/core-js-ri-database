@@ -266,21 +266,21 @@ class MySQLService extends L2Service
                 switch ( code )
                 {
                 case 'ER_DUP_ENTRY':
-                    as.error( 'Duplicate' );
+                    as.error( 'Duplicate', err.message );
                     break;
 
                 case 'ER_EMPTY_QUERY':
                 case 'ER_SYNTAX_ERROR':
                 case 'ER_PARSE_ERROR':
-                    as.error( 'InvalidQuery' );
+                    as.error( 'InvalidQuery', err.message );
                     break;
 
                 case 'ER_LOCK_DEADLOCK':
-                    as.error( 'DeadLock' );
+                    as.error( 'DeadLock', err.message );
                     break;
 
                 default:
-                    as.error( 'OtherExecError', code );
+                    as.error( 'OtherExecError', err.message );
                 }
             }
             catch ( e )

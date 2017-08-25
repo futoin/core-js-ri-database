@@ -1,5 +1,6 @@
 
 === (next) ===
+CHANGED: MySQL service to also return error message in error_info
 FIXED: to handle CCM close @ AutoConfig-generated Executors
 FIXED: to dump notExpected event from AutoConfig-generated Executors
 FIXED: minor Travis CI issues
