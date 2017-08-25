@@ -18,7 +18,11 @@
     "async",
     "db",
     "database",
-    "querybuilder"
+    "querybuilder",
+    "transaction",
+    "postgresql",
+    "mysql",
+    "mariadb"
   ],
   "author": {
     "name": "Andrey Galkin",

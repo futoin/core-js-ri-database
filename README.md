@@ -64,20 +64,240 @@ but such details are absolutely hidden from clients.*
 Large result streaming through BiDirectional channel.
 Database metadata and ORM-like abstraction. TBD.
 
+# Notes
+
+## Auto-configuration
+
+DB_TYPE, DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_DB and DB_MAXCONN environment
+variables are used to autoconfigure "default" connection.
+
+DB_{NAME}_TYPE, DB_{NAME}_HOST, DB_{NAME}_PORT and other variable names are
+used to configure any arbitrary "{name}" connection. The list of expected
+connection names must be supplied to `AutoConfig()` function.
+
+It possible to supply required/supported database type as "type" option of
+pre-configured connection. Example:
+
+```javascript
+AutoConfig(as, ccm, {
+    // DB_MAIN_TYPE must be either of these
+    main : { type: ['mysql', 'postgresql'] },
+    // DB_DWH_TYPE must be exactly this
+    dwh : { type: 'postgresql' },
+});
+```
+
+## Insert ID
+
+It's a known painful moment in many abstractions. For databases like
+MySQL last insert ID is always "selected" as special `$id` result field.
+
+For `QueryBuilder` abstraction please use `getInsertID(id_field)` call
+for cross-database compatibility.
+
+## Conditions
+
+WHERE, HAVING and JOIN support the same approach to conditions:
+1. raw string is treated as is and joined with outer scope AND or OR operator
+2. Object and Map instance is treated as key=>value pairs joined with AND operator
+    - all values are auto-escaped, unless wrapped with QueryBuilder#expr() call
+    - all keys may have "{name} {op}" format, where {op} is one of:
+        * `=` - equal
+        * `<>` - not equal
+        * `>` - greater
+        * `>=` - greater or equal
+        * `<` - less
+        * `<=` - less or equal
+        * `IN` - in array or subquery (assumed)
+        * `NOT IN` - not in array or subquery (assumed)
+        * `BETWEEN` - two value tuple is assumed for inclusive range match
+        * `NOT BETWEEN` - two value tuple is assumed for inverted inclusive range match
+        * `LIKE` - LIKE match
+        * `NOT LIKE` - NOT LIKE match
+        * other ops may be implicitely supported
+3. Array - the most powerful condition builder - almost internal representation
+    - first element is operator for entire scope: 'AND' (default) or 'OR'
+    - all following elements can be:
+        * raw string
+        * Objects or Maps
+        * inner arrays with own scope operator
+        * another QueryBuilder option to be used as sub-query
+        
+## Sub-queries
+
+Everywhere specific database implementation allows sub-queries, they can be used:
+
+1. As select or join entity - alias must be provided in array format: [QueryBuilder(), 'Alias']
+2. As any condition value
+3. As expression for .get() calls
+
+
 # Examples
 
 ## 1. Raw queries
 
 ```javascript
 /**
- * DB_USER
- * DB_
+ * Process ENV options:
+ * DB_TYPE=mysql
+ * DB_HOST=127.0.0.1
+ * DB_PORT=3306
+ * DB_USER=testuser
+ * DB_PASS=testpass
+ * DB_DB=testdb
+ * DB_MAXCONN=10
  */
+
+const $as = require('futoin-asyncsteps');
+const AdvancedCCM = require('futoin-invoker/AdvancedCCM');
+const DBAutoConfig = require('futoin-database/AutoConfig');
+
+$as() // Root FutoIn AsyncSteps
+    .add(
+        // Root step body
+        (as) => {
+            // Setup main application CCM
+            const ccm = new AdvancedCCM();
+            // Configure default connection based on environment variables
+            DBAutoConfig(as, ccm);
+            
+            // Next -> do query
+            as.add((as) => {
+                ccm.db().query(as, 'SELECT 1+2 AS Sum');
+            });
+            // Next -> handle result
+            as.add((as, res) => {
+                res = ccm.db().associateResult(res);
+                console.log(`Sum: ${res[0].Sum}`);
+            });
+            // Ensure proper shutdown
+            // All DB pools are automatically closed
+            as.add((as) => {
+                ccm.close();
+            });
+        },
+        // Overall error handler
+        (as, err) => {
+            console.log(`${err}: ${as.state.error_info}`);
+            console.log(as.state.last_exception);
+        }
+    )
+    // Start execution
+    .execute();
 ```
 
 ## 2. Query Builder
 
 ```javascript
+// Setup main application CCM
+const ccm = new AdvancedCCM();
+// Configure default connection based on environment variables
+DBAutoConfig(as, ccm);
+
+// Next -> run queries
+as.add((as) => {
+    const db = ccm.db();
+    let q;
+    
+    // prepare table
+    // ---
+    db.query(as, 'DROP TABLE IF EXISTS SomeTbl');
+    db.query(as, 'CREATE TABLE SomeTbl(' +
+            'id int auto_increment primary key,' +
+            'name varchar(255) unique)');
+    
+    // insert some data
+    // ---
+    // - simple set
+    db.insert('SomeTbl').set('name', 'abc').execute(as);
+    // - set as object key=>value pairs
+    db.insert('SomeTbl').set({name: 'klm'}).execute(as);
+    // - set with Map key=>value pairs
+    db.insert('SomeTbl')
+        .set(new Map([['name', 'xyz']]))
+        .getInsertID('id')
+        .executeAssoc(as);
+    // use insert ID
+    as.add((as, res, affected) => console.log(`Insert ID: ${res[0].$id}`));
+    
+    // INSERT-SELECT like query
+    // ---
+    // sub-query must be the only parameter for .set()
+    db.insert('SomeTbl').set(
+        // DANGER: .get() expects expressions and does not escape them!
+        db.select('SomeTbl').get('name', "CONCAT('INS', name)").where('id <', 3)
+    ).execute(as);
+    
+    // update data
+    const qb = db.queryBuilder(); // generic query builder for helper API
+    
+    q = db.update('SomeTbl')
+        // - .set can be called multiple times
+        .set('id', 10)
+        // - please note that set auto-escapes all values, unless wrapped with .expr()
+        .set('name', qb.expr('CONCAT(id, name)'))
+        // - simple condition
+        .where('name', 'klm')
+        // - extra calls are implicit "AND"
+        // - Most powerful array-based definition which is
+        //      very close to how all conditions are handled internally.
+        .where([
+            'OR', // The scope of OR is only children of this array
+            // object as member, all fields are AND assumed
+            {
+                // there are various generic suppported operators
+                'name LIKE': 'kl%',
+                // another example
+                'id >': 1,
+            },
+            // Inner complex array
+            [
+                'AND', // this can be omitted as "AND" is implicit for arrays
+                // raw expression as string - DANGER of SQLi, please avoid
+                'name NOT LIKE \'xy%\'',
+                // another example of operator with two values
+                { 'id BETWEEN': [1, 10] }
+            ],
+            // Note: Map object can also be used
+        ]);
+
+    // Dump raw query for inspection
+    console.log(`Query: ${q}`);
+    // UPDATE SomeTbl SET id=10,name=CONCAT(id, name) WHERE name = 'klm' AND (name LIKE 'kl%' OR id > 1 OR (name NOT LIKE 'xy%' AND id BETWEEN 1 AND 10))
+    
+    // Finally, execute it
+    q.execute(as);
+
+    // Select without entity
+    // ---
+    db.select().get('atm', 'NOW()').executeAssoc(as);
+    as.add((as, res) => console.log(`At the moment: ${res[0].atm}`));
+    
+    // Select with join of result of sub-query (instead of normal table)
+    // ---
+    q = db.select('SomeTbl')
+        .innerJoin(
+            // sub-query
+            // NOTE: use of .escape() for .get()
+            [ db.select().get('addr', qb.escape('Street 123')), 'Alias'],
+            // all where-like conditions are supported here
+            '1 = 1' // can be omitted
+        );
+    console.log(`Query: ${q}`);
+    // SELECT * FROM SomeTbl INNER JOIN (SELECT 'Street 123' AS addr) AS Alias ON 1 = 1
+    q.executeAssoc(as);
+    // inspect result
+    as.add((as, res) => console.log(res));
+    /*
+     * [
+     *  { id: 10, name: '10klm', addr: 'Street 123' },
+     *  { id: 1, name: 'abc', addr: 'Street 123' },
+     *  { id: 4, name: 'INSabc', addr: 'Street 123' },
+     *  { id: 5, name: 'INSklm', addr: 'Street 123' },
+     *  { id: 3, name: 'xyz', addr: 'Street 123' },
+     * ]
+     */
+});
 
 ```
 
@@ -87,13 +307,25 @@ Database metadata and ORM-like abstraction. TBD.
 
 ```
 
-## 4. Transaction Builder
+## 4. Simple Transaction Builder
 
 ```javascript
 
 ```
 
 ## 5. Efficient Transaction Builder (prepared)
+
+```javascript
+
+```
+
+## 6. Advanced Transaction Builder
+
+```javascript
+
+```
+
+## 7. Multiple connection types
 
 ```javascript
 
@@ -225,10 +457,10 @@ Get neutral query builder object.
 **Kind**: instance method of [<code>L1Face</code>](#L1Face)  
 **Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - associated instance  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| type | <code>string</code> | Type of query: SELECT, INSERT, UPDATE, DELETE, ... |
-| entity | <code>string</code> | table/view/etc. name |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| type | <code>string</code> | <code>null</code> | Type of query: SELECT, INSERT, UPDATE, DELETE, ... |
+| entity | <code>string</code> | <code>null</code> | table/view/etc. name |
 
 <a name="L1Face+delete"></a>
 
@@ -262,9 +494,9 @@ Get neutral query builder for SELECT
 **Kind**: instance method of [<code>L1Face</code>](#L1Face)  
 **Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - associated instance  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| entity | <code>string</code> | table/view/etc. name |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| entity | <code>string</code> | <code>null</code> | table/view/etc. name |
 
 <a name="L1Face+update"></a>
 
