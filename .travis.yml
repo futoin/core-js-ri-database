@@ -8,6 +8,6 @@ before_install:
 - sudo pip install futoin-cid
 - sudo bash test/db_config.sh
 script:
-- nodeVer=$TRAVIS_NODE_VERSION cid prepare
-- nodeVer=$TRAVIS_NODE_VERSION cid run test
+- nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid prepare
+- nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid run test
 
