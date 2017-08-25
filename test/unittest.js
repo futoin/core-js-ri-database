@@ -73,6 +73,7 @@ describe('QueryBuilder', function() {
             let qb = genQB('delete');
             let res = qb._toQuery();
             expect(res).to.equal('DELETE FROM Table');
+            expect(res).to.equal(`${qb}`);
         });
         
         it('should generate conditional statement', function() {

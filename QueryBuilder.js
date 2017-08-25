@@ -1184,6 +1184,11 @@ class QueryBuilder
         return this;
     }
 
+    toString()
+    {
+        return this._toQuery( true );
+    }
+
     static _replaceParams( driver, q, params, used_params=null )
     {
         for ( let p in params )
