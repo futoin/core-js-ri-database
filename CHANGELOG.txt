@@ -1,3 +1,7 @@
 
+=== (next) ===
+FIXED: minor Travis CI issues
+NEW: SELECT FOR-clause UPDATE/SHARE mode support in xfers
+
 === 0.9.0 (2017-08-25) ===
 Initial release

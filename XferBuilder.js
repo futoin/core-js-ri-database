@@ -26,10 +26,53 @@ class XferQueryBuilder extends QueryBuilder
         throw new Error( 'Cloning is not allowed' );
     }
 
+    /**
+     * Get transaction back reference expression
+     * @param {XferQueryBuilder} xqb - any previous transaction
+     *      query builder instances.
+     * @param {string} field - field to reference by name
+     * @param {boolean} [multi=false] - reference single result row or multiple
+     * @returns {Expression} with DB-specific escape sequence
+     */
     backref( xqb, field, multi=false )
     {
         this._state.template = true;
         return this.getDriver().backref( xqb._seq_id, field, multi );
+    }
+
+    _forClause( mode )
+    {
+        if ( this._state.type !== 'SELECT' )
+        {
+            throw new Error( 'FOR clause is supported only for SELECT' );
+        }
+
+        if ( this._state.forClause )
+        {
+            throw new Error( 'FOR clause is already set' );
+        }
+
+        this._state.forClause = mode;
+    }
+
+    /**
+     * Mark select FOR UPDATE
+     * @returns {XferQueryBuilder} self
+     */
+    forUpdate()
+    {
+        this._forClause( 'UPDATE' );
+        return this;
+    }
+
+    /**
+     * Mark select FOR SHARED READ
+     * @returns {XferQueryBuilder} self
+     */
+    forSharedRead()
+    {
+        this._forClause( 'SHARE' );
+        return this;
     }
 }
 

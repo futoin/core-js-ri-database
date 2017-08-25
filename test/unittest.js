@@ -912,6 +912,20 @@ describe('XferBuilder', function() {
             .execute();
         });
         
+        it('should detect FOR clause errors', function(){
+            //---
+            mockFace._db_type = 'mocksql';
+            expect( () => { mockFace.newXfer().delete('A').forUpdate() } )
+                .to.throw('FOR clause is supported only for SELECT');
+                
+            expect( () => { mockFace.newXfer().select('A').forUpdate().forUpdate() } )
+                .to.throw('FOR clause is already set');
+            expect( () => { mockFace.newXfer().select('A').forUpdate().forSharedRead() } )
+                .to.throw('FOR clause is already set');
+            expect( () => { mockFace.newXfer().select('A').forUpdate()._toQuery() } )
+                .to.throw('Unused generic "forClause"');
+        });
+        
         it('should detect other error', function(){
             //--
             mockFace._db_type = 'mockfail';

@@ -12,20 +12,52 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
 {
     build( state )
     {
-        if ( state.type !== 'SELECT' && state.select.size )
+        switch ( state.type )
         {
-            const pure_state = Object.create( state );
-            pure_state.select = null;
+        case 'SELECT': {
+            const forClause = state.forClause;
 
-            const q = super.build( pure_state );
-            const select = this._build_select_part( state.select );
+            if ( forClause )
+            {
+                const pure_state = Object.create( state );
+                pure_state.forClause = null;
 
-            return `${q} RETURNING ${select}`;
+                const q = super.build( pure_state );
+
+                switch ( forClause )
+                {
+                case 'UPDATE':
+                    return `${q} FOR UPDATE`;
+
+                case 'SHARE':
+                    return `${q} FOR SHARE`;
+                }
+            }
+
+            break;
         }
-        else
-        {
-            return super.build( state );
+
+        case 'DELETE':
+        case 'INSERT':
+        case 'UPDATE': {
+            const select = state.select;
+
+            if ( select.size )
+            {
+                const pure_state = Object.create( state );
+                pure_state.select = null;
+
+                const q = super.build( pure_state );
+                const q_select = this._build_select_part( select );
+
+                return `${q} RETURNING ${q_select}`;
+            }
+
+            break;
         }
+        }
+
+        return super.build( state );
     }
 
     _build_select_part( select )

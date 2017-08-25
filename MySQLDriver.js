@@ -22,10 +22,24 @@ class MySQLDriver extends QueryBuilder.SQLDriver
 
             return super.build( pure_state );
         }
-        else
+        else if ( state.type === 'SELECT' && state.forClause )
         {
-            return super.build( state );
+            const pure_state = Object.create( state );
+            pure_state.forClause = null;
+
+            const q = super.build( pure_state );
+
+            switch ( state.forClause )
+            {
+            case 'UPDATE':
+                return `${q} FOR UPDATE`;
+
+            case 'SHARE':
+                return `${q} LOCK IN SHARE MODE`;
+            }
         }
+
+        return super.build( state );
     }
 
     _escapeSimple( value )

@@ -239,9 +239,11 @@ module.exports = function(describe, it, vars)
                     xfer.select('test.Tbl', { result: true, selected: 2} )
                         .get('name')
                         .where('name LIKE', 'xfer%')
-                        .order('name');
+                        .order('name')
+                        .forUpdate();
                     xfer.select('test.Tbl', { selected: false} )
-                        .where('name LIKE', 'notxfer%');
+                        .where('name LIKE', 'notxfer%')
+                        .forSharedRead();
                     xfer.select('test.Tbl', { selected: true} )
                         .where('name', 'xfer2');
                     xfer.delete('test.Tbl', { affected: 2 }).where(
@@ -487,13 +489,15 @@ module.exports = function(describe, it, vars)
                         .where('id IN', [7, 9, 10, 20]);
                     
                     const s1 = xfer.select('test.Tbl')
-                        .where('id', '7');
+                        .where('id', '7')
+                        .forSharedRead();
                     const s2 = xfer.select('test.Tbl')
                         .get('name').get('RowID', 'id')
                         .where('id', '9');
                     const s3 = xfer.select('test.Tbl', {selected: 2})
                         .get('RID', 'id')
-                        .where('id IN', [10, 20]);
+                        .where('id IN', [10, 20])
+                        .forUpdate();
                         
                     const u1 = xfer.update('test.Tbl');
                     u1.set('name', u1.backref(s2, 'name'))
@@ -615,7 +619,7 @@ module.exports = function(describe, it, vars)
         });
     });
     
-    describe('Jois', function() {
+    describe('JOINs', function() {
         it ('should use proper join', function(done) {
             const as = vars.as;
             

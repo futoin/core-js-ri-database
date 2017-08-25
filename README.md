@@ -19,7 +19,7 @@ Reference implementation of:
 
 # About
 
-TBD. Preparing for first release.
+TBD.
 
 
 # Installation for Node.js
@@ -957,6 +957,40 @@ Get implementation of previously registered driver
 Version of QueryBuilder which forbids direct execution.
 
 **Kind**: global class  
+
+* [XferQueryBuilder](#XferQueryBuilder)
+    * [.backref(xqb, field, [multi])](#XferQueryBuilder+backref) ⇒ [<code>Expression</code>](#Expression)
+    * [.forUpdate()](#XferQueryBuilder+forUpdate) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+    * [.forSharedRead()](#XferQueryBuilder+forSharedRead) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+
+<a name="XferQueryBuilder+backref"></a>
+
+### xferQueryBuilder.backref(xqb, field, [multi]) ⇒ [<code>Expression</code>](#Expression)
+Get transaction back reference expression
+
+**Kind**: instance method of [<code>XferQueryBuilder</code>](#XferQueryBuilder)  
+**Returns**: [<code>Expression</code>](#Expression) - with DB-specific escape sequence  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| xqb | [<code>XferQueryBuilder</code>](#XferQueryBuilder) |  | any previous transaction      query builder instances. |
+| field | <code>string</code> |  | field to reference by name |
+| [multi] | <code>boolean</code> | <code>false</code> | reference single result row or multiple |
+
+<a name="XferQueryBuilder+forUpdate"></a>
+
+### xferQueryBuilder.forUpdate() ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+Mark select FOR UPDATE
+
+**Kind**: instance method of [<code>XferQueryBuilder</code>](#XferQueryBuilder)  
+**Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - self  
+<a name="XferQueryBuilder+forSharedRead"></a>
+
+### xferQueryBuilder.forSharedRead() ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
+Mark select FOR SHARED READ
+
+**Kind**: instance method of [<code>XferQueryBuilder</code>](#XferQueryBuilder)  
+**Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - self  
 <a name="XferBuilder"></a>
 
 ## XferBuilder
