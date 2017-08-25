@@ -3,7 +3,9 @@ dist: trusty
 node_js:
 - '8'
 - '6'
-
+services:
+- mysql
+- postgresql
 before_install:
 - sudo pip install futoin-cid
 - sudo bash test/db_config.sh
