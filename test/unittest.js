@@ -327,6 +327,20 @@ describe('QueryBuilder', function() {
         });
     });
     
+    describe('GENERIC', function() {
+        it('should be supported for helper calls', function() {
+            let qb = genQB(null, null);
+            expect(qb._state.type).to.equal('GENERIC');
+            expect( qb.escape('ab^c') )
+                .to.be.equal('^ab\\^c^');
+        });
+        
+        it('should not be buildable', function() {
+            let qb = genQB(null, null);
+            expect(() => qb._toQuery()).to.throw('GENERIC query cannot be built');
+        });
+    });
+    
     describe('Conditions', function() {
         it('should generate complex statement', function() {
             let qb = genQB('DELETE');

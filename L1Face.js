@@ -90,7 +90,7 @@ class L1Face extends PingFace
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
      */
-    queryBuilder( type, entity )
+    queryBuilder( type=null, entity=null )
     {
         return new QueryBuilder( this, this._db_type, type, entity );
     }
@@ -120,7 +120,7 @@ class L1Face extends PingFace
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
      */
-    select( entity )
+    select( entity=null )
     {
         return this.queryBuilder( 'SELECT', entity );
     }

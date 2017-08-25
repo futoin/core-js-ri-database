@@ -506,6 +506,9 @@ class SQLDriver extends IDriver
             use.params = true;
             break;
 
+        case 'GENERIC':
+            throw new Error( 'GENERIC query cannot be built' );
+
         default:
             throw new Error( `Unsupported query type ${type}` );
         }
@@ -606,7 +609,7 @@ class QueryBuilder
             this._lface = qb_or_lface;
             this._db_type = db_type;
             this._state = {
-                type: type.toUpperCase(),
+                type: type ? type.toUpperCase() : 'GENERIC',
                 entity: this.getDriver().entity( entity ),
                 select: new Map(),
                 toset: new Map(),
