@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/futoin/core-js-ri-database"
+    "url": "https://github.com/futoin/core-js-ri-database.git"
   },
   "keywords": [
     "futoin",
