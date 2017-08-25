@@ -1,5 +1,7 @@
 
 === (next) ===
+FIXED: to handle CCM close @ AutoConfig-generated Executors
+FIXED: to dump notExpected event from AutoConfig-generated Executors
 FIXED: minor Travis CI issues
 NEW: SELECT FOR-clause UPDATE/SHARE mode support in xfers
 

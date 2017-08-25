@@ -87,6 +87,15 @@ function create( as, ccm, name, options )
             return this.iface( '#db.' + ( name || "default" ) );
         };
     }
+    
+    // Make sure to show unexpected internal errors to user
+    executor.on('notExpected', function() {
+        console.error('Not expected DB service error');
+        console.error(arguments);
+    });
+    
+    // Make sure to shutdown processing on CCM close
+    ccm.on('close', () => executor.close() );
 }
 
 /**
