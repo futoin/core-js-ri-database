@@ -3,6 +3,7 @@
 const AutoConfig = require('../AutoConfig');
 const AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 const $as = require('futoin-asyncsteps');
+const expect = require('chai').expect
 
 describe('AutoConfig', function() {
     it('should auto-configure connections', function(done) {
@@ -52,6 +53,8 @@ describe('AutoConfig', function() {
                     DB_P_HOST: '127.0.0.1',
                     DB_P_PORT: '5432',
                     DB_P_USER: 'ftntest',
+                    DB_P_PASS: 'test',
+                    DB_P_DB: 'test',
                     DB_P_MAXCONN: '5',
                     DB_M_TYPE: 'mysql',
                     DB_M_HOST: '127.0.0.1',
@@ -63,17 +66,65 @@ describe('AutoConfig', function() {
                     DB_FUNC_TYPE: 'funcfake',
                     DB_OBJ_TYPE: 'objfake',
                 });
-                as.add( (as) => ccm.db().select('mysql.user').limit(1) );
-                as.add( (as) => ccm.db('m').select('mysql.user').limit(1) );
-                as.add( (as) => ccm.iface('#db.m').select('mysql.user').limit(1) );
-                as.add( (as) => ccm.db('p').select('information_schema.tables').limit(1) );
+                as.add( (as) => ccm.db().getFlavour(as) );
+                as.add( (as, res) => expect(res).to.equal('mysql') );
+                
+                as.add( (as) => ccm.db('m').getFlavour(as) );
+                as.add( (as, res) => expect(res).to.equal('mysql') );
+                
+                as.add( (as) => ccm.iface('#db.m').getFlavour(as) );
+                as.add( (as, res) => expect(res).to.equal('mysql') );
+                
+                as.add( (as) => ccm.db('p').getFlavour(as) );
+                as.add( (as, res) => expect(res).to.equal('postgresql') );
+
+                as.add( (as) => ccm.db().select('mysql.user').limit(1).execute(as) );
+                as.add( (as) => ccm.db('m').select('mysql.user').limit(1).execute(as) );
+                as.add( (as) => ccm.iface('#db.m').select('mysql.user').limit(1).execute(as) );
+                as.add( (as) => ccm.db('p').select('information_schema.tables').limit(1).execute(as) );
                 as.add( (as) => ccm.db('func').getFlavour(as) );
+                as.add( (as, res) => expect(res).to.equal('funcfake') );
                 as.add( (as) => ccm.db('obj').getFlavour(as) );
+                as.add( (as, res) => expect(res).to.equal('objfake') );
+                as.add( (as) => ccm.close() );
                 as.add( (as) => done() );
             },
             (as, err) => {
                 console.log(`${err}: ${as.state.error_info}`);
                 done(as.state.last_exception);
+            }
+        );
+        as.execute();
+    });
+    
+    it('should handle notExpected', function(done) {
+        const as = $as();
+        const ccm = new AdvancedCCM();
+        as.add(
+            (as) => {
+                const LogFace = require('futoin-invoker/LogFace');
+                const Executor = require('futoin-executor/Executor');
+                const executor = new Executor(ccm);
+                LogFace.register(as, ccm, executor);
+                AutoConfig(as, ccm, {
+                    err: {}
+                }, {
+                    DB_ERR_TYPE: 'mysql',
+                    DB_ERR_HOST: '127.0.0.1',
+                    DB_ERR_USER: 'error',
+                });
+                as.add((as) => ccm.db('err').query(as, 'SELECT 1'));
+                as.add((as) => as.error('Fail'));
+            },
+            (as, err) => {
+                if (err === 'InternalError')
+                {
+                    ccm.close();
+                    done();
+                } else {
+                    console.log(`${err}: ${as.state.error_info}`);
+                    done(as.state.last_exception);
+                }
             }
         );
         as.execute();

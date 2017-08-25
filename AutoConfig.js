@@ -87,15 +87,24 @@ function create( as, ccm, name, options )
             return this.iface( '#db.' + ( name || "default" ) );
         };
     }
-    
+
     // Make sure to show unexpected internal errors to user
-    executor.on('notExpected', function() {
-        console.error('Not expected DB service error');
-        console.error(arguments);
-    });
-    
+    executor.on( 'notExpected', function()
+    {
+        try
+        {
+            ccm.log().error( 'Not expected DB service error' );
+            ccm.log().error( `${arguments[0]}: ${arguments[3]}` );
+        }
+        catch ( e )
+        {
+            console.error( 'Not expected DB service error' );
+            console.error( arguments );
+        }
+    } );
+
     // Make sure to shutdown processing on CCM close
-    ccm.on('close', () => executor.close() );
+    ccm.on( 'close', () => executor.close() );
 }
 
 /**
@@ -169,7 +178,7 @@ module.exports = function( as, ccm, config=null, env=process.env )
             port: env[`DB_${uname}_SOCKET`] ||
                     parseInt( env[`DB_${uname}_PORT`] || '0' ),
             user: env[`DB_${uname}_USER`],
-            password: env[`DB_${uname}_PASS`],
+            password: env[`DB_${uname}_PASS`] || null,
             database: env[`DB_${uname}_DB`],
             conn_limit: parseInt( env[`DB_${uname}_MAXCONN`] || '1' ),
         };
@@ -182,7 +191,7 @@ module.exports = function( as, ccm, config=null, env=process.env )
                 port: env[`DB_SOCKET`] ||
                         parseInt( env[`DB_PORT`] || '0' ),
                 user: env[`DB_USER`],
-                password: env[`DB_PASS`],
+                password: env[`DB_PASS`] || null,
                 database: env[`DB_DB`],
                 conn_limit: parseInt( env[`DB_MAXCONN`] || '1' ),
             } );
