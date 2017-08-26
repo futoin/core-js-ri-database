@@ -1,7 +1,7 @@
 {
   "name": "futoin-database",
   "version": "0.9.1",
-  "description": "FutoIn Database Interface - Reference Implementation",
+  "description": "Neutral database interface with powerful Query and revolution Transaction builders",
   "main": "main.js",
   "engines": {
     "node": ">=6"

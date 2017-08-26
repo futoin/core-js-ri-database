@@ -1,7 +1,8 @@
 'use strict';
 
 /**
- * Process ENV options:
+ * Process ENV variables:
+ * 
  * DB_FIRST_TYPE=mysql
  * DB_FIRST_HOST=127.0.0.1
  * DB_FIRST_PORT=3306

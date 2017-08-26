@@ -121,10 +121,10 @@ The same can be implicitly achieved through using `QueryBuilder#executeAssoc()`,
 * `(as, rows, affected) => {}`
     - `rows` and `affected` directly correspond to fields of associated result
     
-## Transaction results
+### Transaction results
 
 The format of inividual query is the same as for single queries, but extended with `.seq` field
-corresponding to #of query in original list. It can be used for safety checks.
+corresponding to # of query in original list. It can be used for safety checks.
 
 *Note: query result is not returned, unless `{ result: true}` query option is set - that's done by intention as normally result of only a single SELECT is required while the rest is covered with Transaction Conditions.*
 
@@ -166,8 +166,8 @@ WHERE, HAVING and JOIN support the same approach to conditions:
 
 ### Transaction conditions
 
-Normally, during transaction execution, we are interested that some operation successfully 
-does modifications, but we do not need its actual result.
+Normally, during transaction execution, we are interested that some operation 
+does modifications successfully, but we do not need its actual result.
 
 The following query options are supported inside transaction:
 * `result=false` - if true then result must be returned in result list of `L2Face#xfer()` call
@@ -252,6 +252,25 @@ as.add(
 );
 ```
 
+### QueryBuilder & XferBuilder cloning
+
+Sometimes, 80+% of queries are the same and only a small part like filter-based
+conditions or selected values are changed. For such cases, a special `.clone()`
+member is provided. Example:
+```javascript
+// standalone query
+const base_qb = db.select('SomeTbl').get(['id', 'name']);
+base_qb.clone().where('id', 1(.execute(as);
+base_qb.clone().where('id', 1(.execute(as);
+
+// transaction
+const base_xfer = db.newXfer();
+base_xfer.select('SomeTbl').get(['id', 'name']).forSharedRead();
+
+let xfer = base_xfer.clone();
+base_xfer.insert('OtherTbl').set('name', 'abc');
+xfer.executeAssoc(as);
+```
 
 # Examples
 
@@ -259,7 +278,8 @@ as.add(
 
 ```javascript
 /**
- * Process ENV options:
+ * Process ENV variables:
+ *
  * DB_TYPE=mysql
  * DB_HOST=127.0.0.1
  * DB_PORT=3306
@@ -536,7 +556,7 @@ data.forEach((params, i) => {
 // Count for 1: 4
 ```
 
-## 6. Advanced Transaction Builder
+## 6. Advanced Transaction Builder (prepared with back references)
 
 ```javascript
 // create a prepared transaction with value back references
@@ -595,9 +615,29 @@ as.add((as, res) => console.log(res));
 //   { id: 4, name: 'zyx' } ]
 ```
 
-## 7. Multiple connection types
+## 7. Multiple connections per application
 
 ```javascript
+/**
+ * Process ENV variables:
+ *
+ * DB_FIRST_TYPE=mysql
+ * DB_FIRST_HOST=127.0.0.1
+ * DB_FIRST_PORT=3306
+ * DB_FIRST_USER=testuser
+ * DB_FIRST_PASS=testpass
+ * DB_FIRST_DB=testdb
+ * DB_FIRST_MAXCONN=10
+ * 
+ * DB_SECOND_TYPE=postgresql
+ * DB_SECOND_HOST=127.0.0.1
+ * DB_SECOND_PORT=5432
+ * DB_SECOND_USER=testuser
+ * DB_SECOND_PASS=testpass
+ * DB_SECOND_DB=testdb
+ * DB_SECOND_MAXCONN=10
+ */
+
 // Configure required connections based on environment variables
 DBAutoConfig(as, ccm, {
     first: {},
