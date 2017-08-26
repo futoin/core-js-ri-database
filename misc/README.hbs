@@ -53,6 +53,10 @@ native DB query. Such pattern avoids blocking on usually expensive DB connection
 and forces to execute transaction with no client-side delays. Also, proper release
 of connection to DB connection pool is ensured.
 
+For cases, when one of later queries requires result data of previous queries
+(e.g. last insert ID) a special mechanism of back references is implemented
+which supports single and multiple (IN/NOT IN ops) value mode.
+
 If at any step an error occurs then whole transaction is rolled back.
 
 *Note: internally, it's assumed that there is a limited number of simultaneous
@@ -64,19 +68,19 @@ but such details are absolutely hidden from clients.*
 Large result streaming through BiDirectional channel.
 Database metadata and ORM-like abstraction. TBD.
 
-# Notes
+# Implementation details
 
 ## Auto-configuration
 
-DB_TYPE, DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_DB and DB_MAXCONN environment
+`DB_TYPE`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_DB` and `DB_MAXCONN` environment
 variables are used to autoconfigure "default" connection.
 
-DB_{NAME}_TYPE, DB_{NAME}_HOST, DB_{NAME}_PORT and other variable names are
-used to configure any arbitrary "{name}" connection. The list of expected
+`DB_{NAME}_TYPE`, `DB_{NAME}_HOST`, `DB_{NAME}_PORT` and other variable names are
+used to configure any arbitrary "`{name}`" connection. The list of expected
 connection names must be supplied to `AutoConfig()` function.
 
 It possible to supply required/supported database type as "type" option of
-pre-configured connection. Example:
+preconfigured connection. Example:
 
 ```javascript
 AutoConfig(as, ccm, {
@@ -86,6 +90,12 @@ AutoConfig(as, ccm, {
     dwh : { type: 'postgresql' },
 });
 ```
+
+All connections are accessible through dependency-injection approach by fundamental design
+of FutoIn Invoker CCM pattern. Specific CCM instance is extended with `.db(name='default')`.
+
+All connections are registered with '#db.' prefix in CCM. Therefore, use of `ccm.db()` instead
+of ccm.iface(`#db.${name}`) is strongly encouraged.
 
 ## Insert ID
 
@@ -100,36 +110,37 @@ for cross-database compatibility.
 WHERE, HAVING and JOIN support the same approach to conditions:
 1. raw string is treated as is and joined with outer scope AND or OR operator
 2. Object and Map instance is treated as key=>value pairs joined with AND operator
-    - all values are auto-escaped, unless wrapped with QueryBuilder#expr() call
-    - all keys may have "{name} {op}" format, where {op} is one of:
+    - all values are auto-escaped, unless wrapped with `QueryBuilder#expr()` call
+    - all keys may have `"{name} {op}"` format, where `{op}` is one of:
         * `=` - equal
         * `<>` - not equal
         * `>` - greater
         * `>=` - greater or equal
         * `<` - less
         * `<=` - less or equal
-        * `IN` - in array or subquery (assumed)
-        * `NOT IN` - not in array or subquery (assumed)
+        * `IN` - in array or sub-query (assumed)
+        * `NOT IN` - not in array or sub-query (assumed)
         * `BETWEEN` - two value tuple is assumed for inclusive range match
         * `NOT BETWEEN` - two value tuple is assumed for inverted inclusive range match
         * `LIKE` - LIKE match
         * `NOT LIKE` - NOT LIKE match
-        * other ops may be implicitely supported
+        * other ops may be implicitly supported
 3. Array - the most powerful condition builder - almost internal representation
     - first element is operator for entire scope: 'AND' (default) or 'OR'
     - all following elements can be:
-        * raw string
+        * raw strings
         * Objects or Maps
         * inner arrays with own scope operator
-        * another QueryBuilder option to be used as sub-query
+        * another QueryBuilder instance to be used as sub-query
         
 ## Sub-queries
 
 Everywhere specific database implementation allows sub-queries, they can be used:
 
-1. As select or join entity - alias must be provided in array format: [QueryBuilder(), 'Alias']
-2. As any condition value
-3. As expression for .get() calls
+1. As select or join entity - alias must be provided in array format:
+    - `[QueryBuilder(), 'Alias']`
+2. As any condition value part, except raw strings
+3. As expression for .get(alias, expr) calls
 
 
 # Examples
