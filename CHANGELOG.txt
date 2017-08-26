@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.0.0 (2017-08-26) ===
 BREAKING CHANGE: fixed Prepared interface according to FTN17 v1.0.1
 NEW: extended README & examples
 
