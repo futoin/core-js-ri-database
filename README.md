@@ -23,6 +23,12 @@ Database neutral microservice interface with advanced Query and revolutionary Tr
 
 Auto-configuration based on process environment variables and connection pooling by design.
 
+At the moment, the following databases are supported our of the box:
+* MySQL
+* PostgreSQL
+* Any custom plugin extending `L?Service` and implementing `IDriver` query builder helper
+    which should be registered through `AutoConfig.register` and `QueryBuilder.addDriver()` calls.
+
 # Installation for Node.js
 
 Command line:
@@ -68,9 +74,9 @@ but such details are absolutely hidden from clients.*
 Large result streaming through BiDirectional channel.
 Database metadata and ORM-like abstraction. TBD.
 
-# Implementation details
+## 2.4. Implementation details
 
-## Auto-configuration
+### Auto-configuration
 
 `DB_TYPE`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_DB` and `DB_MAXCONN` environment
 variables are used to autoconfigure "default" connection.
@@ -97,7 +103,32 @@ of FutoIn Invoker CCM pattern. Specific CCM instance is extended with `.db(name=
 All connections are registered with '#db.' prefix in CCM. Therefore, use of `ccm.db()` instead
 of ccm.iface(`#db.${name}`) is strongly encouraged.
 
-## Insert ID
+### Results
+
+There is a single "raw" result object format:
+* `.rows` - array of array of values
+* `.fields` - array of field names in the same order as values in rows
+* `.affected` - amount of affected rows by last operation (it's quite database specific).
+    - *Note: to get actual changed row count, try to use extra .where() conditions with `<>` of set values*
+
+As such transmission efficient format is not very handy for practical programming the
+result can be manually associated through `iface.associateResult()` call.
+* `.rows` - array of objects with key => value pairs
+* `.affected` - the same as in original raw response
+
+The same can be implicitly achieved through using `QueryBuilder#executeAssoc()`,
+`XferBuilder#executeAssoc()` and `Prepared#executeAssoc()`. Format of next AsyncStep:
+* `(as, rows, affected) => {}`
+    - `rows` and `affected` directly correspond to fields of associated result
+    
+## Transaction results
+
+The format of inividual query is the same as for single queries, but extended with `.seq` field
+corresponding to #of query in original list. It can be used for safety checks.
+
+*Note: query result is not returned, unless `{ result: true}` query option is set - that's done by intention as normally result of only a single SELECT is required while the rest is covered with Transaction Conditions.*
+
+### Insert ID
 
 It's a known painful moment in many abstractions. For databases like
 MySQL last insert ID is always "selected" as special `$id` result field.
@@ -105,7 +136,7 @@ MySQL last insert ID is always "selected" as special `$id` result field.
 For `QueryBuilder` abstraction please use `getInsertID(id_field)` call
 for cross-database compatibility.
 
-## Conditions
+### Conditions
 
 WHERE, HAVING and JOIN support the same approach to conditions:
 1. raw string is treated as is and joined with outer scope AND or OR operator
@@ -132,8 +163,49 @@ WHERE, HAVING and JOIN support the same approach to conditions:
         * Objects or Maps
         * inner arrays with own scope operator
         * another QueryBuilder instance to be used as sub-query
-        
-## Sub-queries
+
+### Transaction conditions
+
+Normally, during transaction execution, we are interested that some operation successfully 
+does modifications, but we do not need its actual result.
+
+The following query options are supported inside transaction:
+* `result=false` - if true then result must be returned in result list of `L2Face#xfer()` call
+* `affected=null`
+    - `boolean` - check if there affected rows (true) or no affected rows (false)
+    - `integer` - if amount of affected rows exactly matches the value
+* `affected=null`
+    - `boolean` - check if amount of affected rows exactly matches the value
+    - `integer` - check if amount of selected rows exactly matches the value
+    
+### Transaction result value back references
+
+Very often, we insert main object and then insert associated object and need to
+use auto-generated values like primary ID keys from the previous query.
+
+Another case, is when we do SELECT-FOR-UPDATE query and need to modify exactly those rows.
+
+There is a special `XferQueryBuilder#backref(qb, field, multi=false)` placeholder supported.
+The function must be called on exactly the target `XferQueryBuilder` object. Example:
+```javascript
+const xfer db.newXfer();
+const sel_q = xfer.select('Tbl').get('id').where('name LIKE', 'abc%').forUpdate();
+const upd_q = xfer.update('Tbl');
+upd_q.set('name', upd_q.expr("CONCAT('UPD_', name)")
+    .where('id IN', upd_q.backref(sel_q, 'id', true);
+xfer.execute(as);
+```
+
+### Transaction isolation levels
+
+All standard ACID isolation levels are supported: READ UNCOMMITTED, READ COMMITTED,
+REPEATEABLE READ and SERIALIZABLE. Please use related `L2Face` constants. Example:
+```javascript
+const db = ccm.db();
+db.newXfer(db.REPEATABLE_READ);
+```
+
+### Sub-queries
 
 Everywhere specific database implementation allows sub-queries, they can be used:
 
@@ -141,6 +213,44 @@ Everywhere specific database implementation allows sub-queries, they can be used
     - `[QueryBuilder(), 'Alias']`
 2. As any condition value part, except raw strings
 3. As expression for .get(alias, expr) calls
+
+### Efficient execution (prepared QueryBuilder & XferQueryBuilder)
+
+Obviously, executing the same steps to create the same query again and again
+is not efficient, if only parameters change. Therefore, named value placeholders
+are supported in format of "`:name`" in raw queries or wrapped with `.param('name')`
+calls in QueryBuilder.
+
+Both query and transaction builders support `.prepare()` call. All queries
+get built into string templates for efficient repetitive execution.
+
+### Error handling
+
+All errors are regular FutoIn exceptions with error code and error info:
+* `InvalidQuery` - broken query due to syntax or semantics
+* `Duplicate` - unique key constraint violation
+* `LimitTooHigh` - more than 1000 rows in result
+* `DeadLock` - database deadlock detected in transaction
+* `XferCondition` - violation of transaction condition constraints
+* `XferBackRef` - invalid transaction value back reference
+* `OtherExecError` - any other execution error
+
+Example of use:
+```javascript
+as.add(
+    (as) => db.query(...),
+    (as, err_code) => {
+        // AsyncSteps convention for error info and last exception
+        console.log(as.state.error_info);
+        console.log(as.state.last_exception);
+        
+        if (err_code === 'Duplicate') {
+            // Example of ignoring Duplicate error
+            as.success();
+        }
+    }
+);
+```
 
 
 # Examples
@@ -315,25 +425,175 @@ as.add((as) => {
 ## 3. Efficient Query Builder (prepared)
 
 ```javascript
+// create a prepared statement with query builder
+// ---
+const qb = db.queryBuilder(); // helper instance
+const prepared_q = db.insert('SomeTbl')
+    // notice .param() placeholder
+    .set('name', qb.param('nm'))
+    .getInsertID('id')
+    .prepare();
 
+for (let nm of ['abc', 'klm', 'xyz']) {
+    // prepared_q is not QueryBuilder, but Prepared object
+    prepared_q.executeAssoc(as, {nm});
+    as.add((as, res) =>
+        console.log(`Inserted ${nm} ID ${res[0].$id}`));
+}
+
+// Inserted abc ID 1
+// Inserted klm ID 2
+// Inserted xyz ID 3
+
+// raw param query
+// ---
+// Not recommended raw example  with the same execution speed
+const raw_q = `INSERT INTO SomeTbl SET name = :nm`;
+
+for (let nm of ['abc2', 'klm2', 'xyz2']) {
+    db.paramQuery(as, raw_q, {nm});
+    as.add((as, res) =>
+        console.log(`Inserted ${nm} ID ${res.rows[0][0]}`));
+}
+
+// Inserted abc2 ID 4
+// Inserted klm2 ID 5
+// Inserted xyz2 ID 6
 ```
 
 ## 4. Simple Transaction Builder
 
 ```javascript
+// create a transaction with builder
+// ---
+const xfer = db.newXfer(); // Read Committed by default
 
+// already known QueryBuilder without execute() call
+xfer.insert('SomeTbl').set('name', 'abc');
+xfer.insert('SomeTbl').set('name', 'xyz');
+
+// Note the the "result" option to include result in
+// overall xfer result
+xfer.select('SomeTbl', {result: true})
+    .get('C', 'COUNT(*)')
+    // add FOR-clause, if supported by DB
+    .forUpdate();
+
+// Return result of update and check that any rows are affected
+xfer.update('SomeTbl', {result: true, affected: true})
+    .set('name', 'klm').where('name', 'xyz');
+    
+// Run again making sure zero rows are affected
+xfer.update('SomeTbl', {affected: 0})
+    .set('name', 'klm').where('name', 'xyz');
+
+// Execute of transaction itself
+xfer.executeAssoc(as);
+
+as.add((as, results) => {
+    console.log(`Count: ${results[0].rows[0].C}`);
+    console.log(`First UPDATE affected: ${results[1].affected}`);
+});
+
+// Count: 2
+// First UPDATE affected: 1
 ```
 
 ## 5. Efficient Transaction Builder (prepared)
 
 ```javascript
+// create a prepared transaction with builder
+// ---
+const xfer = db.newXfer(); // Read Committed by default
 
+// already known QueryBuilder without execute() call
+xfer.insert('SomeTbl').set('name', xfer.param('n1'));
+xfer.insert('SomeTbl').set('name', xfer.param('n2'));
+
+// Note the the "result" option to include result in
+// overall xfer result
+xfer.select('SomeTbl', {result: true})
+    .get('C', 'COUNT(*)')
+    .forSharedRead(); // another locking example
+
+// Prepare transaction
+const prepared_xfer = xfer.prepare();
+
+// test data
+const data = [
+    { n1: 'abc', n2: 'xyz' },
+    { n1: 'cba', n2: 'zyx' },
+];
+data.forEach((params, i) => {
+    // Efficiently execute prepared transaction
+    prepared_xfer.executeAssoc(as, params);
+
+    as.add((as, results) => {
+        console.log(`Count for ${i}: ${results[0].rows[0].C}`);
+    });
+});
+
+// Count for 0: 2
+// Count for 1: 4
 ```
 
 ## 6. Advanced Transaction Builder
 
 ```javascript
+// create a prepared transaction with value back references
+// ---
+const xfer = db.newXfer(db.SERIALIZABLE);
 
+// Insert some parametrized data
+const ins1_q = xfer.insert('SomeTbl')
+    .set('name', xfer.param('n1'))
+    .getInsertID('id');
+const ins2_q = xfer.insert('SomeTbl')
+    .set('name', xfer.param('n2'))
+    .getInsertID('id');
+
+// Ensure two items are selected with brain-damaged conditions
+const sel_q = xfer.select('SomeTbl', {selected: 2});
+sel_q
+    .get('id')
+    .where([
+        'OR',
+        {'name': xfer.param('n1')},
+        'id = ' + sel_q.backref(ins2_q, '$id'), // note object of .backref()
+    ])
+    .forUpdate();
+    
+// Make sure one row is updated with brain-damaged conditions
+const upd_q = xfer.update('SomeTbl', {affected: 1});
+upd_q
+    .set('name',
+            upd_q.expr(`CONCAT('klm', ${upd_q.backref(ins1_q, '$id')})`))
+    .where('id IN', upd_q.backref(sel_q, 'id', true))
+    .where('name', xfer.param('n1'));
+
+// Prepare transaction
+const prepared_xfer = xfer.prepare();
+
+// test data
+// ---
+const data = [
+    { n1: 'abc', n2: 'xyz' },
+    { n1: 'cba', n2: 'zyx' },
+];
+data.forEach((params, i) => {
+    // Efficiently execute prepared transaction
+    prepared_xfer.executeAssoc(as, params);
+});
+
+// Let's see what we have
+// ---
+db.select('SomeTbl').executeAssoc(as);
+as.add((as, res) => console.log(res));
+
+// [ { id: 1, name: 'klm1' },
+//   { id: 3, name: 'klm3' },
+//   { id: 2, name: 'xyz' },
+//   { id: 4, name: 'zyx' } ]
 ```
 
 ## 7. Multiple connection types
