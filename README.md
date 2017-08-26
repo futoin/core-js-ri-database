@@ -795,29 +795,27 @@ Interface for prepared statement execution
 **Kind**: global class  
 
 * [Prepared](#Prepared)
-    * [.execute(as, iface, [params])](#Prepared+execute)
-    * [.executeAsync(as, iface, [params])](#Prepared+executeAsync)
+    * [.execute(as, [params])](#Prepared+execute)
+    * [.executeAsync(as, [params])](#Prepared+executeAsync)
 
 <a name="Prepared+execute"></a>
 
-### prepared.execute(as, iface, [params])
+### prepared.execute(as, [params])
 **Kind**: instance method of [<code>Prepared</code>](#Prepared)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | step interface |
-| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
 | [params] | <code>object</code> | <code></code> | parameters to subsitute |
 
 <a name="Prepared+executeAsync"></a>
 
-### prepared.executeAsync(as, iface, [params])
+### prepared.executeAsync(as, [params])
 **Kind**: instance method of [<code>Prepared</code>](#Prepared)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | step interface |
-| iface | [<code>L1Face</code>](#L1Face) |  | interface instance |
 | [params] | <code>object</code> | <code></code> | parameters to subsitute |
 
 <a name="QueryBuilder"></a>

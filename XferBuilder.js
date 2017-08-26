@@ -319,11 +319,12 @@ class XferBuilder
         const ql = _cloneDeep( this._query_list );
         const isol = this._iso_level;
         const db_type = this._db_type;
+        const iface = this._lface;
         this._prepareQueryList( ql, unsafe_dml );
 
         return new class extends QueryBuilder.Prepared
         {
-            execute( as, iface, params=null )
+            execute( as, params=null )
             {
                 if ( params )
                 {
@@ -353,9 +354,9 @@ class XferBuilder
                 }
             }
 
-            executeAssoc( as, iface, params )
+            executeAssoc( as, params )
             {
-                this.execute( as, iface, params );
+                this.execute( as, params );
                 as.add( XferBuilder._assocResult( iface ) );
             }
         };

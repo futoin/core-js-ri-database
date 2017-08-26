@@ -598,7 +598,7 @@ describe('QueryBuilder', function() {
                     expect(q).to.equal(
                         'SELECT a,b,c FROM Table '+
                         'WHERE a BETWEEN 1 AND 10');
-                }, mockFace);
+                });
             }
         });
         
@@ -618,7 +618,7 @@ describe('QueryBuilder', function() {
                     expect(q).to.equal(
                         'SELECT a,b,c FROM Table '+
                         `WHERE a BETWEEN ${1+i} AND ${10+i}`);
-                }, mockFace, {
+                }, {
                     start: 1 + i,
                     end: 10 + i,
                 });
@@ -632,7 +632,7 @@ describe('QueryBuilder', function() {
                 (as) => {
                     mockFace.select('SomeTable')
                         .prepare()
-                        .executeAssoc(as, mockFace);
+                        .executeAssoc(as);
                     as.add((as, res, affected) => {
                         expect(res).to.eql([
                             { id: 1, name: 'aaa' },
@@ -856,7 +856,7 @@ describe('XferBuilder', function() {
                     { q: 'CALL Prc(123,^abc^,TRUE)' },
                     { q: 'Something Cazy ^c^, 1' },
                 ]);
-            }, mockFace);
+            });
         });
         
         it('should prepare parametrized transactions', function(){
@@ -884,7 +884,7 @@ describe('XferBuilder', function() {
                     { q: 'CALL Prc(123,^abc^,TRUE)' },
                     { q: 'Something Cazy ^c^, 1' },
                 ]);
-            }, mockFace, {
+            }, {
                 a: 1,
                 b: 'c',
                 lset: 'ABC',
@@ -899,7 +899,7 @@ describe('XferBuilder', function() {
                 (as) => {
                     mockFace.newXfer('ABC')
                         .prepare()
-                        .executeAssoc(as, mockFace, {});
+                        .executeAssoc(as, {});
                     as.add((as, res, affected) => {
                         expect(res).to.eql([
                             {

@@ -1,4 +1,8 @@
 
+=== (next) ===
+BREAKING CHANGE: fixed Prepared interface according to FTN17 v1.0.1
+NEW: extended README & examples
+
 === 0.9.1 (2017-08-25) ===
 CHANGED: MySQL service to also return error message in error_info
 FIXED: to handle CCM close @ AutoConfig-generated Executors

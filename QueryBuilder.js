@@ -41,7 +41,6 @@ class Prepared
      * @func
      * @name Prepared#execute
      * @param {AsyncSteps} as - step interface
-     * @param {L1Face} iface - interface instance
      * @param {object} [params=null] - parameters to subsitute
      */
 
@@ -49,7 +48,6 @@ class Prepared
      * @func
      * @name Prepared#executeAsync
      * @param {AsyncSteps} as - step interface
-     * @param {L1Face} iface - interface instance
      * @param {object} [params=null] - parameters to subsitute
      */
 }
@@ -1063,17 +1061,25 @@ class QueryBuilder
     prepare( unsafe_dml=false )
     {
         const q = this._toQuery( unsafe_dml );
+        const iface = this._lface;
 
         return new class extends Prepared
         {
-            execute( as, iface, params={} )
+            execute( as, params=null )
             {
-                iface.paramQuery( as, q, params );
+                if ( params )
+                {
+                    iface.paramQuery( as, q, params );
+                }
+                else
+                {
+                    iface.query( as, q );
+                }
             }
 
-            executeAssoc( as, iface, params )
+            executeAssoc( as, params )
             {
-                iface.paramQuery( as, q, params );
+                this.execute( as, params );
 
                 as.add( ( as, res ) =>
                 {

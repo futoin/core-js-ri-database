@@ -105,7 +105,7 @@ module.exports = function(describe, it, vars)
                     const p = as.parallel();
                     
                     for ( let i = 0; i <= 1000; ++i ) {
-                        p.add( (as) => pq.execute(as, iface, { nm: i }) );
+                        p.add( (as) => pq.execute(as, { nm: i }) );
                     }
                     
                     as.add( (as) => done() );
@@ -311,12 +311,12 @@ module.exports = function(describe, it, vars)
                     const pxfer = xfer.prepare();
                     
                     expect(function() {
-                        pxfer.executeAssoc(as, iface, { nm: 'xfer5', unused: '2' });
+                        pxfer.executeAssoc(as, { nm: 'xfer5', unused: '2' });
                     }).to.throw('Unused param "unused"')
                     
                     // Run sequentially
                     as.repeat(3, (as, i) => {
-                        pxfer.executeAssoc(as, iface, { nm: 'xfer5' });
+                        pxfer.executeAssoc(as, { nm: 'xfer5' });
                         as.add( (as, res) => {
                             expect(res).to.eql([
                                 {
@@ -337,7 +337,7 @@ module.exports = function(describe, it, vars)
                             
                             for (let i = 0; i < 10; ++i){
                                 p.add((as) => {
-                                    pxfer.executeAssoc(as, iface, { nm: 'xfer4' });
+                                    pxfer.executeAssoc(as, { nm: 'xfer4' });
                                     as.add( (as, res) => {
                                         expect(res).to.eql([
                                             {

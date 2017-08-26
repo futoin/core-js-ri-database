@@ -23,6 +23,12 @@ Database neutral microservice interface with advanced Query and revolutionary Tr
 
 Auto-configuration based on process environment variables and connection pooling by design.
 
+At the moment, the following databases are supported our of the box:
+* MySQL
+* PostgreSQL
+* Any custom plugin extending `L?Service` and implementing `IDriver` query builder helper
+    which should be registered through `AutoConfig.register` and `QueryBuilder.addDriver()` calls.
+
 # Installation for Node.js
 
 Command line:
