@@ -419,7 +419,6 @@ as.add((as) => {
      * ]
      */
 });
-
 ```
 
 ## 3. Efficient Query Builder (prepared)
@@ -599,7 +598,23 @@ as.add((as, res) => console.log(res));
 ## 7. Multiple connection types
 
 ```javascript
+// Configure required connections based on environment variables
+DBAutoConfig(as, ccm, {
+    first: {},
+    second: {},
+});
 
+// Next -> do query
+as.add((as) => {
+    ccm.db('first').query(as, 'SELECT 1+2 AS Sum');
+    as.add((as, res) => console.log(`First: ${res.rows[0][0]}`));
+    
+    ccm.db('second').query(as, 'SELECT 3+2 AS Sum');
+    as.add((as, res) => console.log(`Second: ${res.rows[0][0]}`));
+    
+    // First: 3
+    // Second: 5
+});
 ```
     
 # API documentation
