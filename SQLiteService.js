@@ -6,7 +6,7 @@ const _values = require( 'lodash/values' );
 const sqlite3 = require( 'sqlite3' );
 const L2Service = require( './L2Service' );
 const SQLiteDriver = require( './SQLiteDriver' );
-const Mutex = require( './lib/Mutex' );
+const Mutex = require( 'futoin-asyncsteps/Mutex' );
 
 
 /**
@@ -59,7 +59,7 @@ class SQLiteService extends L2Service
 
     _withDatabase( as, cb )
     {
-        this._mutex.synchronized( as, ( as ) =>
+        as.sync( this._mutex, ( as ) =>
         {
             if ( !this._db )
             {

@@ -2,6 +2,7 @@
 === (next) ===
 FIXED: minor misuse of AsyncSteps on PostgrSQL rollback
 NEW: SQLite support
+NEW: upgraded to AsyncSteps v1.7 with FTN12 v1.8 support
 
 === 1.0.0 (2017-08-26) ===
 BREAKING CHANGE: fixed Prepared interface according to FTN17 v1.0.1

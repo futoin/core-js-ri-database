@@ -442,12 +442,12 @@ console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"
 
-cookies@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.7.0.tgz#0bc961d910c35254980fc7c9eff5da12011bbf00"
+cookies@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.7.1.tgz#7c8a615f5481c61ab9f16c833731bcb8f663b99b"
   dependencies:
-    depd "~1.1.0"
-    keygrip "~1.0.1"
+    depd "~1.1.1"
+    keygrip "~1.0.2"
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -540,7 +540,7 @@ delegates@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delegates/-/delegates-1.0.0.tgz#84c6e159b81904fdca59a0ef44cd870d31250f9a"
 
-depd@~1.1.0:
+depd@~1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/depd/-/depd-1.1.1.tgz#5783b4e1c459f06fa5ca27f991f3d06e7a310359"
 
@@ -903,34 +903,34 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-futoin-asyncsteps@^1.6.3:
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.6.3.tgz#75a9180a3da31015096a54fd5bfe6e7d661f510e"
+futoin-asyncsteps@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.7.0.tgz#834805736a0bb6e85b350e7917edcbca6a360b62"
   dependencies:
     performance-now "^2.1.0"
 
-futoin-executor@^1.4.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.4.2.tgz#10de2619b7a7083f65be7783a8c880d18e041c0a"
+futoin-executor@^1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.4.3.tgz#70d13d4800280ed6f746317e3533e7ca5cdbfa5f"
   dependencies:
-    cookies "^0.7.0"
+    cookies "^0.7.1"
     detect-node "^2.0.3"
     event-emitter "^0.3.5"
     faye-websocket "^0.11.1"
-    futoin-asyncsteps "^1.6.3"
-    futoin-invoker "^1.4.2"
+    futoin-asyncsteps "^1.7.0"
+    futoin-invoker "^1.4.3"
     lodash "^4.17.4"
     performance-now "^2.1.0"
 
-futoin-invoker@^1.4.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.4.2.tgz#6eaffae117b8b6c3f6dfbad274d31ffb7865cc68"
+futoin-invoker@^1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.4.3.tgz#5cc38bd4cc8fea99f5467bec18324fb53fd3aae9"
   dependencies:
     agentkeepalive "^3.3.0"
     detect-node "^2.0.3"
     event-emitter "^0.3.5"
     faye-websocket "^0.11.1"
-    futoin-asyncsteps "^1.6.3"
+    futoin-asyncsteps "^1.7.0"
     lodash "^4.17.4"
     performance-now "^2.1.0"
     request "^2.81.0"
@@ -1484,9 +1484,9 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-keygrip@~1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.1.tgz#b02fa4816eef21a8c4b35ca9e52921ffc89a30e9"
+keygrip@~1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.2.tgz#ad3297c557069dea8bcfe7a4fa491b75c5ddeb91"
 
 kind-of@^3.0.2:
   version "3.2.2"

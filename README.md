@@ -15,6 +15,8 @@ Reference implementation of:
     
 * Spec: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/final/preview/ftn17_if_database-1.html)
 
+Author: [Andrey Galkin](mailto:andrey@futoin.org)
+
 [Web Site](http://futoin.org/)
 
 # About
