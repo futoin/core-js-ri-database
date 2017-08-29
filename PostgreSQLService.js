@@ -338,8 +338,7 @@ class PostgreSQLService extends L2Service
                 },
                 ( as, err ) =>
                 {
-                    const dbq = conn.query( 'ROLLBACK' );
-                    this._handleResult( as, dbq );
+                    conn.query( 'ROLLBACK' );
                 }
             );
         } );
