@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.1.0 (2017-08-29) ===
 FIXED: minor misuse of AsyncSteps on PostgrSQL rollback
 NEW: SQLite support
 NEW: upgraded to AsyncSteps v1.7 with FTN12 v1.8 support
