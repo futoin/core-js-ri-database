@@ -11,7 +11,7 @@
 Reference implementation of:
  
     FTN17: FutoIn Interface - Database
-    Version: 1.0DV
+    Version: 1.0
     
 * Spec: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/final/preview/ftn17_if_database-1.html)
 
