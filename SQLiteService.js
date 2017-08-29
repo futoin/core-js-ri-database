@@ -2,6 +2,7 @@
 
 const _cloneDeep = require( 'lodash/cloneDeep' );
 const _defaults = require( 'lodash/defaults' );
+const _values = require( 'lodash/values' );
 const sqlite3 = require( 'sqlite3' );
 const L2Service = require( './L2Service' );
 const SQLiteDriver = require( './SQLiteDriver' );
@@ -245,7 +246,7 @@ class SQLiteService extends L2Service
                         else
                         {
                             const fields = Object.keys( rows[0] );
-                            rows = rows.map( ( v ) => Object.values( v ) );
+                            rows = rows.map( ( v ) => _values( v ) );
 
                             res = {
                                 rows,
