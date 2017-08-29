@@ -13,7 +13,7 @@ Reference implementation of:
     FTN17: FutoIn Interface - Database
     Version: 1.0DV
     
-* Spec: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/draft/preview/ftn17_if_database-1.html)
+* Spec: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/final/preview/ftn17_if_database-1.html)
 
 [Web Site](http://futoin.org/)
 
@@ -26,8 +26,12 @@ Auto-configuration based on process environment variables and connection pooling
 At the moment, the following databases are supported our of the box:
 * MySQL
 * PostgreSQL
+* SQLite
 * Any custom plugin extending `L?Service` and implementing `IDriver` query builder helper
     which should be registered through `AutoConfig.register` and `QueryBuilder.addDriver()` calls.
+    
+*Note: note specific database support is to be split into separate packages at some point. Meanwhile, please
+use `yarn install --ignore-optional` to minimize deps.*
 
 # Installation for Node.js
 
@@ -659,7 +663,7 @@ as.add((as) => {
     
 # API documentation
 
-The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/draft/preview/ftn17_if_database-1.html)
+The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/final/preview/ftn17_if_database-1.html)
 
 ## Classes
 
@@ -692,6 +696,9 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 </dd>
 <dt><a href="#QueryBuilder">QueryBuilder</a></dt>
 <dd><p>Neutral query builder</p>
+</dd>
+<dt><a href="#SQLiteService">SQLiteService</a></dt>
+<dd><p>SQLite service implementation for FutoIn Database interface.addEventListener()</p>
 </dd>
 <dt><a href="#QueryOptions">QueryOptions</a></dt>
 <dd></dd>
@@ -1501,6 +1508,27 @@ Get implementation of previously registered driver
 | Param | Type | Description |
 | --- | --- | --- |
 | type | <code>string</code> | type of driver |
+
+<a name="SQLiteService"></a>
+
+## SQLiteService
+SQLite service implementation for FutoIn Database interface.addEventListener()
+
+**Kind**: global class  
+<a name="new_SQLiteService_new"></a>
+
+### new SQLiteService(options)
+Please use SQLiteService.register() for proper setup.
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>object</code> |  | see SQLiteService.register() for common options |
+| [options.raw] | <code>objecT</code> | <code>{}</code> | raw options |
+| [options.raw.filename] | <code>string</code> | <code>&quot;options.port&quot;</code> | database file |
+| [options.raw.mode] | <code>integer</code> | <code>OPEN_READWRITE|OPEN_CREATE|SQLITE_OPEN_FULLMUTEX</code> | open mode |
+| [options.raw.busyTimeout] | <code>integer</code> | <code>10000</code> | busyTimeout configuration value |
+| [options.raw.pragma] | <code>array</code> | <code>[]</code> | list of pragma statements to execute on DB open |
 
 <a name="QueryOptions"></a>
 

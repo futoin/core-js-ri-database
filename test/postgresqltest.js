@@ -69,6 +69,7 @@ describe('PostgreSQLService', () => {
         ccm: null,
         executor: null,
         formatDate: (d) => moment(d).format('YYYY-MM-DD HH:mm:ss'),
+        haveStored: true,
     };
     
     beforeEach(() => {

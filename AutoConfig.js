@@ -18,6 +18,7 @@ void main;
 const serviceImpl = {
     mysql : './MySQLService',
     postgresql : './PostgreSQLService',
+    sqlite : './SQLiteService',
 };
 
 /**

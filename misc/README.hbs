@@ -26,8 +26,12 @@ Auto-configuration based on process environment variables and connection pooling
 At the moment, the following databases are supported our of the box:
 * MySQL
 * PostgreSQL
+* SQLite
 * Any custom plugin extending `L?Service` and implementing `IDriver` query builder helper
     which should be registered through `AutoConfig.register` and `QueryBuilder.addDriver()` calls.
+    
+*Note: note specific database support is to be split into separate packages at some point. Meanwhile, please
+use `yarn install --ignore-optional` to minimize deps.*
 
 # Installation for Node.js
 
