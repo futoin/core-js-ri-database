@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: added Helpers interface as defined in FTN17: v1.0.2
+
 === 1.1.2 (2017-09-03) ===
 FIXED: ignored DB_PORT & DB_MAXCONN for "default" connection @ AutoConfig
 

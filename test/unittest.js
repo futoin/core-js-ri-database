@@ -450,13 +450,13 @@ describe('QueryBuilder', function() {
 
 
             expect( () => { mockFace.select().get('M', 123)} )
-                .to.throw('Expression must be QueryBuilder or string')
+                .to.throw('Expression must be QueryBuilder, Expression or string')
             expect( () => { mockFace.select().get('M', true)} )
-                .to.throw('Expression must be QueryBuilder or string')
+                .to.throw('Expression must be QueryBuilder, Expression or string')
             expect( () => { mockFace.select().get({'M': true})} )
-                .to.throw('Expression must be QueryBuilder or string')
+                .to.throw('Expression must be QueryBuilder, Expression or string')
             expect( () => { mockFace.select().get(new Map([['M', true]]))} )
-                .to.throw('Expression must be QueryBuilder or string')
+                .to.throw('Expression must be QueryBuilder, Expression or string')
 
             expect( () => { mockFace.select({}) } )
                 .to.throw(`Unknown entity type: ${{}}`)

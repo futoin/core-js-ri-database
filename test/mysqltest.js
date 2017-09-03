@@ -39,13 +39,11 @@ describe('MySQLService', () => {
     const L2Face = require('../L2Face');
     const MySQLService = require('../MySQLService');
     const $as = require('futoin-asyncsteps');
-    const moment = require('moment');
     
     const vars = {
         as: null,
         ccm: null,
         executor: null,
-        formatDate: (d) => moment(d).format('YYYY-MM-DD HH:mm:ss'),
         haveStored: true,
     };
     

@@ -2,6 +2,43 @@
 
 const QueryBuilder = require( './QueryBuilder' );
 const NO_ESCAPE_RE = /^[a-z][a-z_]*(\.[a-z][a-z_])*$/;
+const Expression = QueryBuilder.Expression;
+const moment = require( 'moment' );
+
+class PostgreSQLHelpers extends QueryBuilder.Helpers
+{
+    now()
+    {
+        return new Expression( 'CURRENT_TIMESTAMP' );
+    }
+
+    date( value )
+    {
+        return moment.utc( value ).format( 'YYYY-MM-DD HH:mm:ss' );
+    }
+
+    nativeDate( value )
+    {
+        return moment.utc( value );
+    }
+
+    dateModify( expr, seconds )
+    {
+        if ( !seconds )
+        {
+            return expr;
+        }
+
+        if ( typeof seconds !== 'number' )
+        {
+            throw new Error( 'Seconds must be a number' );
+        }
+
+        // PostgreSQL should be OK even with fractional seconds
+        expr = `((${expr})::timestamp + interval '${seconds} second')`;
+        return new Expression( expr );
+    }
+}
 
 /**
  * PostgreSQL driver for QueryBuilder
@@ -11,6 +48,11 @@ const NO_ESCAPE_RE = /^[a-z][a-z_]*(\.[a-z][a-z_])*$/;
  */
 class PostgreSQLDriver extends QueryBuilder.SQLDriver
 {
+    constructor()
+    {
+        super( new PostgreSQLHelpers );
+    }
+
     build( state )
     {
         switch ( state.type )
@@ -106,7 +148,7 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
                 return 'NULL';
             }
 
-            if ( value instanceof QueryBuilder.Expression )
+            if ( value instanceof Expression )
             {
                 return value.toQuery();
             }

@@ -696,6 +696,9 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#Prepared">Prepared</a></dt>
 <dd><p>Interface for prepared statement execution</p>
 </dd>
+<dt><a href="#Helpers">Helpers</a></dt>
+<dd><p>Additional helpers interface</p>
+</dd>
 <dt><a href="#QueryBuilder">QueryBuilder</a></dt>
 <dd><p>Neutral query builder</p>
 </dd>
@@ -724,6 +727,24 @@ It&#39;s possible to add result constraints to each query for intermediate check
 <dl>
 <dt><a href="#AutoConfig">AutoConfig</a></dt>
 <dd></dd>
+</dl>
+
+## Functions
+
+<dl>
+<dt><a href="#now">now()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Get DB-specific current timestamp expression</p>
+</dd>
+<dt><a href="#date">date(value)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Convert native timestamp to DB format</p>
+</dd>
+<dt><a href="#nativeDate">nativeDate(value)</a> ⇒ <code>moment</code></dt>
+<dd><p>Convert DB timestamp to native format</p>
+</dd>
+<dt><a href="#dateModify">dateModify(expr, seconds)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Create expression representing date modification of
+input expression by specified number of seconds.</p>
+</dd>
 </dl>
 
 <a name="L1Face"></a>
@@ -1142,6 +1163,12 @@ Interface for prepared statement execution
 | as | <code>AsyncSteps</code> |  | step interface |
 | [params] | <code>object</code> | <code></code> | parameters to subsitute |
 
+<a name="Helpers"></a>
+
+## Helpers
+Additional helpers interface
+
+**Kind**: global class  
 <a name="QueryBuilder"></a>
 
 ## QueryBuilder
@@ -1158,6 +1185,7 @@ Neutral query builder
         * [.identifier(name)](#QueryBuilder+identifier) ⇒ <code>string</code>
         * [.expr(expr)](#QueryBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
         * [.param(name)](#QueryBuilder+param) ⇒ [<code>Expression</code>](#Expression)
+        * [.helpers()](#QueryBuilder+helpers) ⇒ [<code>Helpers</code>](#Helpers)
         * [.get(fields, [value])](#QueryBuilder+get) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.getInsertID(field)](#QueryBuilder+getInsertID) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.set(field, [value])](#QueryBuilder+set) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -1177,6 +1205,7 @@ Neutral query builder
         * [.SQLDriver](#QueryBuilder.SQLDriver)
         * [.Expression](#QueryBuilder.Expression)
         * [.Prepared](#QueryBuilder.Prepared)
+        * [.Helpers](#QueryBuilder.Helpers)
         * [.addDriver(type, module)](#QueryBuilder.addDriver)
         * [.getDriver(type)](#QueryBuilder.getDriver) ⇒ <code>IDriver</code>
 
@@ -1253,6 +1282,13 @@ Wrap parameter name to prevent escaping.
 | --- | --- | --- |
 | name | <code>string</code> | name to wrap |
 
+<a name="QueryBuilder+helpers"></a>
+
+### queryBuilder.helpers() ⇒ [<code>Helpers</code>](#Helpers)
+Get additional helpers
+
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: [<code>Helpers</code>](#Helpers) - - db-specific helpers object  
 <a name="QueryBuilder+get"></a>
 
 ### queryBuilder.get(fields, [value]) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -1487,6 +1523,12 @@ Wrapper for raw expressions
 Interface of Prepared statement
 
 **Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
+<a name="QueryBuilder.Helpers"></a>
+
+### QueryBuilder.Helpers
+Interface of Helpers
+
+**Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
 <a name="QueryBuilder.addDriver"></a>
 
 ### QueryBuilder.addDriver(type, module)
@@ -1604,6 +1646,7 @@ It's possible to add result constraints to each query for intermediate checks:
     * [.identifier(name)](#XferBuilder+identifier) ⇒ <code>string</code>
     * [.expr(expr)](#XferBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
     * [.param(name)](#XferBuilder+param) ⇒ [<code>Expression</code>](#Expression)
+    * [.helpers()](#XferBuilder+helpers) ⇒ [<code>Helpers</code>](#Helpers)
     * [.query(type, entity, [query_options])](#XferBuilder+query) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
     * [.delete(entity, [query_options])](#XferBuilder+delete) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
     * [.insert(entity, [query_options])](#XferBuilder+insert) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
@@ -1677,6 +1720,13 @@ Wrap parameter name to prevent escaping.
 | --- | --- | --- |
 | name | <code>string</code> | name to wrap |
 
+<a name="XferBuilder+helpers"></a>
+
+### xferBuilder.helpers() ⇒ [<code>Helpers</code>](#Helpers)
+Get additional helpers
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>Helpers</code>](#Helpers) - - db-specific helpers object  
 <a name="XferBuilder+query"></a>
 
 ### xferBuilder.query(type, entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
@@ -1882,6 +1932,51 @@ Register database service type.
 | --- | --- | --- |
 | type | <code>string</code> | type of database |
 | factory | <code>string</code> \| <code>callable</code> \| <code>object</code> | module name, factory method      or a subclass of L1Service |
+
+<a name="now"></a>
+
+## now() ⇒ [<code>Expression</code>](#Expression)
+Get DB-specific current timestamp expression
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - current timestamp  
+<a name="date"></a>
+
+## date(value) ⇒ [<code>Expression</code>](#Expression)
+Convert native timestamp to DB format
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - timestamp in DB format  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>moment</code> \| <code>string</code> | native timestamp |
+
+<a name="nativeDate"></a>
+
+## nativeDate(value) ⇒ <code>moment</code>
+Convert DB timestamp to native format
+
+**Kind**: global function  
+**Returns**: <code>moment</code> - - timestamp in moment.js  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>string</code> | timestamp in DB format |
+
+<a name="dateModify"></a>
+
+## dateModify(expr, seconds) ⇒ [<code>Expression</code>](#Expression)
+Create expression representing date modification of
+input expression by specified number of seconds.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - DB expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| expr | [<code>Expression</code>](#Expression) \| <code>string</code> | source expression (e.g field name) |
+| seconds | <code>seconds</code> | number of seconds to add/subtract(negative) |
 
 
 

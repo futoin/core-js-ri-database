@@ -166,6 +166,15 @@ class XferBuilder
     }
 
     /**
+     * Get additional helpers
+     * @returns {Helpers} - db-specific helpers object
+     */
+    helpers()
+    {
+        return this.getDriver().helpers;
+    }
+
+    /**
      * Get generic query builder
      * @param {string} type - query type
      * @param {string|null} entity - man subject

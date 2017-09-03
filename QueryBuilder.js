@@ -53,14 +53,59 @@ class Prepared
 }
 
 /**
+ * Additional helpers interface
+ */
+class Helpers
+{
+    /**
+     * Get DB-specific current timestamp expression
+     * @func
+     * @name now
+     * @returns {Expression} - current timestamp
+     */
+
+    /**
+     * Convert native timestamp to DB format
+     * @func
+     * @name date
+     * @param {moment|string} value - native timestamp
+     * @returns {Expression} - timestamp in DB format
+     */
+
+    /**
+     * Convert DB timestamp to native format
+     * @func
+     * @name nativeDate
+     * @param {string} value - timestamp in DB format
+     * @returns {moment} - timestamp in moment.js
+     */
+
+    /**
+     * Create expression representing date modification of
+     * input expression by specified number of seconds.
+     * @func
+     * @name dateModify
+     * @param {Expression|string} expr - source expression (e.g field name)
+     * @param {seconds} seconds - number of seconds to add/subtract(negative)
+     * @returns {Expression} - DB expression
+     */
+}
+
+/**
  * Basic interface for DB flavour support
  * @private
  */
 class IDriver
 {
-    constructor()
+    get helpers()
+    {
+        return this._helpers;
+    }
+
+    constructor( helpers )
     {
         this.COND = COND;
+        this._helpers = helpers || new Helpers();
     }
 
     entity( entity )
@@ -260,9 +305,14 @@ class SQLDriver extends IDriver
             return `(${raw_query})`;
         }
 
+        if ( expr instanceof Expression )
+        {
+            return expr.toString();
+        }
+
         if ( typeof expr !== 'string' )
         {
-            throw new Error( 'Expression must be QueryBuilder or string' );
+            throw new Error( 'Expression must be QueryBuilder, Expression or string' );
         }
 
         return this._escapeExpr( expr );
@@ -594,6 +644,14 @@ class QueryBuilder
     }
 
     /**
+    * Interface of Helpers
+    */
+    static get Helpers()
+    {
+        return Helpers;
+    }
+
+    /**
      * @private
      * @param {QueryBuilder|L1Face} qb_or_lface - ref
      * @param {string} db_type - type of driver
@@ -738,6 +796,15 @@ class QueryBuilder
     param( name )
     {
         return new Expression( this.getDriver().expr( `:${name}` ) );
+    }
+
+    /**
+     * Get additional helpers
+     * @returns {Helpers} - db-specific helpers object
+     */
+    helpers()
+    {
+        return this.getDriver().helpers;
     }
 
     /**

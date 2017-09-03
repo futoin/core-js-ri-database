@@ -2,6 +2,43 @@
 
 const QueryBuilder = require( './QueryBuilder' );
 const SqlString = require( 'sqlstring' );
+const Expression = QueryBuilder.Expression;
+const moment = require( 'moment' );
+
+class MySQLHelpers extends QueryBuilder.Helpers
+{
+    now()
+    {
+        return new Expression( 'UTC_TIMESTAMP()' );
+    }
+
+    date( value )
+    {
+        return moment.utc( value ).format( 'YYYY-MM-DD HH:mm:ss' );
+    }
+
+    nativeDate( value )
+    {
+        return moment.utc( value );
+    }
+
+    dateModify( expr, seconds )
+    {
+        if ( !seconds )
+        {
+            return expr;
+        }
+
+        if ( typeof seconds !== 'number' )
+        {
+            throw new Error( 'Seconds must be a number' );
+        }
+
+        // MySQL should be OK even with fractional seconds
+        expr = `(${expr} + INTERVAL ${seconds} SECOND)`;
+        return new Expression( expr );
+    }
+}
 
 /**
  * MySQL driver for QueryBuilder
@@ -11,6 +48,11 @@ const SqlString = require( 'sqlstring' );
  */
 class MySQLDriver extends QueryBuilder.SQLDriver
 {
+    constructor()
+    {
+        super( new MySQLHelpers );
+    }
+
     build( state )
     {
         if ( state.type === 'INSERT' &&
@@ -58,7 +100,7 @@ class MySQLDriver extends QueryBuilder.SQLDriver
                 return 'NULL';
             }
 
-            if ( value instanceof QueryBuilder.Expression )
+            if ( value instanceof Expression )
             {
                 return value.toQuery();
             }

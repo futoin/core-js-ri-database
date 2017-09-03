@@ -1,6 +1,42 @@
 'use strict';
 
 const QueryBuilder = require( './QueryBuilder' );
+const Expression = QueryBuilder.Expression;
+const moment = require( 'moment' );
+
+class SQLiteHelpers extends QueryBuilder.Helpers
+{
+    now()
+    {
+        return new Expression( 'CURRENT_TIMESTAMP' );
+    }
+
+    date( value )
+    {
+        return moment.utc( value ).format( 'YYYY-MM-DD HH:mm:ss' );
+    }
+
+    nativeDate( value )
+    {
+        return moment.utc( value );
+    }
+
+    dateModify( expr, seconds )
+    {
+        if ( !seconds )
+        {
+            return expr;
+        }
+
+        if ( typeof seconds !== 'number' )
+        {
+            throw new Error( 'Seconds must be a number' );
+        }
+
+        expr = `datetime(${expr}, '${seconds} seconds')`;
+        return new Expression( expr );
+    }
+}
 
 /**
  * SQLite driver for QueryBuilder
@@ -10,6 +46,11 @@ const QueryBuilder = require( './QueryBuilder' );
  */
 class SQLiteDriver extends QueryBuilder.SQLDriver
 {
+    constructor()
+    {
+        super( new SQLiteHelpers );
+    }
+
     build( state )
     {
         if ( state.type === 'INSERT' &&
@@ -58,7 +99,7 @@ class SQLiteDriver extends QueryBuilder.SQLDriver
                 return 'NULL';
             }
 
-            if ( value instanceof QueryBuilder.Expression )
+            if ( value instanceof Expression )
             {
                 return value.toQuery();
             }

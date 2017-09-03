@@ -1,6 +1,7 @@
 'use strict';
 
 const expect = require('chai').expect;
+const moment = require('moment');
 process.on('warning', e => console.warn(e.stack));
 
 module.exports = function(describe, it, vars)
@@ -17,11 +18,12 @@ module.exports = function(describe, it, vars)
             as.add(
                 (as) => {
                     const iface = ccm.iface('l1');
+                    const helpers = iface.queryBuilder().helpers();
                     iface.insert(Tbl).set('name', 'aaa').execute(as);
                     
                     iface.insert(Tbl)
                         .set('name', 'bbb')
-                        .set('ts', vars.formatDate(new Date('2017-08-08T12:00:00Z')))
+                        .set('ts', helpers.date('2017-08-08T12:00:00Z'))
                         .getInsertID('id')
                         .executeAssoc(as);
                     as.add( (as, res, affected) => {
@@ -32,7 +34,7 @@ module.exports = function(describe, it, vars)
                     });
                     
                     iface.update(Tbl)
-                        .set('ts', vars.formatDate(new Date('2017-08-08T12:30:00Z')))
+                        .set('ts', helpers.date(new Date('2017-08-08T12:30:00Z')))
                         .where('name', 'bbb')
                         .execute(as);
                     iface.insert(Tbl).set('name', 'ccc').execute(as);
@@ -57,7 +59,7 @@ module.exports = function(describe, it, vars)
                         expect(res).to.eql([
                             { id: 1, name: 'aaa', ts: null },
                             { id: 2, name: 'bbb',
-                              ts: vars.formatDate(new Date('2017-08-08T12:30:00Z')) },
+                              ts: helpers.date(new Date('2017-08-08T12:30:00Z')) },
                         ]);
                         expect(affected).to.equal(0);
                     });
@@ -673,7 +675,7 @@ module.exports = function(describe, it, vars)
                 
                 const s = iface.select(Tbl);
                 s.get('ref_id', 'id')
-                    .get('ts', s.escape(vars.formatDate(new Date())))
+                    .get('ts', s.helpers().now())
                     .get('data', s.escape('\x01\x02\x03'))
                     .order('id')
                     .limit(10);
@@ -700,6 +702,62 @@ module.exports = function(describe, it, vars)
                     .get('C', 'COUNT(*)')
                     .executeAssoc(as);
                 as.add((as, res) => expect(res[0].C).to.equal(as.state.SndC));
+                
+            }, (as, err) => {
+                console.log(as.state.error_info);
+                console.log(as.state.last_exception);
+                done(as.state.last_exception);
+            });
+            as.add((as) => done());
+            as.execute();
+        });
+    });
+    
+    describe('Helpers', function() {
+        it ('should support dates', function(done) {
+            const as = vars.as;
+            
+            as.add( (as) => {
+                const iface = vars.ccm.iface('l1');
+                const helpers = iface.queryBuilder().helpers();
+                
+                
+                const s = iface.select();
+                s
+                    .get('f', s.escape(helpers.now()))
+                    .executeAssoc(as);
+                as.add( (as, res) => {
+                    expect(res[0].f.substring(0, 13))
+                        .to.equal(helpers.date(moment.utc()).toString().substring(0, 13))
+                        
+                    expect( helpers.nativeDate(res[0].f).format('YYYY') )
+                        .to.equal( moment.utc().format('YYYY') );
+                });
+                        
+                iface.select()
+                    .get('f', s.escape(helpers.date('2010-01-01')))
+                    .executeAssoc(as);
+                as.add( (as, res) => expect(
+                    res[0].f).to.equal(
+                        helpers.date('2010-01-01')));
+                
+                        
+                iface.select()
+                    .get('t', helpers.dateModify(s.escape('2010-01-02'), 60*60*24))
+                    .get('y', helpers.dateModify(s.escape('2010-01-02'), -60*60*24))
+                    .executeAssoc(as);
+                as.add( (as, res) => {
+                    expect(res[0].t).to.equal(
+                        helpers.date('2010-01-03'));
+                    expect(res[0].y).to.equal(
+                        helpers.date('2010-01-01'));
+                });
+                
+                expect(vars.ccm.iface('l2').newXfer()
+                        .helpers().dateModify('abc')).to.equal('abc');
+                expect(function() {
+                    helpers.dateModify('abc', 'xyz');
+                }).to.throw('Seconds must be a number');
                 
             }, (as, err) => {
                 console.log(as.state.error_info);
