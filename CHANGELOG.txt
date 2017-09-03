@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.1.1 (2017-09-03) ===
 BREAKING: changed futoin-* to be peer dependency
 
 === 1.1.0 (2017-08-29) ===
