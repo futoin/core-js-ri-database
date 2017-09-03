@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.1.2 (2017-09-03) ===
 FIXED: ignored DB_PORT & DB_MAXCONN for "default" connection @ AutoConfig
 
 === 1.1.1 (2017-09-03) ===
