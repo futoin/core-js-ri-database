@@ -177,11 +177,11 @@ module.exports = function( as, ccm, config=null, env=process.env )
             type: env[`DB_${uname}_TYPE`],
             host: env[`DB_${uname}_HOST`],
             port: env[`DB_${uname}_SOCKET`] ||
-                    parseInt( env[`DB_${uname}_PORT`] || '0' ),
+                    parseInt( env[`DB_${uname}_PORT`] || '0' ) || undefined,
             user: env[`DB_${uname}_USER`],
-            password: env[`DB_${uname}_PASS`] || null,
-            database: env[`DB_${uname}_DB`],
-            conn_limit: parseInt( env[`DB_${uname}_MAXCONN`] || '1' ),
+            password: env[`DB_${uname}_PASS`] || undefined,
+            database: env[`DB_${uname}_DB`] || undefined,
+            conn_limit: parseInt( env[`DB_${uname}_MAXCONN`] || '0' ) || undefined,
         };
 
         if ( name === 'default' )
@@ -190,13 +190,15 @@ module.exports = function( as, ccm, config=null, env=process.env )
                 type: env[`DB_TYPE`],
                 host: env[`DB_HOST`],
                 port: env[`DB_SOCKET`] ||
-                        parseInt( env[`DB_PORT`] || '0' ),
+                        parseInt( env[`DB_PORT`] || '0' ) || undefined,
                 user: env[`DB_USER`],
-                password: env[`DB_PASS`] || null,
-                database: env[`DB_DB`],
-                conn_limit: parseInt( env[`DB_MAXCONN`] || '1' ),
+                password: env[`DB_PASS`] || undefined,
+                database: env[`DB_DB`] || undefined,
+                conn_limit: parseInt( env[`DB_MAXCONN`] || '0' ) || undefined,
             } );
         }
+
+        _defaults( detected, { conn_limit: 1 } );
 
         let db_type = options.type;
 

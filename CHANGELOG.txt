@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: ignored DB_PORT & DB_MAXCONN for "default" connection @ AutoConfig
+
 === 1.1.1 (2017-09-03) ===
 BREAKING: changed futoin-* to be peer dependency
 

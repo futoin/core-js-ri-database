@@ -246,4 +246,40 @@ describe('AutoConfig', function() {
         );
         as.execute();
     });
+    
+    it('should properly fallback to DB_PORT', function(done) {
+        const as = $as();
+        as.add(
+            (as) => {
+                AutoConfig.register('mock', function() {
+                    const L2Service = require('../L2Service');
+                    return class extends L2Service {
+                        constructor(options) {
+                            super();
+                            expect(options.type).to.equal('mock');
+                            expect(options.port).to.equal(1234);
+                            expect(options.conn_limit).to.equal(123);
+                        }
+                        
+                        getFlavour(as, reqinfo) {
+                            return 'mock';
+                        }
+                    };
+                });
+                
+                const ccm = new AdvancedCCM();
+                AutoConfig(as, ccm, null, {
+                    DB_TYPE: 'mock',
+                    DB_PORT: '1234',
+                    DB_MAXCONN: '123',
+                });
+                as.add( (as) => done() );
+            },
+            (as, err) => {
+                console.log(`${err}: ${as.state.error_info}`);
+                done(as.state.last_exception);
+            }
+        );
+        as.execute();
+    });
 });
