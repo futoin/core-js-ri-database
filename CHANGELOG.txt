@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.2.0 (2017-09-03) ===
 NEW: added Helpers interface as defined in FTN17: v1.0.2
 
 === 1.1.2 (2017-09-03) ===
