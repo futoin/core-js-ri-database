@@ -903,9 +903,9 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-futoin-asyncsteps@^1.7.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.7.0.tgz#834805736a0bb6e85b350e7917edcbca6a360b62"
+futoin-asyncsteps@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.7.1.tgz#eb5d80ba0b5581fce7caa022ab02b32ca9947a06"
   dependencies:
     performance-now "^2.1.0"
 
