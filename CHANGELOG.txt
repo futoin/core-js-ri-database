@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.2.2 (2017-09-06) ===
 FIXED: to allow zero & null as second parameter for .where() and .having()
     - note: may be seen as critical in some cases
 
