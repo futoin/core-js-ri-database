@@ -974,7 +974,7 @@ class QueryBuilder
      */
     where( conditions, value=undefined )
     {
-        if ( value )
+        if ( value !== undefined )
         {
             conditions = { [conditions]: value };
         }
@@ -993,7 +993,7 @@ class QueryBuilder
      */
     having( conditions, value=undefined )
     {
-        if ( value )
+        if ( value !== undefined )
         {
             conditions = { [conditions]: value };
         }

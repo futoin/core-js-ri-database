@@ -311,6 +311,23 @@ describe('QueryBuilder', function() {
                 'LIMIT 10 OFFSET 1');
         });
         
+        it('should check for undefined in .where() & .having()', function() {
+            let qb = genQB('select');       
+
+            expect(qb.clone().where('a', 0)._toQuery())
+                .to.equal('SELECT * FROM Table WHERE a = 0');
+            
+            // No sense, as "a IS NULL" to be used
+            expect(qb.clone().where('a', null)._toQuery())
+                .to.equal('SELECT * FROM Table WHERE a = NULL');
+
+            expect(qb.clone().having('a', 0)._toQuery())
+                .to.equal('SELECT * FROM Table HAVING a = 0');
+            
+            expect(qb.clone().having('a', null)._toQuery())
+                .to.equal('SELECT * FROM Table HAVING a = NULL');
+        });
+        
         it('should detect invalid queries', function() {
             let qb = genQB('select');       
 

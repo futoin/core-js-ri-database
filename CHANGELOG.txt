@@ -1,4 +1,8 @@
 
+=== (next) ===
+FIXED: to allow zero & null as second parameter for .where() and .having()
+    - note: may be seen as critical in some cases
+
 === 1.2.1 (2017-09-04) ===
 FIXED: added workaround related to NPM: https://github.com/npm/npm/issues/16723
 
