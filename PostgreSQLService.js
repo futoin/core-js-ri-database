@@ -26,9 +26,28 @@ const IsoLevels = {
 // Do not wrap dates into Date()
 // See pg-types/lib/textParsers.js
 const pg_types = pg.types;
+const arrayParser = require( 'pg-types/lib/arrayParser' );
+
+const parseStringArray = function( value )
+{
+    if( !value )
+    {
+        return null;
+    }
+
+    return arrayParser.create( value ).parse();
+};
+
 pg_types.setTypeParser( 1082, ( v ) => v ); // Date
 pg_types.setTypeParser( 1114, ( v ) => v ); // Timestamp
 pg_types.setTypeParser( 1184, ( v ) => v ); // Timestampt with TZ
+pg_types.setTypeParser( 1115, parseStringArray ); // timestamp without time zone[]
+pg_types.setTypeParser( 1182, parseStringArray ); // _date
+pg_types.setTypeParser( 1185, parseStringArray ); // timestamp with time zone[]
+pg_types.setTypeParser( 114, ( v ) => v ); // json
+pg_types.setTypeParser( 3802, ( v ) => v ); // jsonb
+pg_types.setTypeParser( 199, parseStringArray ); // json[]
+pg_types.setTypeParser( 3807, parseStringArray ); // jsonb[]
 
 /**
  * PostgreSQL service implementation for FutoIn Database interface
