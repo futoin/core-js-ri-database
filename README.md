@@ -2,7 +2,7 @@
   [![NPM Version](https://img.shields.io/npm/v/futoin-database.svg?style=flat)](https://www.npmjs.com/package/futoin-database)
   [![NPM Downloads](https://img.shields.io/npm/dm/futoin-database.svg?style=flat)](https://www.npmjs.com/package/futoin-database)
   [![Build Status](https://travis-ci.org/futoin/core-js-ri-database.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-database)
-  [![stable](https://img.shields.io/badge/stability-stable-green.svg?style=flat)](https://www.npmjs.com/package/futoin-asyncsteps)
+  [![stable](https://img.shields.io/badge/stability-stable-green.svg?style=flat)](https://www.npmjs.com/package/futoin-database)
 
   [![NPM](https://nodei.co/npm/futoin-database.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/futoin-database/)
 
@@ -61,7 +61,7 @@ Transaction execution abstraction with "single call" pattern.
 The overall idea is to execute a list of statements on DB side in single transaction
 one-by-one. After each xfer, trivial validation is done like amount of affected rows
 or count of rows in result. This allows creating complex intermediate checks in
-native DB query. Such pattern avoids blocking on usually expensive DB connection
+native DB query. Such pattern avoids blocking usually expensive DB connections
 and forces to execute transaction with no client-side delays. Also, proper release
 of connection to DB connection pool is ensured.
 
