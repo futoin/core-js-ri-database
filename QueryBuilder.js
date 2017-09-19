@@ -341,6 +341,7 @@ class SQLDriver extends IDriver
             entity: true,
             select: false,
             toset: false,
+            multiset: false,
             where: false,
             having: false,
             group: false,
@@ -451,6 +452,53 @@ class SQLDriver extends IDriver
                 }
 
                 q.push( toset[1] );
+            }
+            else if ( state.multiset )
+            {
+                const multiset = state.multiset;
+                use.multiset = true;
+                use.toset = true;
+
+                // NOTE: side effect
+                if ( state.toset.size )
+                {
+                    multiset.push( state.toset );
+                    state.toset = new Map();
+                }
+
+                const first = multiset[0];
+                const first_keys = Array.from( first.keys() );
+                q.push( '(' );
+                q.push( first_keys.join( ',' ) );
+                q.push( ') VALUES (' );
+                q.push( Array.from( first.values() ).join( ',' ) );
+                q.push( ')' );
+
+                const row_count = multiset.length;
+
+                for ( let i = 1; i < row_count; ++i )
+                {
+                    const row = multiset[i];
+
+                    if ( row.size != first.size )
+                    {
+                        throw new Error( 'Multi-row field count mismatch' );
+                    }
+
+                    const vals = first_keys.map( f =>
+                    {
+                        const v = row.get( f );
+
+                        if ( v === undefined )
+                        {
+                            throw new Error( `Multi-row missing field: ${f}` );
+                        }
+
+                        return v;
+                    } );
+
+                    q.push( ',(' + vals.join( ',' ) + ')' );
+                }
             }
             else
             {
@@ -675,6 +723,7 @@ class QueryBuilder
                 entity: this.getDriver().entity( entity ),
                 select: new Map(),
                 toset: new Map(),
+                multiset: null,
                 where: [],
                 having: [],
                 group: [],
@@ -891,6 +940,38 @@ class QueryBuilder
 
         driver.checkField( field );
         select.set( '$id', field );
+
+        return this;
+    }
+
+    /**
+     * Save current set() context and start new INSERT row
+     * @returns {QueryBuilder} self
+     */
+    newRow()
+    {
+        const state = this._state;
+
+        if ( state.type !== 'INSERT' )
+        {
+            throw new Error( 'Not an INSERT query for multi-row' );
+        }
+
+        if ( state.toset instanceof Array )
+        {
+            throw new Error( 'INSERT-SELECT can not be mixed with multirow' );
+        }
+
+        if ( !state.multiset )
+        {
+            state.multiset = [];
+        }
+
+        if ( state.toset.size )
+        {
+            state.multiset.push( state.toset );
+            state.toset = new Map();
+        }
 
         return this;
     }

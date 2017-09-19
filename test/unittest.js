@@ -149,6 +149,36 @@ describe('QueryBuilder', function() {
                 'SELECT A AS a,B AS b FROM Other');
         });
         
+        it('should generate INSERT multi-row statement', function() {
+            let res = genQB('insert')
+                .set({ a: 1, b: 2})
+                .newRow().set({ a: 2, b: 3})
+                .newRow().set({ a: 5, b: 10})
+                ._toQuery();
+            expect(res).to.equal(
+                'INSERT INTO Table (a,b) '+
+                'VALUES (1,2),(2,3),(5,10)');
+            
+            res = genQB('insert')
+                .newRow().set({ a: 1, b: 2})
+                .newRow().set({ a: 2, b: 3})
+                .newRow().set({ a: 5, b: 10})
+                ._toQuery();
+            expect(res).to.equal(
+                'INSERT INTO Table (a,b) '+
+                'VALUES (1,2),(2,3),(5,10)');
+            
+            res = genQB('insert')
+                .newRow().set({ a: 1, b: 2})
+                .newRow().set({ a: 2, b: 3})
+                .newRow().set({ a: 5, b: 10})
+                .newRow()
+                ._toQuery();
+            expect(res).to.equal(
+                'INSERT INTO Table (a,b) '+
+                'VALUES (1,2),(2,3),(5,10)');
+        });
+
         it('should detect invalid queries', function() {
             let qb = genQB('insert');
             
@@ -198,7 +228,21 @@ describe('QueryBuilder', function() {
             
             expect(() => {
                 qb.clone().set(genQB('delete'))._toQuery();
-            }).to.throw('Not a SELECT sub-query');            
+            }).to.throw('Not a SELECT sub-query'); 
+            
+            expect(() => {
+                qb.clone().set({a:1, b:2})
+                    .newRow().set({a:1, b:2, c:3})._toQuery();
+            }).to.throw('Multi-row field count mismatch');
+            
+            expect(() => {
+                qb.clone().set({a:1, b:2})
+                    .newRow().set({a:1, c:2})._toQuery();
+            }).to.throw('Multi-row missing field: b');
+            
+            expect(() => {
+                qb.clone().set(genQB('select')).newRow();
+            }).to.throw( 'INSERT-SELECT can not be mixed with multirow' );
         });
     })
     
@@ -264,6 +308,10 @@ describe('QueryBuilder', function() {
             expect(() => {
                 qb.clone().set(genQB('select'))._toQuery();
             }).to.throw('Not an INSERT query for INSERT-SELECT');
+            
+            expect(() => {
+                qb.clone().newRow();
+            }).to.throw('Not an INSERT query for multi-row');
         });
     })
     

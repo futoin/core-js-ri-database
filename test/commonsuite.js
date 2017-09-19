@@ -81,6 +81,15 @@ module.exports = function(describe, it, vars)
                             } );
                     }
                     
+                    iface.insert(Tbl)
+                        .set('name', 'row1')
+                        .newRow().set('name', 'row2')
+                        .newRow().set('name', 'row3')
+                        .executeAssoc(as);
+                    as.add( (as, res, affected) => {
+                        expect(affected).to.equal(3);
+                    });
+                    
                     as.add( (as) => done() );
                 },
                 (as, err) => {

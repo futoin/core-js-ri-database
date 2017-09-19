@@ -1188,6 +1188,7 @@ Neutral query builder
         * [.helpers()](#QueryBuilder+helpers) ⇒ [<code>Helpers</code>](#Helpers)
         * [.get(fields, [value])](#QueryBuilder+get) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.getInsertID(field)](#QueryBuilder+getInsertID) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+        * [.newRow()](#QueryBuilder+newRow) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.set(field, [value])](#QueryBuilder+set) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.where(conditions, [value])](#QueryBuilder+where) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.having(conditions, [value])](#QueryBuilder+having) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -1330,6 +1331,13 @@ For others, it would build a valid RETURNING/OUTPUT clause.
 | --- | --- | --- |
 | field | <code>string</code> | field name with auto-generated value |
 
+<a name="QueryBuilder+newRow"></a>
+
+### queryBuilder.newRow() ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+Save current set() context and start new INSERT row
+
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
 <a name="QueryBuilder+set"></a>
 
 ### queryBuilder.set(field, [value]) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
