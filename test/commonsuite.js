@@ -780,6 +780,7 @@ module.exports = function(describe, it, vars)
     
     if (vars.haveStored) describe('Call abort', function() {
         it ('should cancel queries', function(done) {
+            this.timeout(5e3);
             const as = vars.as;
                 
             as.add(
