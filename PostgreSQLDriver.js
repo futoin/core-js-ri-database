@@ -1,7 +1,7 @@
 'use strict';
 
 const QueryBuilder = require( './QueryBuilder' );
-const NO_ESCAPE_RE = /^[a-z][a-z_]*(\.[a-z][a-z_])*$/;
+const NO_ESCAPE_RE = /^(.*\.)*(([a-z0-9][a-z_0-9])|\*)$/;
 const Expression = QueryBuilder.Expression;
 const moment = require( 'moment' );
 
@@ -110,9 +110,19 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
         for ( let [ f, v ] of select.entries() )
         {
             // PostgreSQL forces lower case for not escaped identifiers
-            if ( v === f && f.match( NO_ESCAPE_RE ) )
+            if ( v === f )
             {
-                fields.push( `${f}` );
+                if ( f.match( NO_ESCAPE_RE ) )
+                {
+                    fields.push( `${f}` );
+                }
+                else
+                {
+                    f = f.split( '.' );
+                    f = f[ f.length - 1 ];
+                    f = this.identifier( f );
+                    fields.push( `${v} AS ${f}` );
+                }
             }
             else
             {
@@ -161,7 +171,7 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
     {
         return name
             .split( '.' )
-            .map( v => `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
+            .map( v => ( v === '*' ) ? v : `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
             .join( '.' );
     }
 }

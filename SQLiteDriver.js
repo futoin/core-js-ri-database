@@ -112,7 +112,7 @@ class SQLiteDriver extends QueryBuilder.SQLDriver
     {
         return name
             .split( '.' )
-            .map( v => `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
+            .map( v => ( v === '*' ) ? v : `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
             .join( '.' );
     }
 }

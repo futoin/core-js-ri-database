@@ -24,6 +24,7 @@ describe('PostgreSQLDriver', function() {
         expect( drv.identifier('one') ).to.equal('"one"');
         expect( drv.identifier('one.two') ).to.equal('"one"."two"');
         expect( drv.identifier('on"e.t"w"o') ).to.equal('"on""e"."t""w""o"');
+        expect( drv.identifier('one.*') ).to.equal('"one".*');
     });
         
     it('should create xfer back references', () => {
