@@ -96,6 +96,17 @@ class L1Face extends PingFace
     }
 
     /**
+     * Get query builder helpers
+     * 
+     * Helps avoiding temporary variables for cleaner code.
+     * @returns {Helpers} for specific type
+     */
+    helpers()
+    {
+        return QueryBuilder.getDriver( this._db_type ).helpers;
+    }
+
+    /**
      * Get neutral query builder for DELETE
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance

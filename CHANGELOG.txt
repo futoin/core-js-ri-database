@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: L1Face#helpers() for cleaner code and avoiding temporary QueryBuilder instance
+
 === 1.4.0 (2017-09-23) ===
 NEW: ultra-handy feature "L1Face#getPrepared" for efficient caching
      of prepared statements/xfers per database face instance

@@ -785,6 +785,7 @@ Level 1 Database Face
         * [.callStored](#L1Face+callStored)
         * [.getFlavour(as)](#L1Face+getFlavour)
         * [.queryBuilder(type, entity)](#L1Face+queryBuilder) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
+        * [.helpers()](#L1Face+helpers) ⇒ [<code>Helpers</code>](#Helpers)
         * [.delete(entity)](#L1Face+delete) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.insert(entity)](#L1Face+insert) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.select(entity)](#L1Face+select) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
@@ -844,6 +845,15 @@ Get neutral query builder object.
 | type | <code>string</code> | <code>null</code> | Type of query: SELECT, INSERT, UPDATE, DELETE, ... |
 | entity | <code>string</code> | <code>null</code> | table/view/etc. name |
 
+<a name="L1Face+helpers"></a>
+
+### l1Face.helpers() ⇒ [<code>Helpers</code>](#Helpers)
+Get query builder helpers
+
+Helps avoiding temporary variables for cleaner code.
+
+**Kind**: instance method of [<code>L1Face</code>](#L1Face)  
+**Returns**: [<code>Helpers</code>](#Helpers) - for specific type  
 <a name="L1Face+delete"></a>
 
 ### l1Face.delete(entity) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)

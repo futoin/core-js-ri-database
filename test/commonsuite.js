@@ -728,7 +728,7 @@ module.exports = function(describe, it, vars)
             
             as.add( (as) => {
                 const iface = vars.ccm.iface('l1');
-                const helpers = iface.queryBuilder().helpers();
+                const helpers = iface.helpers();
                 
                 
                 const s = iface.select();
