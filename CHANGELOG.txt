@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.4.0 (2017-09-23) ===
 NEW: ultra-handy feature "L1Face#getPrepared" for efficient caching
      of prepared statements/xfers per database face instance
 
