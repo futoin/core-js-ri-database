@@ -715,6 +715,36 @@ describe('QueryBuilder', function() {
             .add((as) => done())
             .execute();
         });
+        
+        it('should support caching in iface', function(done) {
+            const as = $as();
+            
+            as.add(
+                (as) => {
+                    const sym = Symbol('abc');
+                    mockFace.getPrepared( sym, (db) =>
+                        db.select('SomeTable')
+                            .prepare()
+                    );
+                    mockFace.getPrepared( sym ).executeAssoc(as);
+                    
+                    as.add((as, res, affected) => {
+                        expect(res).to.eql([
+                            { id: 1, name: 'aaa' },
+                            { id: 2, name: 'bb' },
+                            { id: 3, name: 'c' },
+                        ]);
+                        expect(affected, 123);
+                    });
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception || err);
+                }
+            )
+            .add((as) => done())
+            .execute();
+        });
     });
     
     describe('#_replaceParams', function(){

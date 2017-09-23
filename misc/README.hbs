@@ -662,6 +662,31 @@ as.add((as) => {
     // Second: 5
 });
 ```
+
+# 8. Efficient caching of prepared statements for re-use across calls
+
+This is rewritten example #3. The same can be used for prepared transactions.
+
+```javascript
+// create a prepared statement with query builder using L1Face#getPrepared()
+// ---
+const sym = Symbol('arbitrary');
+
+for (let nm of ['abc', 'klm', 'xyz']) {
+    const prepared_q = db.getPrepared(sym, (db) => {
+        // executed once
+        const qb = db.insert('SomeTbl');
+        return qb.set('name', qb.param('nm'))
+            .getInsertID('id')
+            .prepare();
+    });
+    
+    // prepared_q is not QueryBuilder, but Prepared object
+    prepared_q.executeAssoc(as, {nm});
+    as.add((as, res) =>
+        console.log(`Inserted ${nm} ID ${res[0].$id}`));
+}
+```
     
 # API documentation
 

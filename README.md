@@ -662,6 +662,31 @@ as.add((as) => {
     // Second: 5
 });
 ```
+
+# 8. Efficient caching of prepared statements for re-use across calls
+
+This is rewritten example #3. The same can be used for prepared transactions.
+
+```javascript
+// create a prepared statement with query builder using L1Face#getPrepared()
+// ---
+const sym = Symbol('arbitrary');
+
+for (let nm of ['abc', 'klm', 'xyz']) {
+    const prepared_q = db.getPrepared(sym, (db) => {
+        // executed once
+        const qb = db.insert('SomeTbl');
+        return qb.set('name', qb.param('nm'))
+            .getInsertID('id')
+            .prepare();
+    });
+    
+    // prepared_q is not QueryBuilder, but Prepared object
+    prepared_q.executeAssoc(as, {nm});
+    as.add((as, res) =>
+        console.log(`Inserted ${nm} ID ${res[0].$id}`));
+}
+```
     
 # API documentation
 
@@ -766,6 +791,7 @@ Level 1 Database Face
         * [.update(entity)](#L1Face+update) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.paramQuery(as, q, params)](#L1Face+paramQuery)
         * [.associateResult(as_result)](#L1Face+associateResult) ⇒ <code>array</code>
+        * [.getPrepared(sym, cb)](#L1Face+getPrepared) ⇒ [<code>Prepared</code>](#Prepared)
     * _static_
         * [.LATEST_VERSION](#L1Face.LATEST_VERSION)
         * [.PING_VERSION](#L1Face.PING_VERSION)
@@ -893,6 +919,19 @@ Convert raw result into array of associated rows (Maps)
 | Param | Type | Description |
 | --- | --- | --- |
 | as_result | <code>object</code> | $as result of query() call |
+
+<a name="L1Face+getPrepared"></a>
+
+### l1Face.getPrepared(sym, cb) ⇒ [<code>Prepared</code>](#Prepared)
+A handy way to store prepared objects and created on demand
+
+**Kind**: instance method of [<code>L1Face</code>](#L1Face)  
+**Returns**: [<code>Prepared</code>](#Prepared) - - associated prepared statement  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sym | <code>Symbol</code> | unique symbol per prepared statement |
+| cb | <code>callable</code> | a callback returning a prepared statement |
 
 <a name="L1Face.LATEST_VERSION"></a>
 

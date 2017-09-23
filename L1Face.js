@@ -196,6 +196,33 @@ class L1Face extends PingFace
 
         return res;
     }
+
+    /**
+     * A handy way to store prepared objects and created on demand
+     * @param {Symbol} sym - unique symbol per prepared statement
+     * @param {callable} cb - a callback returning a prepared statement
+     * @returns {Prepared} - associated prepared statement
+     */
+    getPrepared( sym, cb )
+    {
+        let cache = this._prep_cache;
+
+        if ( !cache )
+        {
+            cache = new Map;
+            this._prep_cache = cache;
+        }
+
+        let res = cache.get( sym );
+
+        if ( res === undefined )
+        {
+            res = cb( this );
+            cache.set( sym, res );
+        }
+
+        return res;
+    }
 }
 
 module.exports = L1Face;
