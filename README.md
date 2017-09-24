@@ -178,11 +178,11 @@ does modifications successfully, but we do not need its actual result.
 The following query options are supported inside transaction:
 * `result=false` - if true then result must be returned in result list of `L2Face#xfer()` call
 * `affected=null`
-    - `boolean` - check if there affected rows (true) or no affected rows (false)
-    - `integer` - if amount of affected rows exactly matches the value
-* `affected=null`
-    - `boolean` - check if amount of affected rows exactly matches the value
-    - `integer` - check if amount of selected rows exactly matches the value
+    - `boolean` - check if there are affected rows (true) or no affected rows (false)
+    - `integer` - check if affected row count exactly matches the value
+* `selected=null`
+    - `boolean` - check if there are selected rows (true) or no selected rows (false)
+    - `integer` - check if selected row count exactly matches the value
     
 ### Transaction result value back references
 
@@ -229,6 +229,17 @@ calls in QueryBuilder.
 
 Both query and transaction builders support `.prepare()` call. All queries
 get built into string templates for efficient repetitive execution.
+
+For purpose of re-using already prepared statement or transaction there is
+`L1Face#getPreapred(symbol, prepare_callback)` API. See example #8.
+
+### Multi-row insert
+
+It's quite inefficient to insert large amount of data with individual statements.
+It's possible call `QueryBuilder#newRow()` on INSERT type instance. It's safe
+to call before or after - empty rows get ignored.
+
+At the moment, all supported databases have this feature.
 
 ### Error handling
 

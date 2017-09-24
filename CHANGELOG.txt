@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: documentation issues
+
 === 1.4.1 (2017-09-23) ===
 NEW: L1Face#helpers() for cleaner code and avoiding temporary QueryBuilder instance
 
