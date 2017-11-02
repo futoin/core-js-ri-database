@@ -40,7 +40,7 @@ class SQLiteHelpers extends QueryBuilder.Helpers
 
 /**
  * SQLite driver for QueryBuilder
- * 
+ *
  * @note It is normally automatically added when main.js is executed.
  * @private
  */

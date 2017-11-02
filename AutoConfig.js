@@ -77,7 +77,7 @@ function create( as, ccm, name, options )
     {
         /**
          * Retrieve database interface.
-         * 
+         *
          * @name AdvancedCCM#db
          * @param {string} [name=default] - connection name
          * @returns {object} FTN14 native face
@@ -109,16 +109,16 @@ function create( as, ccm, name, options )
 }
 
 /**
- * @brief Automatically configure database connections 
+ * @brief Automatically configure database connections
  *        and related internal Executors.
- * 
+ *
  * For each config entry an instance of dedicated
  * Executor with registered database service is created and
  * related interface is registered on CCM.
- * 
+ *
  * Interfaces are registered as "#db.{key}". The "default" one
  * is also aliased as "#db".
- * 
+ *
  * Env patterns to service configuration:
  * - DB_{name}_HOST -> host
  * - DB_{name}_PORT -> port
@@ -129,9 +129,9 @@ function create( as, ccm, name, options )
  * - DB_{name}_MAXCONN -> conn_limit
  * - DB_{name}_TYPE - type of database, fails if mismatch configuration
  * Note: the variables names are driven by CodingFuture CFDB Puppet module.
- * 
+ *
  * The "default" key also tries env without "{name}_" infix.
- * 
+ *
  * Example:
  * ```javascript
  *  AutoConfig(ccm, {
@@ -155,13 +155,13 @@ function create( as, ccm, name, options )
  *      },
  *  })
  * ```
- * 
+ *
  * @name AutoConfig
  * @param {AsyncSteps} as - async steps interface
  * @param {AdvancedCCM} ccm - CCM instance
  * @param {object} [config=null] - expected connection key => type map
  * @param {object} [env=process.env] - source of settings
- * 
+ *
  * @note it also monkey patches CCM with #db(name="default") method
  */
 module.exports = function( as, ccm, config=null, env=process.env )

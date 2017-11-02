@@ -26,7 +26,7 @@ class L1Face extends PingFace
 
     /**
      * CCM registration helper
-     * 
+     *
      * @param {AsyncSteps} as - steps interface
      * @param {AdvancedCCM} ccm - CCM instance
      * @param {string} name - CCM registration name
@@ -61,7 +61,7 @@ class L1Face extends PingFace
 
     /**
      * Get type of database
-     * 
+     *
      * @param {AsyncSteps} as - steps interface
      */
     getFlavour( as )
@@ -85,7 +85,7 @@ class L1Face extends PingFace
 
     /**
      * Get neutral query builder object.
-     * 
+     *
      * @param {string} type - Type of query: SELECT, INSERT, UPDATE, DELETE, ...
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
@@ -97,7 +97,7 @@ class L1Face extends PingFace
 
     /**
      * Get query builder helpers
-     * 
+     *
      * Helps avoiding temporary variables for cleaner code.
      * @returns {Helpers} for specific type
      */

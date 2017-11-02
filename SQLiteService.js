@@ -21,7 +21,7 @@ class SQLiteService extends L2Service
      * @param {string} [options.raw.filename=options.port] - database file
      * @param {integer} [options.raw.mode=OPEN_READWRITE|OPEN_CREATE|SQLITE_OPEN_FULLMUTEX] - open mode
      * @param {integer} [options.raw.busyTimeout=10000] - busyTimeout configuration value
-     * @param {array} [options.raw.pragma=[]] - list of pragma statements to execute on DB open 
+     * @param {array} [options.raw.pragma=[]] - list of pragma statements to execute on DB open
      * @note database filename is to supplied in options.port parameter.
      */
     constructor( options )

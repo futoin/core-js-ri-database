@@ -78,7 +78,7 @@ class XferQueryBuilder extends QueryBuilder
 
 /**
  * Transction builder.
- * 
+ *
  * Overall concept is build inividual queries to be executed without delay.
  * It's possible to add result constraints to each query for intermediate checks:
  * - affected - integer or boolean to check DML result

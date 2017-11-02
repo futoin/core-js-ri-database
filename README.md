@@ -1934,7 +1934,7 @@ Prepare statement for efficient execution multiple times
 
 ## AutoConfig
 **Kind**: global variable  
-**Brief**: Automatically configure database connections 
+**Brief**: Automatically configure database connections
        and related internal Executors.
 
 For each config entry an instance of dedicated

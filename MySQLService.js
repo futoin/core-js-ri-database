@@ -15,7 +15,7 @@ const IsoLevels = {
 
 /**
  * MySQL service implementation for FutoIn Database interface.addEventListener()
- * 
+ *
  * @note If host is localhost then 'socketPath' is from 'port' option.
  */
 class MySQLService extends L2Service

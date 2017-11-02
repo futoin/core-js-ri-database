@@ -42,7 +42,7 @@ class MySQLHelpers extends QueryBuilder.Helpers
 
 /**
  * MySQL driver for QueryBuilder
- * 
+ *
  * @note It is normally automatically added when main.js is executed.
  * @private
  */

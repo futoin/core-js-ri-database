@@ -275,18 +275,18 @@ class SQLDriver extends IDriver
         switch (typeof value) {
         case 'boolean':
             return value ? 'TRUE' : 'FALSE';
-            
+
         case 'string':
             return implementation_defined.escape(value);
-            
+
         case 'number':
             return `${value}`;
-            
+
         default:
             if (value === null) {
                 return 'NULL';
             }
-            
+
             if (value instanceof QueryBuilder.Expression)
             {
                 return value.toQuery();
@@ -858,7 +858,7 @@ class QueryBuilder
 
     /**
      * Set fields to retrieve.
-     * 
+     *
      * Can be called multiple times for appending.
      * @p fields can be a Map or object:
      * - keys are field names as is
@@ -867,9 +867,9 @@ class QueryBuilder
      * - values - field names
      * @p fields can be a single string
      * - optional @p value is expresion
-     * 
+     *
      * Value can be another QueryBuilder instance.
-     * 
+     *
      * @param {Map|object|string|array} fields - see concept for details
      * @param {*} [value=undefined] - optional value for
      * @returns {QueryBuilder} self
@@ -924,12 +924,12 @@ class QueryBuilder
 
     /**
      * Database neutral way to request last insert ID
-     * 
+     *
      * For databases without RETURNING or OUTPUT clause in INSERT it
      * is expected to always return '$id' field on insert.
-     * 
+     *
      * For others, it would build a valid RETURNING/OUTPUT clause.
-     * 
+     *
      * @param {string} field - field name with auto-generated value
      * @returns {QueryBuilder} self
      */
@@ -978,13 +978,13 @@ class QueryBuilder
 
     /**
      * Add fields to set in UPDATE query.
-     * 
+     *
      * @p fields can be Map or object to setup multiple fields at once.
      * - keys - key name as is, no escape
      * - value - any value to be escaped or QueryBuilder instance
-     * 
+     *
      * Single field => value can be used as shortcut for object form.
-     * 
+     *
      * @param {Map|object|string} field - field(s) to assign
      * @param {string|number|null|QueryBuilder} [value=undefined] - value to assign
      * @returns {QueryBuilder} self

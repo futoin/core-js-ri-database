@@ -42,7 +42,7 @@ class PostgreSQLHelpers extends QueryBuilder.Helpers
 
 /**
  * PostgreSQL driver for QueryBuilder
- * 
+ *
  * @note It is normally automatically added when main.js is executed.
  * @private
  */
