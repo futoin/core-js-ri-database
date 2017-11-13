@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.5.0 (2017-11-13) ===
 NEW: XferBuilder#execute() allow empty query list
 NEW: XferBuilder#lface() API
 
