@@ -309,8 +309,16 @@ class XferBuilder
     execute( as, unsafe_dml=false )
     {
         const ql = this._query_list;
-        this._prepareQueryList( ql, unsafe_dml );
-        this._lface.xfer( as, ql, this._iso_level );
+
+        if ( ql.length > 0 )
+        {
+            this._prepareQueryList( ql, unsafe_dml );
+            this._lface.xfer( as, ql, this._iso_level );
+        }
+        else
+        {
+            as.add( ( as ) => as.success( [] ) );
+        }
     }
 
     /**

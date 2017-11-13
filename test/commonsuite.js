@@ -691,6 +691,33 @@ module.exports = function(describe, it, vars)
             as.add( (as) => done() );
             as.execute();
         });
+
+        it ('should allow empty query list', function() {
+            const as = vars.as;
+            
+            as.add(
+                (as) => {
+                    const iface = vars.ccm.iface('l2');
+                    
+                    iface.newXfer().execute(as);
+                    as.add( (as, results) => {
+                        expect(results.length).to.equal(0);
+                    });
+                    
+                    iface.newXfer().executeAssoc(as);
+                    as.add( (as, results) => {
+                        expect(results.length).to.equal(0);
+                    });
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add( (as) => done() );
+            as.execute();
+        });
     });
     
     describe('JOINs', function() {

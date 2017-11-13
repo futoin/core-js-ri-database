@@ -855,7 +855,10 @@ describe('XferBuilder', function() {
         
         as.add(
             (as) => {
-                mockFace.newXfer('ABC').executeAssoc(as);
+                const xfer = mockFace.newXfer('ABC');
+                xfer.select();
+                xfer.executeAssoc(as);
+
                 as.add((as, res, affected) => {
                     expect(res).to.eql([
                         {
@@ -888,9 +891,16 @@ describe('XferBuilder', function() {
     });
     
     it('should use isolation level', function(){
-        mockFace.newXfer('ABC').execute(function(ql, isol){
-            expect(isol).to.equal('ABC');
-        });
+        $as()
+            .add( (as) => {
+                const xfer = mockFace.newXfer('ABC');
+                xfer.select();
+                xfer.execute(as);
+            } )
+            .add( (as, ql, isol) => {
+                expect(isol).to.equal('ABC');
+            })
+            .execute();
     });
     
     it('should forbid direct clone()/execute() on QueryBuilder', function() {
