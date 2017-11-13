@@ -175,6 +175,15 @@ class XferBuilder
     }
 
     /**
+     * Get reference to L2 interface. Valid use case - sub-queries.
+     * @returns {L2Face} - associated L2 interface implementation
+     */
+    lface()
+    {
+        return this._lface;
+    }
+
+    /**
      * Get generic query builder
      * @param {string} type - query type
      * @param {string|null} entity - man subject

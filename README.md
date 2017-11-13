@@ -1715,6 +1715,7 @@ It's possible to add result constraints to each query for intermediate checks:
     * [.expr(expr)](#XferBuilder+expr) ⇒ [<code>Expression</code>](#Expression)
     * [.param(name)](#XferBuilder+param) ⇒ [<code>Expression</code>](#Expression)
     * [.helpers()](#XferBuilder+helpers) ⇒ [<code>Helpers</code>](#Helpers)
+    * [.lface()](#XferBuilder+lface) ⇒ [<code>L2Face</code>](#L2Face)
     * [.query(type, entity, [query_options])](#XferBuilder+query) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
     * [.delete(entity, [query_options])](#XferBuilder+delete) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
     * [.insert(entity, [query_options])](#XferBuilder+insert) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)
@@ -1795,6 +1796,13 @@ Get additional helpers
 
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 **Returns**: [<code>Helpers</code>](#Helpers) - - db-specific helpers object  
+<a name="XferBuilder+lface"></a>
+
+### xferBuilder.lface() ⇒ [<code>L2Face</code>](#L2Face)
+Get reference to L2 interface. Valid use case - sub-queries.
+
+**Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
+**Returns**: [<code>L2Face</code>](#L2Face) - - associated L2 interface implementation  
 <a name="XferBuilder+query"></a>
 
 ### xferBuilder.query(type, entity, [query_options]) ⇒ [<code>XferQueryBuilder</code>](#XferQueryBuilder)

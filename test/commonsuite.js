@@ -673,6 +673,24 @@ module.exports = function(describe, it, vars)
             as.add((as) => done());
             as.execute();
         });
+        
+        it ('should support lface()', function() {
+            const as = vars.as;
+            
+            as.add(
+                (as) => {
+                    const iface = vars.ccm.iface('l2');
+                    expect(iface.newXfer().lface()).to.equal(iface);
+                },
+                (as, err) => {
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add( (as) => done() );
+            as.execute();
+        });
     });
     
     describe('JOINs', function() {

@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: XferBuilder#lface() API
+
 === 1.4.2 (2017-09-24) ===
 FIXED: documentation issues
 
