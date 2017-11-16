@@ -35,9 +35,9 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^4.10.0",
-    "futoin-asyncsteps": "^1.7.1",
-    "futoin-executor": "^1.5.5",
+    "eslint": "^4.11.0",
+    "futoin-asyncsteps": "^1.8.0",
+    "futoin-executor": "^1.5.6",
     "futoin-invoker": "^1.5.5",
     "grunt": "^1.0.1",
     "grunt-eslint": "^20.1.0",
@@ -52,17 +52,17 @@
   ],
   "dependencies": {
     "lodash": "^4.17.4",
-    "moment": "^2.19.1",
+    "moment": "^2.19.2",
     "sqlstring": "^2.3.0"
   },
   "optionalDependencies": {
     "mysql": "^2.15.0",
-    "pg": "^7.3.0",
+    "pg": "^7.4.0",
     "sqlite3": "^3.1.13"
   },
   "peerDependencies": {
-    "futoin-asyncsteps": "^1.7.1",
-    "futoin-executor": "^1.5.5",
+    "futoin-asyncsteps": "^1.8.0",
+    "futoin-executor": "^1.5.6",
     "futoin-invoker": "^1.5.5"
   }
 }
