@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.5.1 (2017-11-19) ===
 NEW: added related query to XferCondition error info to aid developers
 
 === 1.5.0 (2017-11-13) ===
