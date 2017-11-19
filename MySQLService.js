@@ -366,7 +366,7 @@ class MySQLService extends L2Service
                             {
                                 prev_results.push( qresults[0] );
                                 this._xferCommon(
-                                    as, xfer, qresults, stmt_id, results );
+                                    as, xfer, qresults, stmt_id, results, q );
                             }
                         );
                     } );

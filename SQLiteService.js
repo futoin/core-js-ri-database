@@ -321,7 +321,7 @@ class SQLiteService extends L2Service
                             {
                                 prev_results.push( qres );
                                 this._xferCommon(
-                                    as, xfer, [ qres ], stmt_id, results );
+                                    as, xfer, [ qres ], stmt_id, results, q );
                             } );
                         } );
                     } );

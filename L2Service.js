@@ -46,7 +46,7 @@ class L2Service extends L1Service
         as.error( FutoInError.NotImplemented );
     }
 
-    _xferCommon( as, xfer, qresults, stmt_id, results )
+    _xferCommon( as, xfer, qresults, stmt_id, results, q )
     {
         const res = qresults[0];
         let fail_on_multi = false;
@@ -61,7 +61,7 @@ class L2Service extends L1Service
             if ( ( xfer.affected && ( res.affected <= 0 ) ) ||
                  ( !xfer.affected && ( res.affected > 0 ) ) )
             {
-                cond_error = `Affected ${stmt_id}: ${res.affected}`;
+                cond_error = `Affected ${stmt_id}: ${res.affected} (${q})`;
             }
         }
         else if ( typeof xfer.affected === 'number' )
@@ -70,7 +70,7 @@ class L2Service extends L1Service
 
             if ( res.affected !== xfer.affected )
             {
-                cond_error = `Affected ${stmt_id}: ${res.affected} != ${xfer.affected}`;
+                cond_error = `Affected ${stmt_id}: ${res.affected} != ${xfer.affected} (${q})`;
             }
         }
 
@@ -83,7 +83,7 @@ class L2Service extends L1Service
             if ( ( xfer.selected && ( res.rows.length <= 0 ) ) ||
                  ( !xfer.selected && ( res.rows.length > 0 ) ) )
             {
-                cond_error = `Selected ${stmt_id}: ${res.rows.length}`;
+                cond_error = `Selected ${stmt_id}: ${res.rows.length} (${q})`;
             }
         }
         else if ( typeof xfer.selected === 'number' )
@@ -92,7 +92,7 @@ class L2Service extends L1Service
 
             if ( res.rows.length !== xfer.selected )
             {
-                cond_error = `Selected ${res.rows.length} != ${xfer.selected}`;
+                cond_error = `Selected ${res.rows.length} != ${xfer.selected} (${q})`;
             }
         }
 
