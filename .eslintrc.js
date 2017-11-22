@@ -72,5 +72,18 @@ module.exports = {
                 "no-console" : ["off"],
             }
         },
+        {
+            env : {
+                es6: true,
+                node: true,
+                commonjs: true,
+                mocha: true,
+            },
+            files: [ "test/**/*.js" ],
+            rules: {
+                "no-console" : ["off"],
+                "no-unused-vars": ["off"],
+            }
+        },
     ],
 };
