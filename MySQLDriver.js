@@ -85,6 +85,11 @@ class MySQLHelpers extends QueryBuilder.SQLHelpers
         case 'BLOB':
             type = 'BINARY';
             break;
+
+        case 'JSON':
+            // Should be removed at some point
+            type = 'CHAR';
+            break;
         }
 
         return super.cast( a, type );
