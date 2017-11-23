@@ -5,7 +5,7 @@ const $as = require( 'futoin-asyncsteps' );
 
 const { QueryBuilder } = require( '../main' );
 
-class MockSQLDriver extends QueryBuilder.SQLDriver
+class MockSQLHelpers extends QueryBuilder.SQLHelpers
 {
     _escapeSimple( value )
     {
@@ -33,6 +33,14 @@ class MockSQLDriver extends QueryBuilder.SQLDriver
 
             throw new Error( `Unknown type: ${typeof value}` );
         }
+    }
+}
+
+class MockSQLDriver extends QueryBuilder.SQLDriver
+{
+    constructor()
+    {
+        super( new MockSQLHelpers );
     }
 }
 
@@ -710,9 +718,15 @@ describe( 'QueryBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
             {
-                entity( entity )
+                constructor()
                 {
-                    return entity;
+                    super( new class extends QueryBuilder.Helpers
+                    {
+                        entity( v )
+                        {
+                            return v;
+                        }
+                    } );
                 }
             } );
             mockFace.select( 'A' );
@@ -726,13 +740,19 @@ describe( 'QueryBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
             {
-                entity( v )
+                constructor()
                 {
-                    return v;
-                }
-                escape( v )
-                {
-                    return v;
+                    super( new class extends QueryBuilder.Helpers
+                    {
+                        entity( v )
+                        {
+                            return v;
+                        }
+                        escape( v )
+                        {
+                            return v;
+                        }
+                    } );
                 }
             } );
             mockFace.select().escape( 'a' );
@@ -746,17 +766,23 @@ describe( 'QueryBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
             {
-                entity( v )
+                constructor()
                 {
-                    return v;
-                }
-                escape( v )
-                {
-                    return v;
-                }
-                expr( v )
-                {
-                    return v;
+                    super( new class extends QueryBuilder.Helpers
+                    {
+                        entity( v )
+                        {
+                            return v;
+                        }
+                        escape( v )
+                        {
+                            return v;
+                        }
+                        expr( v )
+                        {
+                            return v;
+                        }
+                    } );
                 }
             } );
             mockFace.select().expr( 'a' );
@@ -770,21 +796,27 @@ describe( 'QueryBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
             {
-                entity( v )
+                constructor()
                 {
-                    return v;
-                }
-                escape( v )
-                {
-                    return v;
-                }
-                expr( v )
-                {
-                    return v;
-                }
-                identifier( v )
-                {
-                    return v;
+                    super( new class extends QueryBuilder.Helpers
+                    {
+                        entity( v )
+                        {
+                            return v;
+                        }
+                        escape( v )
+                        {
+                            return v;
+                        }
+                        expr( v )
+                        {
+                            return v;
+                        }
+                        identifier( v )
+                        {
+                            return v;
+                        }
+                    } );
                 }
             } );
             mockFace.select().identifier( 'a' );
@@ -798,22 +830,29 @@ describe( 'QueryBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
             {
-                entity( v )
+                constructor()
                 {
-                    return v;
+                    super( new class extends QueryBuilder.Helpers
+                    {
+                        entity( v )
+                        {
+                            return v;
+                        }
+                        escape( v )
+                        {
+                            return v;
+                        }
+                        expr( v )
+                        {
+                            return v;
+                        }
+                        identifier( v )
+                        {
+                            return v;
+                        }
+                    } );
                 }
-                escape( v )
-                {
-                    return v;
-                }
-                expr( v )
-                {
-                    return v;
-                }
-                identifier( v )
-                {
-                    return v;
-                }
+
                 checkField( v )
                 {}
             } );
@@ -828,24 +867,32 @@ describe( 'QueryBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
             {
-                entity( v )
+                constructor()
                 {
-                    return v;
+                    super( new class extends QueryBuilder.Helpers
+                    {
+                        entity( v )
+                        {
+                            return v;
+                        }
+                        escape( v )
+                        {
+                            return v;
+                        }
+                        expr( v )
+                        {
+                            return v;
+                        }
+                        identifier( v )
+                        {
+                            return v;
+                        }
+                    } );
                 }
-                escape( v )
-                {
-                    return v;
-                }
-                expr( v )
-                {
-                    return v;
-                }
-                identifier( v )
-                {
-                    return v;
-                }
+
                 checkField( v )
                 {}
+
                 build( state )
                 {
                     return state;
@@ -866,9 +913,15 @@ describe( 'QueryBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.SQLDriver
             {
-                _escapeSimple( v )
+                constructor()
                 {
-                    return v;
+                    super( new class extends QueryBuilder.SQLHelpers
+                    {
+                        _escapeSimple( v )
+                        {
+                            return v;
+                        }
+                    } );
                 }
             } );
             mockFace.select().escape( 'a' );
@@ -884,9 +937,15 @@ describe( 'QueryBuilder', function()
             QueryBuilder.addDriver( 'mockfail',
                 () => new class extends QueryBuilder.SQLDriver
                 {
-                    _escapeSimple( v )
+                    constructor()
                     {
-                        return v;
+                        super( new class extends QueryBuilder.SQLHelpers
+                        {
+                            _escapeSimple( v )
+                            {
+                                return v;
+                            }
+                        } );
                     }
                 } );
             expect( mockFace.select().getDriver() )
@@ -1024,10 +1083,10 @@ describe( 'QueryBuilder', function()
     {
         it( 'should properly handle placeholders', function()
         {
-            const driver = QueryBuilder.getDriver( 'mocksql' );
+            const helpers = QueryBuilder.getDriver( 'mocksql' ).helpers;
             expect(
                 QueryBuilder._replaceParams(
-                    driver,
+                    helpers,
                     'Some :v :vv :vvv :v',
                     { v: 3,
                         vv: 2,
@@ -1037,11 +1096,11 @@ describe( 'QueryBuilder', function()
 
         it( 'should detected unused params', function()
         {
-            const driver = QueryBuilder.getDriver( 'mocksql' );
+            const helpers = QueryBuilder.getDriver( 'mocksql' ).helpers;
             expect( function()
             {
                 QueryBuilder._replaceParams(
-                    driver,
+                    helpers,
                     'Some :v :vvv :v',
                     { v: 3,
                         vv: 2,
@@ -1426,10 +1485,17 @@ describe( 'XferBuilder', function()
 
             QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
             {
-                entity( entity )
+                constructor()
                 {
-                    return entity;
+                    super( new class extends QueryBuilder.Helpers
+                    {
+                        entity( entity )
+                        {
+                            return entity;
+                        }
+                    } );
                 }
+
                 backref( ...args )
                 {
                     return args;

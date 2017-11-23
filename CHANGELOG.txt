@@ -1,4 +1,9 @@
 
+=== (next) ===
+CHANGED: large internal refactoring of QueryBuilder.Helpers and IDriver interfaces
+NEW: concat(), cast(), add(), sub(), mul(), div() and mod() helpers
+NEW: exposed escape(), identifier() and expr() through helpers
+
 === 1.5.1 (2017-11-19) ===
 NEW: added related query to XferCondition error info to aid developers
 

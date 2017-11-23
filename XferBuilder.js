@@ -131,7 +131,7 @@ class XferBuilder
      */
     escape( value )
     {
-        return this.getDriver().escape( value );
+        return this.helpers().escape( value );
     }
 
     /**
@@ -141,7 +141,7 @@ class XferBuilder
      */
     identifier( name )
     {
-        return this.getDriver().identifier( name );
+        return this.helpers().identifier( name );
     }
 
     /**
@@ -151,7 +151,7 @@ class XferBuilder
      */
     expr( expr )
     {
-        return new QueryBuilder.Expression( this.getDriver().expr( expr ) );
+        return this.helpers().expr( expr );
     }
 
 
@@ -162,7 +162,7 @@ class XferBuilder
      */
     param( name )
     {
-        return new QueryBuilder.Expression( this.getDriver().expr( `:${name}` ) );
+        return this.helpers().expr( `:${name}` );
     }
 
     /**
@@ -289,8 +289,8 @@ class XferBuilder
 
         if ( params )
         {
-            const driver = this.getDriver();
-            item.q = QueryBuilder._replaceParams( driver, q, params );
+            const helpers = this.helpers();
+            item.q = QueryBuilder._replaceParams( helpers, q, params );
         }
         else
         {
@@ -354,14 +354,14 @@ class XferBuilder
             {
                 if ( params )
                 {
-                    const driver = QueryBuilder.getDriver( db_type );
+                    const helpers = QueryBuilder.getDriver( db_type ).helpers;
                     const pql = _cloneDeep( ql );
                     const used_params = {};
 
                     pql.forEach( ( v ) =>
                     {
                         v.q = QueryBuilder._replaceParams(
-                            driver, v.q, params, used_params );
+                            helpers, v.q, params, used_params );
                     } );
 
                     for ( let p in params )

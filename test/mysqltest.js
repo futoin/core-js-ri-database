@@ -8,25 +8,26 @@ describe( 'MySQLDriver', function()
 {
     const { QueryBuilder } = require( '../main' );
     const drv = QueryBuilder.getDriver( 'mysql' );
+    const helpers = drv.helpers;
 
     it( 'should escape values correctly', () =>
     {
-        expect( drv.escape( true ) ).to.equal( 'true' );
-        expect( drv.escape( false ) ).to.equal( 'false' );
-        expect( drv.escape( 0 ) ).to.equal( '0' );
-        expect( drv.escape( 100 ) ).to.equal( '100' );
-        expect( drv.escape( -300 ) ).to.equal( '-300' );
-        expect( drv.escape( 1.5 ) ).to.equal( '1.5' );
-        expect( drv.escape( "" ) ).to.equal( "''" );
-        expect( drv.escape( "Some ' string ' \" \\" ) )
+        expect( helpers.escape( true ) ).to.equal( 'true' );
+        expect( helpers.escape( false ) ).to.equal( 'false' );
+        expect( helpers.escape( 0 ) ).to.equal( '0' );
+        expect( helpers.escape( 100 ) ).to.equal( '100' );
+        expect( helpers.escape( -300 ) ).to.equal( '-300' );
+        expect( helpers.escape( 1.5 ) ).to.equal( '1.5' );
+        expect( helpers.escape( "" ) ).to.equal( "''" );
+        expect( helpers.escape( "Some ' string ' \" \\" ) )
             .to.equal( "'Some \\' string \\' \\\" \\\\'" );
     } );
 
     it( 'should escape identifiers correctly', () =>
     {
-        expect( drv.identifier( 'one' ) ).to.equal( '`one`' );
-        expect( drv.identifier( 'one.two' ) ).to.equal( '`one`.`two`' );
-        expect( drv.identifier( 'on`e.t`w`o' ) ).to.equal( '`on``e`.`t``w``o`' );
+        expect( helpers.identifier( 'one' ) ).to.equal( '`one`' );
+        expect( helpers.identifier( 'one.two' ) ).to.equal( '`one`.`two`' );
+        expect( helpers.identifier( 'on`e.t`w`o' ) ).to.equal( '`on``e`.`t``w``o`' );
     } );
 
     it( 'should create xfer back references', () =>

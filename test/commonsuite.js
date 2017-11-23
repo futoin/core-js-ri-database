@@ -962,6 +962,114 @@ module.exports = function( describe, it, vars )
             as.add( ( as ) => done() );
             as.execute();
         } );
+
+        it ( 'should support concat', function( done )
+        {
+            const as = vars.as;
+
+            as.add( ( as ) =>
+            {
+                const iface = vars.ccm.iface( 'l1' );
+                const helpers = iface.helpers();
+
+
+                iface.select()
+                    .get( 'f', helpers.escape( helpers.concat(
+                        'START',
+                        helpers.expr( '(33-22)' ),
+                        'END'
+                    ) ) )
+                    .executeAssoc( as );
+                as.add( ( as, res ) => expect( res[0].f ).to.equal( 'START11END' ) );
+            }, ( as, err ) =>
+            {
+                console.log( as.state.error_info );
+                console.log( as.state.last_exception );
+                done( as.state.last_exception );
+            } );
+            as.add( ( as ) => done() );
+            as.execute();
+        } );
+
+        it ( 'should support cast', function( done )
+        {
+            const as = vars.as;
+
+            as.add( ( as ) =>
+            {
+                const iface = vars.ccm.iface( 'l1' );
+                const helpers = iface.helpers();
+
+
+                iface.select()
+                    .get( 't', helpers.escape( helpers.cast( 'SomeText', 'TEXT' ) ) )
+                    .get( 'b', helpers.escape( helpers.cast( 'SomeBlob', 'BLOB' ) ) )
+                    .get( 'd', helpers.escape( helpers.cast( '234', 'DECIMAL(6,3)' ) ) )
+                    .get( 'j', helpers.escape( helpers.cast( '123', 'JSON' ) ) )
+                    .executeAssoc( as );
+                as.add( ( as, res ) =>
+                {
+                    const r = res[0];
+                    expect( r.t ).to.equal( 'SomeText' );
+                    expect( r.b.toString() ).to.equal( 'SomeBlob' );
+
+                    try
+                    {
+                        expect( r.d ).to.equal( '234.000' );
+                    }
+                    catch ( e )
+                    {
+                        // SQLite...
+                        expect( r.d ).to.equal( 234 );
+                    }
+
+                    expect( r.j ).to.equal( '123' );
+                } );
+            }, ( as, err ) =>
+            {
+                console.log( as.state.error_info );
+                console.log( as.state.last_exception );
+                done( as.state.last_exception );
+            } );
+            as.add( ( as ) => done() );
+            as.execute();
+        } );
+
+        it ( 'should support arithmetic ops', function( done )
+        {
+            const as = vars.as;
+
+            as.add( ( as ) =>
+            {
+                const iface = vars.ccm.iface( 'l1' );
+                const helpers = iface.helpers();
+
+
+                iface.select()
+                    .get( 'a', helpers.escape( helpers.add( 1, 2, 3 ) ) )
+                    .get( 's', helpers.escape( helpers.sub( 5, 3 ) ) )
+                    .get( 'm', helpers.escape( helpers.mul( 4, 5, 6 ) ) )
+                    .get( 'd', helpers.escape( helpers.div( 20, 5 ) ) )
+                    .get( 'r', helpers.escape( helpers.mod( 8, 6 ) ) )
+                    .executeAssoc( as );
+                as.add( ( as, res ) =>
+                {
+                    const r = res[0];
+                    expect( r.a | 0 ).to.equal( 6 );
+                    expect( r.s | 0 ).to.equal( 2 );
+                    expect( r.m | 0 ).to.equal( 120 );
+                    expect( r.d | 0 ).to.equal( 4 );
+                    expect( r.r | 0 ).to.equal( 2 );
+                } );
+            }, ( as, err ) =>
+            {
+                console.log( as.state.error_info );
+                console.log( as.state.last_exception );
+                done( as.state.last_exception );
+            } );
+            as.add( ( as ) => done() );
+            as.execute();
+        } );
     } );
 
     if ( vars.haveStored )

@@ -163,8 +163,8 @@ class L1Face extends PingFace
      */
     paramQuery( as, q, params={} )
     {
-        const driver = QueryBuilder.getDriver( this._db_type );
-        q = QueryBuilder._replaceParams( driver, q, params );
+        const helpers = QueryBuilder.getDriver( this._db_type ).helpers;
+        q = QueryBuilder._replaceParams( helpers, q, params );
         this.query( as, q );
     }
 

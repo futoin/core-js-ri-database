@@ -5,7 +5,7 @@ const SqlString = require( 'sqlstring' );
 const Expression = QueryBuilder.Expression;
 const moment = require( 'moment' );
 
-class MySQLHelpers extends QueryBuilder.Helpers
+class MySQLHelpers extends QueryBuilder.SQLHelpers
 {
     now()
     {
@@ -37,6 +37,57 @@ class MySQLHelpers extends QueryBuilder.Helpers
         // MySQL should be OK even with fractional seconds
         expr = `(${expr} + INTERVAL ${seconds} SECOND)`;
         return new Expression( expr );
+    }
+
+    _escapeSimple( value )
+    {
+        switch ( typeof value )
+        {
+        case 'boolean':
+        case 'string':
+        case 'number':
+            return SqlString.escape( value );
+
+        default:
+            if ( value === null )
+            {
+                return 'NULL';
+            }
+
+            if ( value instanceof Expression )
+            {
+                return value.toQuery();
+            }
+
+            throw new Error( `Unknown type: ${typeof value}` );
+        }
+    }
+
+    identifier( name )
+    {
+        return SqlString.escapeId( name );
+    }
+
+    concat( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression( `CONCAT(${escaped.join( ',' )})` );
+    }
+
+    cast( a, type )
+    {
+        switch ( type.toUpperCase() )
+        {
+        case 'TEXT':
+            type = 'CHAR';
+            break;
+
+        case 'BLOB':
+            type = 'BINARY';
+            break;
+        }
+
+        return super.cast( a, type );
     }
 }
 
@@ -83,35 +134,6 @@ class MySQLDriver extends QueryBuilder.SQLDriver
         }
 
         return super.build( state );
-    }
-
-    _escapeSimple( value )
-    {
-        switch ( typeof value )
-        {
-        case 'boolean':
-        case 'string':
-        case 'number':
-            return SqlString.escape( value );
-
-        default:
-            if ( value === null )
-            {
-                return 'NULL';
-            }
-
-            if ( value instanceof Expression )
-            {
-                return value.toQuery();
-            }
-
-            throw new Error( `Unknown type: ${typeof value}` );
-        }
-    }
-
-    identifier( name )
-    {
-        return SqlString.escapeId( name );
     }
 }
 

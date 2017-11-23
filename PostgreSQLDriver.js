@@ -5,7 +5,7 @@ const NO_ESCAPE_RE = /^(.*\.)*(([a-z0-9][a-z_0-9])|\*)$/;
 const Expression = QueryBuilder.Expression;
 const moment = require( 'moment' );
 
-class PostgreSQLHelpers extends QueryBuilder.Helpers
+class PostgreSQLHelpers extends QueryBuilder.SQLHelpers
 {
     now()
     {
@@ -37,6 +37,55 @@ class PostgreSQLHelpers extends QueryBuilder.Helpers
         // PostgreSQL should be OK even with fractional seconds
         expr = `((${expr})::timestamp + interval '${seconds} second')`;
         return new Expression( expr );
+    }
+
+    _escapeSimple( value )
+    {
+        switch ( typeof value )
+        {
+        case 'boolean':
+            return value ? 'TRUE' : 'FALSE';
+
+        case 'string':
+            return `'${value.replace( /'/g, "''" ).replace( /\\/g, "\\\\" )}'`;
+
+        case 'number':
+            return `${value}`;
+
+        default:
+            if ( value === null )
+            {
+                return 'NULL';
+            }
+
+            if ( value instanceof Expression )
+            {
+                return value.toQuery();
+            }
+
+            throw new Error( `Unknown type: ${typeof value}` );
+        }
+    }
+
+    identifier( name )
+    {
+        return name
+            .split( '.' )
+            .map( v => ( v === '*' ) ? v : `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
+            .join( '.' );
+    }
+
+    cast( a, type )
+    {
+        switch ( type.toUpperCase() )
+        {
+        case 'BLOB':
+            type = 'BYTEA';
+            break;
+        }
+
+        const expr = this.escape( a );
+        return new Expression( `${expr}::${type}` );
     }
 }
 
@@ -106,6 +155,7 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
     _build_select_part( select )
     {
         const fields = [];
+        const helpers = this.helpers;
 
         for ( let [ f, v ] of select.entries() )
         {
@@ -120,13 +170,13 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
                 {
                     f = f.split( '.' );
                     f = f[ f.length - 1 ];
-                    f = this.identifier( f );
+                    f = helpers.identifier( f );
                     fields.push( `${v} AS ${f}` );
                 }
             }
             else
             {
-                f = this.identifier( f );
+                f = helpers.identifier( f );
                 fields.push( `${v} AS ${f}` );
             }
         }
@@ -137,42 +187,6 @@ class PostgreSQLDriver extends QueryBuilder.SQLDriver
     _build_call( entity, params )
     {
         return `SELECT * FROM ${entity}(${params.join( ',' )})`;
-    }
-
-    _escapeSimple( value )
-    {
-        switch ( typeof value )
-        {
-        case 'boolean':
-            return value ? 'TRUE' : 'FALSE';
-
-        case 'string':
-            return `'${value.replace( /'/g, "''" ).replace( /\\/g, "\\\\" )}'`;
-
-        case 'number':
-            return `${value}`;
-
-        default:
-            if ( value === null )
-            {
-                return 'NULL';
-            }
-
-            if ( value instanceof Expression )
-            {
-                return value.toQuery();
-            }
-
-            throw new Error( `Unknown type: ${typeof value}` );
-        }
-    }
-
-    identifier( name )
-    {
-        return name
-            .split( '.' )
-            .map( v => ( v === '*' ) ? v : `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
-            .join( '.' );
     }
 }
 

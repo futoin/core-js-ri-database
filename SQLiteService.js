@@ -26,7 +26,7 @@ class SQLiteService extends L2Service
      */
     constructor( options )
     {
-        super();
+        super( new SQLiteDriver );
 
         const raw = options.raw ? _cloneDeep( options.raw ) : {};
         _defaults( raw, {
@@ -44,7 +44,6 @@ class SQLiteService extends L2Service
 
         this._db = null;
         this._db_params = raw;
-        this._driver = new SQLiteDriver;
         this._mutex = new Mutex();
     }
 

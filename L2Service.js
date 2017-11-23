@@ -41,6 +41,13 @@ class L2Service extends L1Service
         return impl;
     }
 
+    constructor( driver )
+    {
+        super();
+        this._driver = driver || null;
+        this._helpers = driver ? driver.helpers : null;
+    }
+
     xfer( as, _reqinfo )
     {
         as.error( FutoInError.NotImplemented );
@@ -165,11 +172,11 @@ class L2Service extends L1Service
                             `More than one row in result #${query_id}` );
                     }
 
-                    return this._driver.escape( qres.rows[0][field_id] );
+                    return this._helpers.escape( qres.rows[0][field_id] );
                 }
                 else
                 {
-                    return this._driver.escape( qres.rows.map( v => v[field_id] ) );
+                    return this._helpers.escape( qres.rows.map( v => v[field_id] ) );
                 }
             }
         );

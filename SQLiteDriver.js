@@ -4,7 +4,7 @@ const QueryBuilder = require( './QueryBuilder' );
 const Expression = QueryBuilder.Expression;
 const moment = require( 'moment' );
 
-class SQLiteHelpers extends QueryBuilder.Helpers
+class SQLiteHelpers extends QueryBuilder.SQLHelpers
 {
     now()
     {
@@ -35,6 +35,52 @@ class SQLiteHelpers extends QueryBuilder.Helpers
 
         expr = `datetime(${expr}, '${seconds} seconds')`;
         return new Expression( expr );
+    }
+
+    _escapeSimple( value )
+    {
+        switch ( typeof value )
+        {
+        case 'boolean':
+            return value ? 'TRUE' : 'FALSE';
+
+        case 'string':
+            return `'${value.replace( /'/g, "''" ).replace( /\\/g, "\\\\" )}'`;
+
+        case 'number':
+            return `${value}`;
+
+        default:
+            if ( value === null )
+            {
+                return 'NULL';
+            }
+
+            if ( value instanceof Expression )
+            {
+                return value.toQuery();
+            }
+
+            throw new Error( `Unknown type: ${typeof value}` );
+        }
+    }
+
+    identifier( name )
+    {
+        return name
+            .split( '.' )
+            .map( v => ( v === '*' ) ? v : `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
+            .join( '.' );
+    }
+
+    cast( a, type )
+    {
+        if ( type.toUpperCase() === 'JSON' )
+        {
+            type = 'TEXT';
+        }
+
+        return super.cast( a, type );
     }
 }
 
@@ -78,42 +124,6 @@ class SQLiteDriver extends QueryBuilder.SQLDriver
     _build_call( _entity, _params )
     {
         throw new Error( 'Not supported' );
-    }
-
-    _escapeSimple( value )
-    {
-        switch ( typeof value )
-        {
-        case 'boolean':
-            return value ? 'TRUE' : 'FALSE';
-
-        case 'string':
-            return `'${value.replace( /'/g, "''" ).replace( /\\/g, "\\\\" )}'`;
-
-        case 'number':
-            return `${value}`;
-
-        default:
-            if ( value === null )
-            {
-                return 'NULL';
-            }
-
-            if ( value instanceof Expression )
-            {
-                return value.toQuery();
-            }
-
-            throw new Error( `Unknown type: ${typeof value}` );
-        }
-    }
-
-    identifier( name )
-    {
-        return name
-            .split( '.' )
-            .map( v => ( v === '*' ) ? v : `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
-            .join( '.' );
     }
 }
 

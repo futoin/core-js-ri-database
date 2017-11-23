@@ -56,7 +56,7 @@ class PostgreSQLService extends L2Service
 {
     constructor( options )
     {
-        super();
+        super( new PostgreSQLDriver );
 
         const raw = options.raw ? _cloneDeep( options.raw ) : {};
         _defaults( raw, {
@@ -86,7 +86,6 @@ class PostgreSQLService extends L2Service
         const pool = new Pool( raw );
 
         this._pool = pool;
-        this._driver = new PostgreSQLDriver;
     }
 
     _withConnection( as, callback )

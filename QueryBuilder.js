@@ -57,6 +57,31 @@ class Prepared
  */
 class Helpers
 {
+    entity( entity )
+    {
+        void entity;
+        throw new Error( 'Not implemented' );
+    }
+
+    escape( value, op=undefined )
+    {
+        void value;
+        void op;
+        throw new Error( 'Not implemented' );
+    }
+
+    identifier( name )
+    {
+        void name;
+        throw new Error( 'Not implemented' );
+    }
+
+    expr( expr )
+    {
+        void expr;
+        throw new Error( 'Not implemented' );
+    }
+
     /**
      * Get DB-specific current timestamp expression
      * @func
@@ -89,6 +114,68 @@ class Helpers
      * @param {seconds} seconds - number of seconds to add/subtract(negative)
      * @returns {Expression} - DB expression
      */
+
+    /**
+     * Concat arguments. Useful for in-query operation with unknown values.
+     * @func
+     * @name concat
+     * @param {string|Expression} value... - String to escape or Expresion object
+     * @returns {Expression} - concatenated argument expression
+     */
+
+    /**
+     * Cast expression to type
+     * @func
+     * @name cast
+     * @param {string|Expression} value - String to escape or Expresion object
+     * @param {type} type - target type
+     * @returns {Expression} - cast expression
+     * @note implementation by implicitly substitute not supported types with acceptable
+     *  equiavelnt like JSON->TEXT/
+     */
+
+    /**
+     * Add arguments in query.
+     * @func
+     * @name add
+     * @param {string|Expression} a... - arguments
+     * @returns {Expression} - addition expression
+     */
+
+    /**
+     * Subtract arguments in query.
+     * @func
+     * @name sub
+     * @param {string|Expression} a - first arg
+     * @param {string|Expression} b - second arg
+     * @returns {Expression} - subtraction expression
+     */
+
+    /**
+     * Multiply arguments in query.
+     * @func
+     * @name mul
+     * @param {string|Expression} a... - arguments
+     * @returns {Expression} - multiplication expression
+     */
+
+    /**
+     * Divide arguments in query.
+     * @func
+     * @name div
+     * @param {string|Expression} a - first arg
+     * @param {string|Expression} b - second arg
+     * @returns {Expression} - division expression
+     */
+
+    /**
+     * Reminder of division in query.
+     * @func
+     * @name rem
+     * @param {string|Expression} a - first arg
+     * @param {string|Expression} b - second arg
+     * @returns {Expression} - reminder expression
+     */
 }
 
 /**
@@ -108,30 +195,6 @@ class IDriver
         this._helpers = helpers || new Helpers();
     }
 
-    entity( entity )
-    {
-        void entity;
-        throw new Error( 'Not implemented' );
-    }
-
-    escape( value, op=undefined )
-    {
-        void value;
-        void op;
-        throw new Error( 'Not implemented' );
-    }
-
-    identifier( name )
-    {
-        void name;
-        throw new Error( 'Not implemented' );
-    }
-
-    expr( expr )
-    {
-        void expr;
-        throw new Error( 'Not implemented' );
-    }
 
     backref( query_id, field, multi )
     {
@@ -183,10 +246,9 @@ class IDriver
 }
 
 /**
- * Basic logic for SQL-based databases
- * @private
+ * Basic logic for SQL-based helpers
  */
-class SQLDriver extends IDriver
+class SQLHelpers extends Helpers
 {
     entity( entity )
     {
@@ -299,6 +361,11 @@ class SQLDriver extends IDriver
 
     expr( expr )
     {
+        return new Expression( this._expr( expr ) );
+    }
+
+    _expr( expr )
+    {
         if ( expr instanceof QueryBuilder )
         {
             const raw_query = expr._toQuery();
@@ -321,6 +388,65 @@ class SQLDriver extends IDriver
     _escapeExpr( expr )
     {
         return expr;
+    }
+
+    concat( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression(
+            this.expr( `(${escaped.join( '||' )})` )
+        );
+    }
+
+    cast( a, type )
+    {
+        const expr = this.escape( a );
+        return new Expression( `CAST(${expr} AS ${type})` );
+    }
+
+    add( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression( `(${escaped.join( '+' )})` );
+    }
+
+    sub( a, b )
+    {
+        a = this.escape( a );
+        b = this.escape( b );
+        return new Expression( `(${a}-${b})` );
+    }
+
+    mul( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression( `(${escaped.join( '*' )})` );
+    }
+
+    div( a, b )
+    {
+        a = this.escape( a );
+        b = this.escape( b );
+        return new Expression( `(${a}/${b})` );
+    }
+
+    mod( a, b )
+    {
+        a = this.escape( a );
+        b = this.escape( b );
+        return new Expression( `(${a}%${b})` );
+    }
+}
+
+/**
+ * Basic logic for SQL-based databases
+ * @private
+ */
+class SQLDriver extends IDriver
+{
+    constructor( helpers )
+    {
+        super( helpers || new SQLHelpers() );
     }
 
     backref( query_id, field, multi )
@@ -660,43 +786,51 @@ class SQLDriver extends IDriver
 class QueryBuilder
 {
     /**
-    * Base for QB Driver implementation
-    */
+     * Base for QB Driver implementation
+     */
     static get IDriver()
     {
         return IDriver;
     }
 
     /**
-    * Base for SQL-based QB Driver implementation
-    */
+     * Base for SQL-based QB Driver implementation
+     */
     static get SQLDriver()
     {
         return SQLDriver;
     }
 
     /**
-    * Wrapper for raw expressions
-    */
+     * Wrapper for raw expressions
+     */
     static get Expression()
     {
         return Expression;
     }
 
     /**
-    * Interface of Prepared statement
-    */
+     * Interface of Prepared statement
+     */
     static get Prepared()
     {
         return Prepared;
     }
 
     /**
-    * Interface of Helpers
-    */
+     * Base for Helpers
+     */
     static get Helpers()
     {
         return Helpers;
+    }
+
+    /**
+     * Base for SQLHelpers
+     */
+    static get SQLHelpers()
+    {
+        return SQLHelpers;
     }
 
     /**
@@ -720,7 +854,7 @@ class QueryBuilder
             this._db_type = db_type;
             this._state = {
                 type: type ? type.toUpperCase() : 'GENERIC',
-                entity: this.getDriver().entity( entity ),
+                entity: this.helpers().entity( entity ),
                 select: new Map(),
                 toset: new Map(),
                 multiset: null,
@@ -813,7 +947,7 @@ class QueryBuilder
      */
     escape( value )
     {
-        return this.getDriver().escape( value );
+        return this.helpers().escape( value );
     }
 
     /**
@@ -823,7 +957,7 @@ class QueryBuilder
      */
     identifier( name )
     {
-        return this.getDriver().identifier( name );
+        return this.helpers().identifier( name );
     }
 
     /**
@@ -833,7 +967,7 @@ class QueryBuilder
      */
     expr( expr )
     {
-        return new Expression( this.getDriver().expr( expr ) );
+        return this.helpers().expr( expr );
     }
 
 
@@ -844,7 +978,7 @@ class QueryBuilder
      */
     param( name )
     {
-        return new Expression( this.getDriver().expr( `:${name}` ) );
+        return this.expr( `:${name}` );
     }
 
     /**
@@ -878,18 +1012,19 @@ class QueryBuilder
     {
         const select = this._state.select;
         const driver = this.getDriver();
+        const helpers = driver.helpers;
 
         if ( value !== undefined )
         {
             driver.checkField( fields );
-            select.set( fields, driver.expr( value ) );
+            select.set( fields, helpers.expr( value ) );
         }
         else if ( fields instanceof Map )
         {
             for ( let [ f, v ] of fields.entries() )
             {
                 driver.checkField( f );
-                select.set( f, driver.expr( v ) );
+                select.set( f, helpers.expr( v ) );
             }
         }
         else if ( fields instanceof Array )
@@ -905,7 +1040,7 @@ class QueryBuilder
             for ( let f in fields )
             {
                 driver.checkField( f );
-                select.set( f, driver.expr( fields[f] ) );
+                select.set( f, helpers.expr( fields[f] ) );
             }
         }
         else if ( typeof fields === 'string' )
@@ -993,6 +1128,7 @@ class QueryBuilder
     {
         const toset = this._state.toset;
         const driver = this.getDriver();
+        const helpers = driver.helpers;
 
         if ( toset instanceof Array )
         {
@@ -1002,14 +1138,14 @@ class QueryBuilder
         if ( value !== undefined )
         {
             driver.checkField( field );
-            toset.set( field, driver.escape( value ) );
+            toset.set( field, helpers.escape( value ) );
         }
         else if ( field instanceof Map )
         {
             for ( let [ f, v ] of field.entries() )
             {
                 driver.checkField( f );
-                toset.set( f, driver.escape( v ) );
+                toset.set( f, helpers.escape( v ) );
             }
         }
         else if ( field instanceof QueryBuilder )
@@ -1036,7 +1172,7 @@ class QueryBuilder
             for ( let f in field )
             {
                 driver.checkField( f );
-                toset.set( f, driver.escape( field[f] ) );
+                toset.set( f, helpers.escape( field[f] ) );
             }
         }
         else
@@ -1139,7 +1275,7 @@ class QueryBuilder
             this._processConditions( cond, conditions );
         }
 
-        entity = this.getDriver().entity( entity );
+        entity = this.helpers().entity( entity );
         joins.push( {
             type,
             entity,
@@ -1289,7 +1425,7 @@ class QueryBuilder
         }
         else
         {
-            const driver = this.getDriver();
+            const helpers = this.helpers();
             const confField = ( f, v ) =>
             {
                 const m = f.match( COND_RE );
@@ -1305,7 +1441,7 @@ class QueryBuilder
                     COND,
                     f,
                     op,
-                    driver.escape( v, op ),
+                    helpers.escape( v, op ),
                 ];
             };
 
@@ -1333,8 +1469,8 @@ class QueryBuilder
     _callParams( args )
     {
         const params = this._state.params;
-        const driver = this.getDriver();
-        args.forEach( ( v ) => params.push( driver.escape( v ) ) );
+        const helpers = this.helpers();
+        args.forEach( ( v ) => params.push( helpers.escape( v ) ) );
         return this;
     }
 
@@ -1343,11 +1479,11 @@ class QueryBuilder
         return this._toQuery( true );
     }
 
-    static _replaceParams( driver, q, params, used_params=null )
+    static _replaceParams( helpers, q, params, used_params=null )
     {
         for ( let p in params )
         {
-            let v = driver.escape( params[p] );
+            let v = helpers.escape( params[p] );
             let nq = q.replace(
                 new RegExp( `(:${p})($|\\W)`, 'g' ),
                 `${v}$2` );

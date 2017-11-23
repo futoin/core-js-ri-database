@@ -735,6 +735,9 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dt><a href="#Helpers">Helpers</a></dt>
 <dd><p>Additional helpers interface</p>
 </dd>
+<dt><a href="#SQLHelpers">SQLHelpers</a></dt>
+<dd><p>Basic logic for SQL-based helpers</p>
+</dd>
 <dt><a href="#QueryBuilder">QueryBuilder</a></dt>
 <dd><p>Neutral query builder</p>
 </dd>
@@ -780,6 +783,27 @@ It&#39;s possible to add result constraints to each query for intermediate check
 <dt><a href="#dateModify">dateModify(expr, seconds)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
 <dd><p>Create expression representing date modification of
 input expression by specified number of seconds.</p>
+</dd>
+<dt><a href="#concat">concat()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Concat arguments. Useful for in-query operation with unknown values.</p>
+</dd>
+<dt><a href="#cast">cast(value, type)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Cast expression to type</p>
+</dd>
+<dt><a href="#add">add()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Add arguments in query.</p>
+</dd>
+<dt><a href="#sub">sub(a, b)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Subtract arguments in query.</p>
+</dd>
+<dt><a href="#mul">mul()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Multiply arguments in query.</p>
+</dd>
+<dt><a href="#div">div(a, b)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Divide arguments in query.</p>
+</dd>
+<dt><a href="#rem">rem(a, b)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Reminder of division in query.</p>
 </dd>
 </dl>
 
@@ -1229,6 +1253,12 @@ Interface for prepared statement execution
 Additional helpers interface
 
 **Kind**: global class  
+<a name="SQLHelpers"></a>
+
+## SQLHelpers
+Basic logic for SQL-based helpers
+
+**Kind**: global class  
 <a name="QueryBuilder"></a>
 
 ## QueryBuilder
@@ -1267,6 +1297,7 @@ Neutral query builder
         * [.Expression](#QueryBuilder.Expression)
         * [.Prepared](#QueryBuilder.Prepared)
         * [.Helpers](#QueryBuilder.Helpers)
+        * [.SQLHelpers](#QueryBuilder.SQLHelpers)
         * [.addDriver(type, module)](#QueryBuilder.addDriver)
         * [.getDriver(type)](#QueryBuilder.getDriver) ⇒ <code>IDriver</code>
 
@@ -1594,7 +1625,13 @@ Interface of Prepared statement
 <a name="QueryBuilder.Helpers"></a>
 
 ### QueryBuilder.Helpers
-Interface of Helpers
+Base for Helpers
+
+**Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
+<a name="QueryBuilder.SQLHelpers"></a>
+
+### QueryBuilder.SQLHelpers
+Base for SQLHelpers
 
 **Kind**: static property of [<code>QueryBuilder</code>](#QueryBuilder)  
 <a name="QueryBuilder.addDriver"></a>
@@ -2053,6 +2090,96 @@ input expression by specified number of seconds.
 | --- | --- | --- |
 | expr | [<code>Expression</code>](#Expression) \| <code>string</code> | source expression (e.g field name) |
 | seconds | <code>seconds</code> | number of seconds to add/subtract(negative) |
+
+<a name="concat"></a>
+
+## concat() ⇒ [<code>Expression</code>](#Expression)
+Concat arguments. Useful for in-query operation with unknown values.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - concatenated argument expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value... | <code>string</code> \| [<code>Expression</code>](#Expression) | String to escape or Expresion object |
+
+<a name="cast"></a>
+
+## cast(value, type) ⇒ [<code>Expression</code>](#Expression)
+Cast expression to type
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - cast expression  
+**Note**: implementation by implicitly substitute not supported types with acceptable
+ equiavelnt like JSON->TEXT/  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>string</code> \| [<code>Expression</code>](#Expression) | String to escape or Expresion object |
+| type | <code>type</code> | target type |
+
+<a name="add"></a>
+
+## add() ⇒ [<code>Expression</code>](#Expression)
+Add arguments in query.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - addition expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
+
+<a name="sub"></a>
+
+## sub(a, b) ⇒ [<code>Expression</code>](#Expression)
+Subtract arguments in query.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - subtraction expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a | <code>string</code> \| [<code>Expression</code>](#Expression) | first arg |
+| b | <code>string</code> \| [<code>Expression</code>](#Expression) | second arg |
+
+<a name="mul"></a>
+
+## mul() ⇒ [<code>Expression</code>](#Expression)
+Multiply arguments in query.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - multiplication expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
+
+<a name="div"></a>
+
+## div(a, b) ⇒ [<code>Expression</code>](#Expression)
+Divide arguments in query.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - division expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a | <code>string</code> \| [<code>Expression</code>](#Expression) | first arg |
+| b | <code>string</code> \| [<code>Expression</code>](#Expression) | second arg |
+
+<a name="rem"></a>
+
+## rem(a, b) ⇒ [<code>Expression</code>](#Expression)
+Reminder of division in query.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - reminder expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a | <code>string</code> \| [<code>Expression</code>](#Expression) | first arg |
+| b | <code>string</code> \| [<code>Expression</code>](#Expression) | second arg |
 
 
 

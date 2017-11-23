@@ -22,7 +22,7 @@ class MySQLService extends L2Service
 {
     constructor( options )
     {
-        super();
+        super( new MySQLDriver );
 
         const raw = options.raw ? _cloneDeep( options.raw ) : {};
         _defaults( raw, {
@@ -66,7 +66,6 @@ class MySQLService extends L2Service
         const pool = mysql.createPool( raw );
 
         this._pool = pool;
-        this._driver = new MySQLDriver;
     }
 
     _close()
