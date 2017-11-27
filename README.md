@@ -805,6 +805,12 @@ input expression by specified number of seconds.</p>
 <dt><a href="#rem">rem(a, b)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
 <dd><p>Reminder of division in query.</p>
 </dd>
+<dt><a href="#least">least()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Get minimal value of arguments.</p>
+</dd>
+<dt><a href="#greatest">greatest()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
+<dd><p>Get maximal value of arguments.</p>
+</dd>
 </dl>
 
 <a name="L1Face"></a>
@@ -2180,6 +2186,30 @@ Reminder of division in query.
 | --- | --- | --- |
 | a | <code>string</code> \| [<code>Expression</code>](#Expression) | first arg |
 | b | <code>string</code> \| [<code>Expression</code>](#Expression) | second arg |
+
+<a name="least"></a>
+
+## least() ⇒ [<code>Expression</code>](#Expression)
+Get minimal value of arguments.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - addition expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
+
+<a name="greatest"></a>
+
+## greatest() ⇒ [<code>Expression</code>](#Expression)
+Get maximal value of arguments.
+
+**Kind**: global function  
+**Returns**: [<code>Expression</code>](#Expression) - - addition expression  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
 
 
 

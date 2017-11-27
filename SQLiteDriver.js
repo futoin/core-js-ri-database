@@ -101,6 +101,18 @@ class SQLiteHelpers extends QueryBuilder.SQLHelpers
 
         return super.cast( a, type );
     }
+
+    least( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression( `MIN(${escaped.join( ',' )})` );
+    }
+
+    greatest( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression( `MAX(${escaped.join( ',' )})` );
+    }
 }
 
 /**

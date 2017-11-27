@@ -1051,6 +1051,8 @@ module.exports = function( describe, it, vars )
                     .get( 'm', helpers.escape( helpers.mul( 4, 5, 6 ) ) )
                     .get( 'd', helpers.escape( helpers.div( 20, 5 ) ) )
                     .get( 'r', helpers.escape( helpers.mod( 8, 6 ) ) )
+                    .get( 'l', helpers.escape( helpers.least( 4, 5, 6 ) ) )
+                    .get( 'g', helpers.escape( helpers.greatest( 4, 5, 6 ) ) )
                     .executeAssoc( as );
                 as.add( ( as, res ) =>
                 {
@@ -1060,6 +1062,8 @@ module.exports = function( describe, it, vars )
                     expect( r.m | 0 ).to.equal( 120 );
                     expect( r.d | 0 ).to.equal( 4 );
                     expect( r.r | 0 ).to.equal( 2 );
+                    expect( r.l | 0 ).to.equal( 4 );
+                    expect( r.g | 0 ).to.equal( 6 );
                 } );
             }, ( as, err ) =>
             {

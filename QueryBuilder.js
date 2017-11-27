@@ -195,6 +195,22 @@ class Helpers
      * @param {string|Expression} b - second arg
      * @returns {Expression} - reminder expression
      */
+
+    /**
+     * Get minimal value of arguments.
+     * @func
+     * @name least
+     * @param {string|Expression} a... - arguments
+     * @returns {Expression} - addition expression
+     */
+
+    /**
+     * Get maximal value of arguments.
+     * @func
+     * @name greatest
+     * @param {string|Expression} a... - arguments
+     * @returns {Expression} - addition expression
+     */
 }
 
 /**
@@ -454,6 +470,18 @@ class SQLHelpers extends Helpers
         a = this.escape( a );
         b = this.escape( b );
         return new Expression( `(${a}%${b})` );
+    }
+
+    least( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression( `LEAST(${escaped.join( ',' )})` );
+    }
+
+    greatest( ...args )
+    {
+        const escaped = args.map( ( v ) => this.escape( v ) );
+        return new Expression( `GREATEST(${escaped.join( ',' )})` );
     }
 }
 

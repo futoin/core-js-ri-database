@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: least() and greatest() helpers
+
 === 1.6.2 (2017-11-27) ===
 FIXED: MySQL DECIMAL/BIGINT back references (mysql.js issue workaround)
 
