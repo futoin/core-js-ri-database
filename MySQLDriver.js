@@ -78,6 +78,12 @@ class MySQLHelpers extends QueryBuilder.SQLHelpers
                 return value.toQuery();
             }
 
+            // Fixes backref() with BIGINT/DECIMAL
+            if ( value instanceof Buffer )
+            {
+                return SqlString.escape( value );
+            }
+
             throw new Error( `Unknown type: ${typeof value}` );
         }
     }
