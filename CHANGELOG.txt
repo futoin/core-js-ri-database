@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: to prefix PostgreSQL string literals with "E", if slashes are escaped
+
 === 1.7.0 (2017-11-27) ===
 NEW: least() and greatest() helpers
 

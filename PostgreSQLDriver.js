@@ -65,8 +65,16 @@ class PostgreSQLHelpers extends QueryBuilder.SQLHelpers
         case 'boolean':
             return value ? 'TRUE' : 'FALSE';
 
-        case 'string':
-            return `'${value.replace( /'/g, "''" ).replace( /\\/g, "\\\\" )}'`;
+        case 'string': {
+            value = value.replace( /'/g, "''" );
+
+            if ( value.indexOf( '\\' ) >= 0 )
+            {
+                return `E'${value.replace( /\\/g, "\\\\" )}'`;
+            }
+
+            return `'${value}'`;
+        }
 
         case 'number':
             return `${value}`;

@@ -20,7 +20,8 @@ describe( 'PostgreSQLDriver', function()
         expect( helpers.escape( 1.5 ) ).to.equal( '1.5' );
         expect( helpers.escape( "" ) ).to.equal( "''" );
         expect( helpers.escape( "Some ' string ' \" \\" ) )
-            .to.equal( "'Some '' string '' \" \\\\'" );
+            .to.equal( "E'Some '' string '' \" \\\\'" );
+        expect( helpers.escape( "\\ab'c" ) ).to.equal( "E'\\\\ab''c'" );
     } );
 
     it( 'should escape identifiers correctly', () =>
