@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.7.1 (2017-11-29) ===
 FIXED: to prefix PostgreSQL string literals with "E", if slashes are escaped
 
 === 1.7.0 (2017-11-27) ===
