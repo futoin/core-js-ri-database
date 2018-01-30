@@ -1,4 +1,7 @@
 
+=== (next) ===
+MINOR: changes to use as.waitExternal() instead of dummy as.setCancel()
+
 === 1.7.1 (2017-11-29) ===
 FIXED: to prefix PostgreSQL string literals with "E", if slashes are escaped
 

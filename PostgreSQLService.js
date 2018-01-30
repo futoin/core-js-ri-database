@@ -128,8 +128,7 @@ class PostgreSQLService extends L2Service
         as.add(
             ( as ) =>
             {
-                as.setCancel( ( as ) =>
-                {} );
+                as.waitExternal();
 
                 this._pool.connect( ( err, conn, release ) =>
                 {
@@ -200,7 +199,7 @@ class PostgreSQLService extends L2Service
 
     _handleResult( as, dbq, cb=null )
     {
-        as.setCancel( ( as ) => null );
+        as.waitExternal();
 
         dbq
             .then( ( r ) =>

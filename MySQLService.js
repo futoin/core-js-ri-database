@@ -109,8 +109,7 @@ class MySQLService extends L2Service
         as.add(
             ( as ) =>
             {
-                as.setCancel( ( as ) =>
-                {} );
+                as.waitExternal();
 
                 this._pool.getConnection( ( err, conn ) =>
                 {
@@ -184,7 +183,7 @@ class MySQLService extends L2Service
 
     _handleResult( as, dbq, multi=false, cb=null )
     {
-        as.setCancel( ( as ) => null );
+        as.waitExternal();
 
         let rows = null;
         let fields = null;

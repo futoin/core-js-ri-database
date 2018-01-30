@@ -168,8 +168,7 @@ class SQLiteService extends L2Service
 
     _query( as, db, q, cb=null )
     {
-        as.setCancel( ( as ) =>
-        {} );
+        as.waitExternal();
 
         // Note: with. ...is not covered
         if ( q.match( /^\s*(UPDATE|INSERT|DELETE|BEGIN|COMMIT)\s/i ) )
