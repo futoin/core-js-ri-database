@@ -768,51 +768,6 @@ It&#39;s possible to add result constraints to each query for intermediate check
 <dd></dd>
 </dl>
 
-## Functions
-
-<dl>
-<dt><a href="#now">now()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Get DB-specific current timestamp expression</p>
-</dd>
-<dt><a href="#date">date(value)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Convert native timestamp to DB format</p>
-</dd>
-<dt><a href="#nativeDate">nativeDate(value)</a> ⇒ <code>moment</code></dt>
-<dd><p>Convert DB timestamp to native format</p>
-</dd>
-<dt><a href="#dateModify">dateModify(expr, seconds)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Create expression representing date modification of
-input expression by specified number of seconds.</p>
-</dd>
-<dt><a href="#concat">concat()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Concat arguments. Useful for in-query operation with unknown values.</p>
-</dd>
-<dt><a href="#cast">cast(value, type)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Cast expression to type</p>
-</dd>
-<dt><a href="#add">add()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Add arguments in query.</p>
-</dd>
-<dt><a href="#sub">sub(a, b)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Subtract arguments in query.</p>
-</dd>
-<dt><a href="#mul">mul()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Multiply arguments in query.</p>
-</dd>
-<dt><a href="#div">div(a, b)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Divide arguments in query.</p>
-</dd>
-<dt><a href="#rem">rem(a, b)</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Reminder of division in query.</p>
-</dd>
-<dt><a href="#least">least()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Get minimal value of arguments.</p>
-</dd>
-<dt><a href="#greatest">greatest()</a> ⇒ <code><a href="#Expression">Expression</a></code></dt>
-<dd><p>Get maximal value of arguments.</p>
-</dd>
-</dl>
-
 <a name="L1Face"></a>
 
 ## L1Face
@@ -1065,7 +1020,6 @@ Level 2 Database Face
         * [.READ_COMMITTED](#L2Face+READ_COMMITTED)
         * [.REPEATABL_READ](#L2Face+REPEATABL_READ)
         * [.SERIALIZABLE](#L2Face+SERIALIZABLE)
-        * [.xfer](#L2Face+xfer)
         * [.newXfer([iso_level])](#L2Face+newXfer) ⇒ [<code>XferBuilder</code>](#XferBuilder)
     * _static_
         * [.READ_UNCOMMITTED](#L2Face.READ_UNCOMMITTED)
@@ -1098,18 +1052,6 @@ Repeatable Read isolation level constant
 Serializable
 
 **Kind**: instance property of [<code>L2Face</code>](#L2Face)  
-<a name="L2Face+xfer"></a>
-
-### l2Face.xfer
-Execute query list in transaction of specific isolation level
-
-**Kind**: instance property of [<code>L2Face</code>](#L2Face)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| query_list | <code>array</code> | list of XferQuery objects |
-| isolation_level | <code>string</code> | isolation level |
-
 <a name="L2Face+newXfer"></a>
 
 ### l2Face.newXfer([iso_level]) ⇒ [<code>XferBuilder</code>](#XferBuilder)
@@ -1228,31 +1170,6 @@ Allows easy joining with raw query
 Interface for prepared statement execution
 
 **Kind**: global class  
-
-* [Prepared](#Prepared)
-    * [.execute(as, [params])](#Prepared+execute)
-    * [.executeAsync(as, [params])](#Prepared+executeAsync)
-
-<a name="Prepared+execute"></a>
-
-### prepared.execute(as, [params])
-**Kind**: instance method of [<code>Prepared</code>](#Prepared)  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | step interface |
-| [params] | <code>object</code> | <code></code> | parameters to subsitute |
-
-<a name="Prepared+executeAsync"></a>
-
-### prepared.executeAsync(as, [params])
-**Kind**: instance method of [<code>Prepared</code>](#Prepared)  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | step interface |
-| [params] | <code>object</code> | <code></code> | parameters to subsitute |
-
 <a name="Helpers"></a>
 
 ## Helpers
@@ -2051,165 +1968,6 @@ Register database service type.
 | --- | --- | --- |
 | type | <code>string</code> | type of database |
 | factory | <code>string</code> \| <code>callable</code> \| <code>object</code> | module name, factory method      or a subclass of L1Service |
-
-<a name="now"></a>
-
-## now() ⇒ [<code>Expression</code>](#Expression)
-Get DB-specific current timestamp expression
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - current timestamp  
-<a name="date"></a>
-
-## date(value) ⇒ [<code>Expression</code>](#Expression)
-Convert native timestamp to DB format
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - timestamp in DB format  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| value | <code>moment</code> \| <code>string</code> | native timestamp |
-
-<a name="nativeDate"></a>
-
-## nativeDate(value) ⇒ <code>moment</code>
-Convert DB timestamp to native format
-
-**Kind**: global function  
-**Returns**: <code>moment</code> - - timestamp in moment.js  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| value | <code>string</code> | timestamp in DB format |
-
-<a name="dateModify"></a>
-
-## dateModify(expr, seconds) ⇒ [<code>Expression</code>](#Expression)
-Create expression representing date modification of
-input expression by specified number of seconds.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - DB expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| expr | [<code>Expression</code>](#Expression) \| <code>string</code> | source expression (e.g field name) |
-| seconds | <code>seconds</code> | number of seconds to add/subtract(negative) |
-
-<a name="concat"></a>
-
-## concat() ⇒ [<code>Expression</code>](#Expression)
-Concat arguments. Useful for in-query operation with unknown values.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - concatenated argument expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| value... | <code>string</code> \| [<code>Expression</code>](#Expression) | String to escape or Expresion object |
-
-<a name="cast"></a>
-
-## cast(value, type) ⇒ [<code>Expression</code>](#Expression)
-Cast expression to type
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - cast expression  
-**Note**: implementation by implicitly substitute not supported types with acceptable
- equiavelnt like JSON->TEXT/  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| value | <code>string</code> \| [<code>Expression</code>](#Expression) | String to escape or Expresion object |
-| type | <code>type</code> | target type |
-
-<a name="add"></a>
-
-## add() ⇒ [<code>Expression</code>](#Expression)
-Add arguments in query.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - addition expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
-
-<a name="sub"></a>
-
-## sub(a, b) ⇒ [<code>Expression</code>](#Expression)
-Subtract arguments in query.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - subtraction expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| a | <code>string</code> \| [<code>Expression</code>](#Expression) | first arg |
-| b | <code>string</code> \| [<code>Expression</code>](#Expression) | second arg |
-
-<a name="mul"></a>
-
-## mul() ⇒ [<code>Expression</code>](#Expression)
-Multiply arguments in query.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - multiplication expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
-
-<a name="div"></a>
-
-## div(a, b) ⇒ [<code>Expression</code>](#Expression)
-Divide arguments in query.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - division expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| a | <code>string</code> \| [<code>Expression</code>](#Expression) | first arg |
-| b | <code>string</code> \| [<code>Expression</code>](#Expression) | second arg |
-
-<a name="rem"></a>
-
-## rem(a, b) ⇒ [<code>Expression</code>](#Expression)
-Reminder of division in query.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - reminder expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| a | <code>string</code> \| [<code>Expression</code>](#Expression) | first arg |
-| b | <code>string</code> \| [<code>Expression</code>](#Expression) | second arg |
-
-<a name="least"></a>
-
-## least() ⇒ [<code>Expression</code>](#Expression)
-Get minimal value of arguments.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - addition expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
-
-<a name="greatest"></a>
-
-## greatest() ⇒ [<code>Expression</code>](#Expression)
-Get maximal value of arguments.
-
-**Kind**: global function  
-**Returns**: [<code>Expression</code>](#Expression) - - addition expression  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| a... | <code>string</code> \| [<code>Expression</code>](#Expression) | arguments |
 
 
 

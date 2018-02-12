@@ -64,7 +64,7 @@ class SQLiteHelpers extends QueryBuilder.SQLHelpers
             return value ? 'TRUE' : 'FALSE';
 
         case 'string':
-            return `'${value.replace( /'/g, "''" ).replace( /\\/g, "\\\\" )}'`;
+            return `'${value.replace( /'/g, "''" )}'`;
 
         case 'number':
             return `${value}`;
