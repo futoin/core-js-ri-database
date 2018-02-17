@@ -1,5 +1,7 @@
 'use strict';
 
+require( './prepare' );
+
 const expect = require( 'chai' ).expect;
 const moment = require( 'moment' );
 process.on( 'warning', e => console.warn( e.stack ) );
