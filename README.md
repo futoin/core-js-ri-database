@@ -6,19 +6,6 @@
 
   [![NPM](https://nodei.co/npm/futoin-database.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/futoin-database/)
 
-# FutoIn reference implementation
-
-Reference implementation of:
- 
-    FTN17: FutoIn Interface - Database
-    Version: 1.0
-    
-* Spec: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/final/preview/ftn17_if_database-1.html)
-
-Author: [Andrey Galkin](mailto:andrey@futoin.org)
-
-[Web Site](http://futoin.org/)
-
 # About
 
 Database neutral microservice interface with advanced Query and revolutionary Transaction builder.
@@ -34,6 +21,19 @@ At the moment, the following databases are supported our of the box:
     
 *Note: note specific database support is to be split into separate packages at some point. Meanwhile, please
 use `yarn install --ignore-optional` to minimize deps.*
+
+
+**Documentation** --> [FutoIn Guide](https://futoin.org/docs/db/)
+
+Reference implementation of:
+ 
+    FTN17: FutoIn Interface - Database
+    Version: 1.0
+    
+* Spec: [FTN17: FutoIn Interface - Database v1.x](http://specs.futoin.org/final/preview/ftn17_if_database-1.html)
+
+Author: [Andrey Galkin](mailto:andrey@futoin.org)
+
 
 # Installation for Node.js
 
