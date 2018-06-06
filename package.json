@@ -36,10 +36,10 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "eslint": "^4.19.1",
-    "futoin-asyncsteps": "^1.11.5",
-    "futoin-executor": "^1.9.0",
-    "futoin-invoker": "^1.9.3",
-    "grunt": "^1.0.2",
+    "futoin-asyncsteps": "^2.0.0",
+    "futoin-executor": "^1.10.0",
+    "futoin-invoker": "^1.10.0",
+    "grunt": "^1.0.3",
     "grunt-eslint": "^20.1.0",
     "grunt-jsdoc-to-markdown": "^4.0.0",
     "grunt-mocha-istanbul": "^5.0.2",
@@ -48,7 +48,7 @@
     "mocha": "^5.2.0"
   },
   "dependencies": {
-    "futoin-asyncevent": "^1.0.2",
+    "futoin-asyncevent": "^2.0.0",
     "lodash": "^4.17.10",
     "moment": "^2.22.2"
   },
@@ -59,8 +59,8 @@
     "sqlstring": "^2.3.1"
   },
   "peerDependencies": {
-    "futoin-asyncsteps": "^1.11.5",
-    "futoin-executor": "^1.9.0",
-    "futoin-invoker": "^1.9.3"
+    "futoin-asyncsteps": "^2.0.0",
+    "futoin-executor": "^1.10.0",
+    "futoin-invoker": "^1.10.0"
   }
 }
