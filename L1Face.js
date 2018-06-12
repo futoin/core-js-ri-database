@@ -19,6 +19,8 @@
  * limitations under the License.
  */
 
+const path = require( 'path' );
+
 const PingFace = require( 'futoin-invoker/PingFace' );
 const QueryBuilder = require ( './QueryBuilder' );
 
@@ -27,6 +29,12 @@ const QueryBuilder = require ( './QueryBuilder' );
  */
 class L1Face extends PingFace
 {
+    constructor( ...args )
+    {
+        super( ...args );
+        this._db_type = null;
+    }
+
     /**
      * Latest supported FTN17 version
      */
@@ -43,6 +51,11 @@ class L1Face extends PingFace
         return '1.0';
     }
 
+    static get IFACE_NAME()
+    {
+        return 'futoin.db.l1';
+    }
+
     /**
      * CCM registration helper
      *
@@ -57,16 +70,15 @@ class L1Face extends PingFace
     static register( as, ccm, name, endpoint, credentials=null, options={} )
     {
         const ifacever = options.version || this.LATEST_VERSION;
-        const iface = this.spec( ifacever );
 
         options.nativeImpl = this;
-        options.specDirs = [ iface, PingFace.spec( this.PING_VERSION ) ];
+        options.specDirs = this.spec();
         options.sendOnBehalfOf = options.sendOnBehalfOf || false;
 
         ccm.register(
             as,
             name,
-            iface.iface + ':' + ifacever,
+            `${this.IFACE_NAME}:${ifacever}`,
             endpoint,
             credentials,
             options
@@ -253,81 +265,15 @@ class L1Face extends PingFace
 
         return res;
     }
+
+    static spec()
+    {
+        return [
+            path.resolve( __dirname, 'specs' ),
+            PingFace.spec( this.PING_VERSION ),
+        ];
+    }
 }
 
 module.exports = L1Face;
 
-const specs = {};
-L1Face._specs = specs;
-
-specs['1.0'] = {
-    iface : "futoin.db.l1",
-    version : "1.0",
-    ftn3rev : "1.7",
-    imports : [ "futoin.ping:1.0" ],
-    types : {
-        Query : {
-            type : "string",
-            minlen : 1,
-            maxlen : 10000,
-        },
-        Identifier : {
-            type : "string",
-            maxlen : 256,
-        },
-        Row : "array",
-        Rows : {
-            type : "array",
-            elemtype : "Row",
-            maxlen : 1000,
-        },
-        Field : {
-            type : "string",
-            maxlen : 256,
-        },
-        Fields : {
-            type : "array",
-            elemtype : "Field",
-            desc : "List of field named in order of related Row",
-        },
-        Flavour : {
-            type : "Identifier",
-            desc : "Actual actual database driver type",
-        },
-        QueryResult : {
-            type : "map",
-            fields : {
-                rows : "Rows",
-                fields : "Fields",
-                affected : "integer",
-            },
-        },
-    },
-    funcs : {
-        query : {
-            params : { q : "Query" },
-            result : "QueryResult",
-            throws : [
-                "InvalidQuery",
-                "Duplicate",
-                "OtherExecError",
-                "LimitTooHigh",
-            ],
-        },
-        callStored : {
-            params : {
-                name : "Identifier",
-                args : "Row",
-            },
-            result : "QueryResult",
-            throws : [
-                "InvalidQuery",
-                "Duplicate",
-                "OtherExecError",
-                "LimitTooHigh",
-                "DeadLock",
-            ],
-        },
-        getFlavour : { result : "Flavour" },
-    },
-};

@@ -20,7 +20,6 @@
  */
 
 const PingService = require( 'futoin-executor/PingService' );
-const PingFace = require( 'futoin-invoker/PingFace' );
 const L1Face = require( './L1Face' );
 const { FutoInError } = require( 'futoin-asyncsteps' );
 
@@ -45,10 +44,9 @@ class L1Service extends PingService
      */
     static register( as, executor, options )
     {
-        const iface = L1Face.spec( L1Face.LATEST_VERSION );
-        const ifacever = iface.iface + ':' + iface.version;
+        const ifacever = `${L1Face.IFACE_NAME}:${L1Face.LATEST_VERSION}`;
         const impl = new this( options );
-        const spec_dirs = [ iface, PingFace.spec( L1Face.PING_VERSION ) ];
+        const spec_dirs = L1Face.spec();
 
         executor.register( as, ifacever, impl, spec_dirs );
         executor.once( 'close', () => impl._close() );

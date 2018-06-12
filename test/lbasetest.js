@@ -18,6 +18,9 @@ class FakeL1Face extends L1Face
     {
         return 'fake';
     }
+
+    set _db_type( _ )
+    {}
 }
 
 class FakeL2Face extends L2Face
@@ -26,6 +29,9 @@ class FakeL2Face extends L2Face
     {
         return 'fake';
     }
+
+    set _db_type( _ )
+    {}
 }
 
 

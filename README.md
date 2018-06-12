@@ -1026,7 +1026,6 @@ Level 2 Database Face
         * [.READ_COMMITTED](#L2Face.READ_COMMITTED)
         * [.REPEATABL_READ](#L2Face.REPEATABL_READ)
         * [.SERIALIZABLE](#L2Face.SERIALIZABLE)
-        * [.register(as, ccm, name, endpoint, [credentials], [options])](#L2Face.register)
 
 <a name="L2Face+READ_UNCOMMITTED"></a>
 
@@ -1095,23 +1094,6 @@ Repeatable Read isolation level constant
 Serializable
 
 **Kind**: static property of [<code>L2Face</code>](#L2Face)  
-<a name="L2Face.register"></a>
-
-### L2Face.register(as, ccm, name, endpoint, [credentials], [options])
-CCM registration helper
-
-**Kind**: static method of [<code>L2Face</code>](#L2Face)  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | steps interface |
-| ccm | <code>AdvancedCCM</code> |  | CCM instance |
-| name | <code>string</code> |  | CCM registration name |
-| endpoint | <code>\*</code> |  | see AdvancedCCM#register |
-| [credentials] | <code>\*</code> | <code></code> | see AdvancedCCM#register |
-| [options] | <code>object</code> | <code>{}</code> | interface options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
-
 <a name="L2Service"></a>
 
 ## L2Service

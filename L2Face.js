@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-const PingFace = require( 'futoin-invoker/PingFace' );
 const L1Face = require( './L1Face' );
 const XferBuilder = require( './XferBuilder' );
 
@@ -79,44 +78,9 @@ class L2Face extends L1Face
         return L2Face.SERIALIZABLE;
     }
 
-    /**
-     * CCM registration helper
-     *
-     * @param {AsyncSteps} as - steps interface
-     * @param {AdvancedCCM} ccm - CCM instance
-     * @param {string} name - CCM registration name
-     * @param {*} endpoint - see AdvancedCCM#register
-     * @param {*} [credentials=null] - see AdvancedCCM#register
-     * @param {object} [options={}] - interface options
-     * @param {string} [options.version=1.0] - interface version to use
-     */
-    static register( as, ccm, name, endpoint, credentials=null, options={} )
+    static get IFACE_NAME()
     {
-        const ifacever = options.version || this.LATEST_VERSION;
-        const iface = this.spec( ifacever );
-        const l1_iface = L1Face.spec( ifacever );
-
-        options.nativeImpl = this;
-        options.specDirs = [
-            iface,
-            l1_iface,
-            PingFace.spec( this.PING_VERSION ),
-        ];
-        options.sendOnBehalfOf = options.sendOnBehalfOf || false;
-
-        ccm.register(
-            as,
-            name,
-            iface.iface + ':' + ifacever,
-            endpoint,
-            credentials,
-            options
-        );
-
-        as.add( ( as ) =>
-        {
-            ccm.iface( name ).getFlavour( as );
-        } );
+        return 'futoin.db.l2';
     }
 
     /**
@@ -132,6 +96,7 @@ class L2Face extends L1Face
     {
         return new XferBuilder( this, this._db_type, iso_level );
     }
+
 
     /**
      * Execute query list in transaction of specific isolation level

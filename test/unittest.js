@@ -54,7 +54,10 @@ describe( 'QueryBuilder', function()
     {
         constructor()
         {
-            super( null, { funcs: {} } );
+            super(
+                { limiters: {} },
+                { funcs: {},
+                    options: {} } );
             this._result = null;
             this._db_type = 'mocksql';
         }
@@ -1121,7 +1124,10 @@ describe( 'XferBuilder', function()
     {
         constructor()
         {
-            super( null, { funcs: {} } );
+            super(
+                { limiters: {} },
+                { funcs: {},
+                    options: {} } );
             this._qresult = null;
             this._xresult = null;
             this._db_type = 'mocksql';

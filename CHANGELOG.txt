@@ -1,4 +1,9 @@
 
+=== (next) ===
+CHANGED: moved specs from sources to specs/ folder
+CHANGED: to list only necessary files in package
+NEW: futoin-invoker & futoin-executor v2 support
+
 === 1.8.0 (2018-06-06) ===
 CHANGED: to use performance-enhanced futoin-asyncsteps v2
 
