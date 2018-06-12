@@ -1,6 +1,7 @@
 
 === (next) ===
 CHANGED: harmonized eslint rules with other FutoIn projects
+FIXED: getPrepared() failures when run through CCM v2
 
 === 1.9.0 (2018-06-12) ===
 CHANGED: moved specs from sources to specs/ folder

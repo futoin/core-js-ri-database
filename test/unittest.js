@@ -50,6 +50,7 @@ describe( 'QueryBuilder', function() {
                     options: {} } );
             this._result = null;
             this._db_type = 'mocksql';
+            Object.seal( this );
         }
 
         query( as, q ) {
@@ -947,6 +948,7 @@ describe( 'XferBuilder', function() {
             this._qresult = null;
             this._xresult = null;
             this._db_type = 'mocksql';
+            Object.seal( this );
         }
 
         query( as, q ) {

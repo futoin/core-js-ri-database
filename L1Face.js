@@ -31,6 +31,7 @@ class L1Face extends PingFace {
     constructor( ...args ) {
         super( ...args );
         this._db_type = null;
+        this._prep_cache = null;
     }
 
     /**
