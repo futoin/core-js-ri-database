@@ -27,8 +27,7 @@ const { FutoInError } = require( 'futoin-asyncsteps' );
 /**
  * Base for Level 1 Database service implementation
  */
-class L1Service extends PingService
-{
+class L1Service extends PingService {
     /**
      * Register futoin.db.l1 interface with Executor
      * @param {AsyncSteps} as - steps interface
@@ -42,8 +41,7 @@ class L1Service extends PingService
      * @param {string} options.conn_limit - max connections
      * @returns {L1Service} instance
      */
-    static register( as, executor, options )
-    {
+    static register( as, executor, options ) {
         const ifacever = `${L1Face.IFACE_NAME}:${L1Face.LATEST_VERSION}`;
         const impl = new this( options );
         const spec_dirs = L1Face.spec();
@@ -54,27 +52,22 @@ class L1Service extends PingService
         return impl;
     }
 
-    get MAX_ROWS()
-    {
+    get MAX_ROWS() {
         return 1000;
     }
 
-    _close()
-    {
+    _close() {
     }
 
-    query( as, _reqinfo )
-    {
+    query( as, _reqinfo ) {
         as.error( FutoInError.NotImplemented );
     }
 
-    callStored( as, _reqinfo )
-    {
+    callStored( as, _reqinfo ) {
         as.error( FutoInError.NotImplemented );
     }
 
-    getFlavour( as, _reqinfo )
-    {
+    getFlavour( as, _reqinfo ) {
         as.error( FutoInError.NotImplemented );
     }
 }

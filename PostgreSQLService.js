@@ -26,8 +26,7 @@ const pg = require( 'pg' );
 // const Pool = pg.native ? pg.native.Pool : pg.Pool;
 const Pool = pg.Pool;
 
-if ( typeof process.env.NODE_PG_FORCE_NATIVE !== 'undefined' )
-{
+if ( typeof process.env.NODE_PG_FORCE_NATIVE !== 'undefined' ) {
     throw new Error( 'NODE_PG_FORCE_NATIVE is not supported yet' );
 }
 
@@ -47,10 +46,8 @@ const IsoLevels = {
 const pg_types = pg.types;
 const arrayParser = require( 'pg-types/lib/arrayParser' );
 
-const parseStringArray = function( value )
-{
-    if( !value )
-    {
+const parseStringArray = function( value ) {
+    if( !value ) {
         return null;
     }
 
@@ -71,10 +68,8 @@ pg_types.setTypeParser( 3807, parseStringArray ); // jsonb[]
 /**
  * PostgreSQL service implementation for FutoIn Database interface
  */
-class PostgreSQLService extends L2Service
-{
-    constructor( options )
-    {
+class PostgreSQLService extends L2Service {
+    constructor( options ) {
         super( new PostgreSQLDriver );
 
         const raw = options.raw ? _cloneDeep( options.raw ) : {};
@@ -92,12 +87,10 @@ class PostgreSQLService extends L2Service
             'user',
             'password',
             'database',
-        ] )
-        {
+        ] ) {
             const val = options[f];
 
-            if ( val )
-            {
+            if ( val ) {
                 raw[f] = val;
             }
         }
@@ -107,17 +100,14 @@ class PostgreSQLService extends L2Service
         this._pool = pool;
     }
 
-    _withConnection( as, callback )
-    {
+    _withConnection( as, callback ) {
         const isol = 'RC';
 
-        const releaseConn = ( as ) =>
-        {
+        const releaseConn = ( as ) => {
             const state = as.state;
             const release = state.dbRelease;
 
-            if ( release )
-            {
+            if ( release ) {
                 state.dbConn = null;
                 state.dbRelease = null;
 
@@ -126,34 +116,26 @@ class PostgreSQLService extends L2Service
         };
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 as.waitExternal();
 
-                this._pool.connect( ( err, conn, release ) =>
-                {
+                this._pool.connect( ( err, conn, release ) => {
                     const state = as.state;
 
-                    if ( !state )
-                    {
-                        if ( release )
-                        {
+                    if ( !state ) {
+                        if ( release ) {
                             release();
                         }
 
                         return;
                     }
 
-                    if ( err )
-                    {
-                        try
-                        {
+                    if ( err ) {
+                        try {
                             state.last_db_error= err;
                             state.last_exception = err;
                             as.error( err.code );
-                        }
-                        catch ( e )
-                        {
+                        } catch ( e ) {
                             return;
                         }
                     }
@@ -166,12 +148,9 @@ class PostgreSQLService extends L2Service
             ( as, err ) => releaseConn( as )
         );
         as.add(
-            ( as, conn ) =>
-            {
-                if ( conn._futoin_isol !== isol )
-                {
-                    as.add( ( as ) =>
-                    {
+            ( as, conn ) => {
+                if ( conn._futoin_isol !== isol ) {
+                    as.add( ( as ) => {
                         const q = (
                             'SET SESSION CHARACTERISTICS AS ' +
                             'TRANSACTION ISOLATION '+
@@ -181,14 +160,11 @@ class PostgreSQLService extends L2Service
                         this._handleResult( as, dbq );
                     } );
 
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         conn._futoin_isol = isol;
                         callback( as, conn );
                     } );
-                }
-                else
-                {
+                } else {
                     callback( as, conn );
                 }
             },
@@ -197,30 +173,22 @@ class PostgreSQLService extends L2Service
         as.add( releaseConn );
     }
 
-    _handleResult( as, dbq, cb=null )
-    {
+    _handleResult( as, dbq, cb=null ) {
         as.waitExternal();
 
         dbq
-            .then( ( r ) =>
-            {
-                if ( !as.state )
-                {
+            .then( ( r ) => {
+                if ( !as.state ) {
                     return;
                 }
 
-                if ( cb )
-                {
+                if ( cb ) {
                     const rows = r.rows;
 
-                    if ( rows.length > this.MAX_ROWS )
-                    {
-                        try
-                        {
+                    if ( rows.length > this.MAX_ROWS ) {
+                        try {
                             as.error( 'LimitTooHigh' );
-                        }
-                        catch ( e )
-                        {
+                        } catch ( e ) {
                             return;
                         }
                     }
@@ -233,30 +201,24 @@ class PostgreSQLService extends L2Service
                         affected,
                     };
 
-                    try
-                    {
+                    try {
                         cb( res );
-                    }
-                    catch ( e )
-                    {
+                    } catch ( e ) {
                         return;
                     }
                 }
 
                 as.success();
             } )
-            .catch( ( err ) =>
-            {
+            .catch( ( err ) => {
                 if ( !as.state ) return;
 
                 as.state.last_db_error= err;
                 as.state.last_exception = err;
                 const code = err.code;
 
-                try
-                {
-                    switch ( code )
-                    {
+                try {
+                    switch ( code ) {
                     case '23505':
                         as.error( 'Duplicate', err.message );
                         break;
@@ -273,25 +235,20 @@ class PostgreSQLService extends L2Service
                         as.error( 'OtherExecError',
                             `${code}: ${err.message}` );
                     }
-                }
-                catch ( e )
-                {
+                } catch ( e ) {
                     // ignore
                 }
             } );
     }
 
-    query( as, reqinfo )
-    {
+    query( as, reqinfo ) {
         const q = reqinfo.params().q.trim();
 
-        if ( !q.length )
-        {
+        if ( !q.length ) {
             as.error( 'InvalidQuery' );
         }
 
-        this._withConnection( as, ( as, conn ) =>
-        {
+        this._withConnection( as, ( as, conn ) => {
             const dbq = conn.query( {
                 text: q,
                 rowMode: 'array',
@@ -300,10 +257,8 @@ class PostgreSQLService extends L2Service
         } );
     }
 
-    callStored( as, reqinfo )
-    {
-        this._withConnection( as, ( as, conn ) =>
-        {
+    callStored( as, reqinfo ) {
+        this._withConnection( as, ( as, conn ) => {
             const p = reqinfo.params();
             const args = p.args;
             const placeholders = args.map( ( _v, i ) => `$${i+1}` ).join( ',' );
@@ -317,26 +272,21 @@ class PostgreSQLService extends L2Service
         } );
     }
 
-    getFlavour( as, reqinfo )
-    {
+    getFlavour( as, reqinfo ) {
         reqinfo.result( 'postgresql' );
     }
 
-    xfer( as, reqinfo )
-    {
-        this._withConnection( as, ( as, conn ) =>
-        {
+    xfer( as, reqinfo ) {
+        this._withConnection( as, ( as, conn ) => {
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const p = reqinfo.params();
                     const ql = p.ql;
                     const prev_results = [];
                     const results = [];
 
                     // Begin
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         const q = (
                             'START TRANSACTION ' +
                             `ISOLATION LEVEL ${IsoLevels[p.isol]}`
@@ -346,16 +296,14 @@ class PostgreSQLService extends L2Service
                     } );
 
                     // Loop through query list
-                    as.forEach( ql, ( as, stmt_id, xfer ) =>
-                    {
+                    as.forEach( ql, ( as, stmt_id, xfer ) => {
                         const q = this._xferTemplate( as, xfer, prev_results );
                         const dbq = conn.query( {
                             text: q,
                             rowMode: 'array',
                         } );
                         this._handleResult( as, dbq,
-                            ( qres ) =>
-                            {
+                            ( qres ) => {
                                 prev_results.push( qres );
                                 this._xferCommon(
                                     as, xfer, [ qres ], stmt_id, results, q );
@@ -364,16 +312,14 @@ class PostgreSQLService extends L2Service
                     } );
 
                     // Commit
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         reqinfo.result( results );
 
                         const dbq = conn.query( 'COMMIT' );
                         this._handleResult( as, dbq );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     conn.query( 'ROLLBACK' );
                 }
             );

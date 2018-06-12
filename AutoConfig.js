@@ -47,53 +47,38 @@ const serviceImpl = {
  * @param {string} name - iface name
  * @param {object} options - service options
  */
-function create( as, ccm, name, options )
-{
+function create( as, ccm, name, options ) {
     const factory = serviceImpl[options.type];
     let service;
 
-    if ( typeof factory === "string" )
-    {
+    if ( typeof factory === "string" ) {
         service = require( factory );
-    }
-    else if ( typeof factory === "function" &&
-              factory.prototype instanceof L1Service )
-    {
+    } else if ( typeof factory === "function" &&
+              factory.prototype instanceof L1Service ) {
         service = factory;
-    }
-    else if ( typeof factory === "function" )
-    {
+    } else if ( typeof factory === "function" ) {
         service = factory();
-    }
-    else
-    {
+    } else {
         as.error( 'InternalError', `Unknown factory type ${factory} for ${options.type}` );
     }
 
     const executor = new Executor( ccm );
     service = service.register( as, executor, options );
 
-    if ( service instanceof L2Service )
-    {
+    if ( service instanceof L2Service ) {
         L2Face.register( as, ccm, `#db.${name}`, executor );
-    }
-    else if ( service instanceof L1Service )
-    {
+    } else if ( service instanceof L1Service ) {
         L1Face.register( as, ccm, `#db.${name}`, executor );
-    }
-    else
-    {
+    } else {
         as.error( 'InternalError',
             `Unknown service type "${typeof service}" for ${name}` );
     }
 
-    if ( name === 'default' )
-    {
+    if ( name === 'default' ) {
         ccm.alias( `#db.${name}`, '#db' );
     }
 
-    if ( !ccm.db )
-    {
+    if ( !ccm.db ) {
         /**
          * Retrieve database interface.
          *
@@ -102,22 +87,17 @@ function create( as, ccm, name, options )
          * @returns {object} FTN14 native face
          * @note Monkey-patched only for related CCM
          */
-        ccm.db = function( name )
-        {
+        ccm.db = function( name ) {
             return this.iface( '#db.' + ( name || "default" ) );
         };
     }
 
     // Make sure to show unexpected internal errors to user
-    executor.on( 'notExpected', function()
-    {
-        try
-        {
+    executor.on( 'notExpected', function() {
+        try {
             ccm.log().error( 'Not expected DB service error' );
             ccm.log().error( `${arguments[0]}: ${arguments[3]}` );
-        }
-        catch ( e )
-        {
+        } catch ( e ) {
             console.error( 'Not expected DB service error' );
             console.error( arguments );
         }
@@ -183,12 +163,10 @@ function create( as, ccm, name, options )
  *
  * @note it also monkey patches CCM with #db(name="default") method
  */
-module.exports = function( as, ccm, config=null, env=process.env )
-{
+module.exports = function( as, ccm, config=null, env=process.env ) {
     config = config || { default: {} };
 
-    for ( let name in config )
-    {
+    for ( let name in config ) {
         let uname = name.toUpperCase();
         let options = _cloneDeep( config[name] );
 
@@ -203,8 +181,7 @@ module.exports = function( as, ccm, config=null, env=process.env )
             conn_limit: parseInt( env[`DB_${uname}_MAXCONN`] || '0' ) || undefined,
         };
 
-        if ( name === 'default' )
-        {
+        if ( name === 'default' ) {
             _defaults( detected, {
                 type: env[`DB_TYPE`],
                 host: env[`DB_HOST`],
@@ -221,19 +198,13 @@ module.exports = function( as, ccm, config=null, env=process.env )
 
         let db_type = options.type;
 
-        if ( db_type )
-        {
+        if ( db_type ) {
             if ( db_type instanceof Array &&
-                db_type.indexOf( detected.type ) >= 0 )
-            {
+                db_type.indexOf( detected.type ) >= 0 ) {
                 // pass
-            }
-            else if ( db_type === detected.type )
-            {
+            } else if ( db_type === detected.type ) {
                 // pass
-            }
-            else
-            {
+            } else {
                 as.error( 'InternalError',
                     `DB type mismatch for ${name}: ${db_type} != ${detected.type}` );
             }
@@ -251,7 +222,6 @@ module.exports = function( as, ccm, config=null, env=process.env )
  * @param {string|callable|object} factory - module name, factory method
  *      or a subclass of L1Service
  */
-module.exports.register = function( type, factory )
-{
+module.exports.register = function( type, factory ) {
     serviceImpl[type] = factory;
 };

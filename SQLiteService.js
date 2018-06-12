@@ -31,8 +31,7 @@ const Mutex = require( 'futoin-asyncsteps/Mutex' );
 /**
  * SQLite service implementation for FutoIn Database interface.addEventListener()
  */
-class SQLiteService extends L2Service
-{
+class SQLiteService extends L2Service {
     /**
      * Please use SQLiteService.register() for proper setup.
      * @param {object} options - see SQLiteService.register() for common options
@@ -43,8 +42,7 @@ class SQLiteService extends L2Service
      * @param {array} [options.raw.pragma=[]] - list of pragma statements to execute on DB open
      * @note database filename is to supplied in options.port parameter.
      */
-    constructor( options )
-    {
+    constructor( options ) {
         super( new SQLiteDriver );
 
         const raw = options.raw ? _cloneDeep( options.raw ) : {};
@@ -56,8 +54,7 @@ class SQLiteService extends L2Service
             pragmas: [],
         } );
 
-        if ( options.port )
-        {
+        if ( options.port ) {
             raw.filename = options.port;
         }
 
@@ -66,39 +63,27 @@ class SQLiteService extends L2Service
         this._mutex = new Mutex();
     }
 
-    _close()
-    {
-        if ( this._db )
-        {
+    _close() {
+        if ( this._db ) {
             this._db.close();
             this._db = null;
         }
     }
 
-    _withDatabase( as, cb )
-    {
-        as.sync( this._mutex, ( as ) =>
-        {
-            if ( !this._db )
-            {
-                as.add( ( as ) =>
-                {
+    _withDatabase( as, cb ) {
+        as.sync( this._mutex, ( as ) => {
+            if ( !this._db ) {
+                as.add( ( as ) => {
                     const params = this._db_params;
                     const db = new sqlite3.Database(
                         params.filename,
                         params.mode,
-                        ( err ) =>
-                        {
-                            if ( !as.state )
-                            {
+                        ( err ) => {
+                            if ( !as.state ) {
                                 // ignore
-                            }
-                            else if ( err )
-                            {
+                            } else if ( err ) {
                                 this._handleError( as, err );
-                            }
-                            else if ( as.state )
-                            {
+                            } else if ( as.state ) {
                                 db.configure( 'busyTimeout', params.busyTimeout );
 
                                 this._db = db;
@@ -107,39 +92,31 @@ class SQLiteService extends L2Service
                         }
                     );
 
-                    as.setCancel( ( as ) =>
-                    {
-                        if ( !this._db )
-                        {
+                    as.setCancel( ( as ) => {
+                        if ( !this._db ) {
                             db.close();
                         }
                     } );
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const db = this._db;
-                    as.forEach( this._db_params.pragmas, ( as, _i, v ) =>
-                    {
+                    as.forEach( this._db_params.pragmas, ( as, _i, v ) => {
                         this._query( as, db, `PRAGMA ${v}` );
                     } );
                 } );
             }
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 cb( as, this._db );
             } );
         } );
     }
 
-    _handleError( as, err )
-    {
-        try
-        {
+    _handleError( as, err ) {
+        try {
             const code = err.code;
 
-            switch ( code )
-            {
+            switch ( code ) {
             case 'SQLITE_CONSTRAINT':
             case 'SQLITE_CONSTRAINT_UNIQUE':
                 as.error( 'Duplicate', err.message );
@@ -159,49 +136,38 @@ class SQLiteService extends L2Service
             default:
                 as.error( 'OtherExecError', err.message );
             }
-        }
-        catch ( e )
-        {
+        } catch ( e ) {
             // ignore
         }
     }
 
-    _query( as, db, q, cb=null )
-    {
+    _query( as, db, q, cb=null ) {
         as.waitExternal();
 
         // Note: with. ...is not covered
-        if ( q.match( /^\s*(UPDATE|INSERT|DELETE|BEGIN|COMMIT)\s/i ) )
-        {
+        if ( q.match( /^\s*(UPDATE|INSERT|DELETE|BEGIN|COMMIT)\s/i ) ) {
             const that = this;
 
-            db.run( q, function( err )
-            {
-                if ( !as.state )
-                {
+            db.run( q, function( err ) {
+                if ( !as.state ) {
                     return;
                 }
 
-                if ( err )
-                {
+                if ( err ) {
                     that._handleError( as, err );
                     return;
                 }
 
-                if ( cb )
-                {
+                if ( cb ) {
                     let res;
 
-                    if ( q.match( /^\s*INSERT\s/i ) )
-                    {
+                    if ( q.match( /^\s*INSERT\s/i ) ) {
                         res = {
                             rows: [ [ this.lastID ] ],
                             fields: [ '$id' ],
                             affected: this.changes,
                         };
-                    }
-                    else
-                    {
+                    } else {
                         res = {
                             rows: [],
                             fields: [],
@@ -209,59 +175,40 @@ class SQLiteService extends L2Service
                         };
                     }
 
-                    try
-                    {
+                    try {
                         cb( as, res );
-                    }
-                    catch ( e )
-                    {
+                    } catch ( e ) {
                         return;
                     }
                 }
 
                 as.success();
             } );
-        }
-        else
-        {
-            db.all( q, ( err, rows ) =>
-            {
-                if ( !as.state )
-                {
+        } else {
+            db.all( q, ( err, rows ) => {
+                if ( !as.state ) {
                     return;
                 }
 
-                if ( err )
-                {
+                if ( err ) {
                     this._handleError( as, err );
-                }
-                else if ( rows.length > this.MAX_ROWS )
-                {
-                    try
-                    {
+                } else if ( rows.length > this.MAX_ROWS ) {
+                    try {
                         as.error( 'LimitTooHigh' );
-                    }
-                    catch ( e )
-                    {
+                    } catch ( e ) {
                         // ignore
                     }
-                }
-                else
-                {
-                    if ( cb )
-                    {
+                } else {
+                    if ( cb ) {
                         let res;
 
-                        if ( rows.length === 0 )
-                        {
+                        if ( rows.length === 0 ) {
                             res = {
                                 rows: [],
                                 fields: [],
                                 affected: 0,
                             };
-                        }
-                        else
-                        {
+                        } else {
                             const fields = Object.keys( rows[0] );
                             rows = rows.map( ( v ) => _values( v ) );
 
@@ -272,12 +219,9 @@ class SQLiteService extends L2Service
                             };
                         }
 
-                        try
-                        {
+                        try {
                             cb( as, res );
-                        }
-                        catch ( e )
-                        {
+                        } catch ( e ) {
                             return;
                         }
                     }
@@ -288,54 +232,42 @@ class SQLiteService extends L2Service
         }
     }
 
-    query( as, reqinfo )
-    {
-        this._withDatabase( as, ( as, db ) =>
-        {
-            this._query( as, db, reqinfo.params().q, ( as, res ) =>
-            {
+    query( as, reqinfo ) {
+        this._withDatabase( as, ( as, db ) => {
+            this._query( as, db, reqinfo.params().q, ( as, res ) => {
                 reqinfo.result( res );
             } );
         } );
     }
 
-    callStored( as, _reqinfo )
-    {
+    callStored( as, _reqinfo ) {
         as.error( 'InvalidQuery', 'SQLite does not support stored procedures' );
     }
 
-    getFlavour( as, reqinfo )
-    {
+    getFlavour( as, reqinfo ) {
         reqinfo.result( 'sqlite' );
     }
 
-    xfer( as, reqinfo )
-    {
+    xfer( as, reqinfo ) {
         const p = reqinfo.params();
 
-        this._withDatabase( as, ( as, db ) =>
-        {
+        this._withDatabase( as, ( as, db ) => {
             const ql = p.ql;
             const prev_results = [];
             const results = [];
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     // Begin
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         this._query( as, db, 'BEGIN EXCLUSIVE' );
                     } );
 
                     // Loop through query list
-                    as.forEach( ql, ( as, stmt_id, xfer ) =>
-                    {
-                        as.add( ( as ) =>
-                        {
+                    as.forEach( ql, ( as, stmt_id, xfer ) => {
+                        as.add( ( as ) => {
                             const q = this._xferTemplate( as, xfer, prev_results );
-                            this._query( as, db, q, ( as, qres ) =>
-                            {
+                            this._query( as, db, q, ( as, qres ) => {
                                 prev_results.push( qres );
                                 this._xferCommon(
                                     as, xfer, [ qres ], stmt_id, results, q );
@@ -344,14 +276,12 @@ class SQLiteService extends L2Service
                     } );
 
                     // Commit
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         reqinfo.result( results );
                         this._query( as, db, 'COMMIT' );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     db.run( 'ROLLBACK' );
                 }
             );

@@ -7,12 +7,9 @@ const $as = require( 'futoin-asyncsteps' );
 
 const { QueryBuilder } = require( '../main' );
 
-class MockSQLHelpers extends QueryBuilder.SQLHelpers
-{
-    _escapeSimple( value )
-    {
-        switch ( typeof value )
-        {
+class MockSQLHelpers extends QueryBuilder.SQLHelpers {
+    _escapeSimple( value ) {
+        switch ( typeof value ) {
         case 'boolean':
             return value ? 'TRUE' : 'FALSE';
 
@@ -23,13 +20,11 @@ class MockSQLHelpers extends QueryBuilder.SQLHelpers
             return `${value}`;
 
         default:
-            if ( value === null )
-            {
+            if ( value === null ) {
                 return 'NULL';
             }
 
-            if ( value instanceof QueryBuilder.Expression )
-            {
+            if ( value instanceof QueryBuilder.Expression ) {
                 return value.toQuery();
             }
 
@@ -38,22 +33,17 @@ class MockSQLHelpers extends QueryBuilder.SQLHelpers
     }
 }
 
-class MockSQLDriver extends QueryBuilder.SQLDriver
-{
-    constructor()
-    {
+class MockSQLDriver extends QueryBuilder.SQLDriver {
+    constructor() {
         super( new MockSQLHelpers );
     }
 }
 
-describe( 'QueryBuilder', function()
-{
+describe( 'QueryBuilder', function() {
     const L1Face = require( '../L1Face' );
 
-    const mockFace = new class extends L1Face
-    {
-        constructor()
-        {
+    const mockFace = new class extends L1Face {
+        constructor() {
             super(
                 { limiters: {} },
                 { funcs: {},
@@ -62,16 +52,11 @@ describe( 'QueryBuilder', function()
             this._db_type = 'mocksql';
         }
 
-        query( as, q )
-        {
-            if ( typeof as === 'function' )
-            {
+        query( as, q ) {
+            if ( typeof as === 'function' ) {
                 as( q );
-            }
-            else
-            {
-                as.add( ( as ) =>
-                {
+            } else {
+                as.add( ( as ) => {
                     as.success( this._result );
                 } );
             }
@@ -80,13 +65,11 @@ describe( 'QueryBuilder', function()
 
     QueryBuilder.addDriver( 'mocksql', new MockSQLDriver );
 
-    const genQB = ( type, entity='Table' ) =>
-    {
+    const genQB = ( type, entity='Table' ) => {
         return mockFace.queryBuilder( type, entity );
     };
 
-    beforeEach( function()
-    {
+    beforeEach( function() {
         mockFace._db_type = 'mocksql';
         mockFace._result = {
             rows: [ [ 1, 'aaa' ], [ 2, 'bb' ], [ 3, 'c' ] ],
@@ -96,73 +79,59 @@ describe( 'QueryBuilder', function()
     } );
 
 
-    describe( 'DELETE', function()
-    {
-        it( 'should generate simple statement', function()
-        {
+    describe( 'DELETE', function() {
+        it( 'should generate simple statement', function() {
             let qb = genQB( 'delete' );
             let res = qb._toQuery();
             expect( res ).to.equal( 'DELETE FROM Table' );
             expect( res ).to.equal( `${qb}` );
         } );
 
-        it( 'should generate conditional statement', function()
-        {
+        it( 'should generate conditional statement', function() {
             let qb = genQB( 'dELEte' );
             let res = qb.where( 'val IS NULL' )._toQuery();
             expect( res ).to.equal( 'DELETE FROM Table WHERE val IS NULL' );
         } );
 
-        it( 'should detect invalid queries', function()
-        {
+        it( 'should detect invalid queries', function() {
             let qb = genQB( 'delete' );
 
-            expect( () =>
-            {
+            expect( () => {
                 genQB( 'delete', null )._toQuery();
             } ).to.throw( 'Entity is not set' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).get( 'f' )._toQuery();
             } ).to.throw( 'Unused map "select"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).set( 'f', 'a' )._toQuery();
             } ).to.throw( 'Unused map "toset"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).group( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "group"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).having( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "having"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).order( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "order"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).limit( 10 )._toQuery();
             } ).to.throw( 'Unused array "limit"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).leftJoin( 'Other' )._toQuery();
             } ).to.throw( 'Unused array "joins"' );
         } );
     } );
 
-    describe( 'INSERT', function()
-    {
-        it( 'should generate simple statement', function()
-        {
+    describe( 'INSERT', function() {
+        it( 'should generate simple statement', function() {
             let qb = genQB( 'insert' );
             let res = qb.set( 'a', 'b' )._toQuery();
             expect( res ).to.equal( 'INSERT INTO Table (a) VALUES (^b^)' );
@@ -172,8 +141,7 @@ describe( 'QueryBuilder', function()
             expect( res ).to.equal( 'INSERT INTO Table (a,d,c) VALUES (^b^,^D^,^C^)' );
         } );
 
-        it( 'should generate complex statement', function()
-        {
+        it( 'should generate complex statement', function() {
             let qb = genQB( 'inSeRt' );
             let res = qb.set( 'a', qb.expr( 'A + B' ) )._toQuery();
             expect( res ).to.equal( 'INSERT INTO Table (a) VALUES (A + B)' );
@@ -184,8 +152,7 @@ describe( 'QueryBuilder', function()
                 'VALUES (A + B,(SELECT * FROM Other))' );
         } );
 
-        it( 'should generate INSERT-SELECT statement', function()
-        {
+        it( 'should generate INSERT-SELECT statement', function() {
             let sqb = genQB( 'select', 'Other' );
             sqb.get( { a: 'A',
                 b: 'B' } );
@@ -195,8 +162,7 @@ describe( 'QueryBuilder', function()
                 'SELECT A AS a,B AS b FROM Other' );
         } );
 
-        it( 'should generate INSERT multi-row statement', function()
-        {
+        it( 'should generate INSERT multi-row statement', function() {
             let res = genQB( 'insert' )
                 .set( { a: 1,
                     b: 2 } )
@@ -235,72 +201,58 @@ describe( 'QueryBuilder', function()
                 'VALUES (1,2),(2,3),(5,10)' );
         } );
 
-        it( 'should detect invalid queries', function()
-        {
+        it( 'should detect invalid queries', function() {
             let qb = genQB( 'insert' );
 
-            expect( () =>
-            {
+            expect( () => {
                 genQB( 'insert', null )._toQuery();
             } ).to.throw( 'Entity is not set' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone()._toQuery();
             } ).to.throw( 'Nothing to set' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).get( 'f' )._toQuery();
             } ).to.throw( 'Unused map "select"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).where( { f: 'a' } )._toQuery();
             } ).to.throw( 'Unused array "where"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).group( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "group"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).having( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "having"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).order( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "order"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).limit( 10 )._toQuery();
             } ).to.throw( 'Unused array "limit"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).leftJoin( 'Other' )._toQuery();
             } ).to.throw( 'Unused array "joins"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).set( genQB( 'select' ) )._toQuery();
             } ).to.throw( 'INSERT-SELECT can not be mixed with others' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( genQB( 'select' ) ).set( 'a', 'A' )._toQuery();
             } ).to.throw( 'INSERT-SELECT can not be mixed with others' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( genQB( 'delete' ) )._toQuery();
             } ).to.throw( 'Not a SELECT sub-query' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( { a:1,
                     b:2 } )
                     .newRow().set( { a:1,
@@ -308,25 +260,21 @@ describe( 'QueryBuilder', function()
                         c:3 } )._toQuery();
             } ).to.throw( 'Multi-row field count mismatch' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( { a:1,
                     b:2 } )
                     .newRow().set( { a:1,
                         c:2 } )._toQuery();
             } ).to.throw( 'Multi-row missing field: b' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( genQB( 'select' ) ).newRow();
             } ).to.throw( 'INSERT-SELECT can not be mixed with multirow' );
         } );
     } );
 
-    describe( 'UPDATE', function()
-    {
-        it( 'should generate simple statement', function()
-        {
+    describe( 'UPDATE', function() {
+        it( 'should generate simple statement', function() {
             let qb = genQB( 'update' );
             let res = qb.set( 'a', 'b' )._toQuery();
             expect( res ).to.equal( 'UPDATE Table SET a=^b^' );
@@ -339,8 +287,7 @@ describe( 'QueryBuilder', function()
             expect( res ).to.equal( 'UPDATE Table SET a=^b^,d=^D^,c=^C^' );
         } );
 
-        it( 'should generate complex statement', function()
-        {
+        it( 'should generate complex statement', function() {
             let qb = genQB( 'upDaTe' );
             let res = qb.set( 'a', qb.expr( 'A + B' ) )._toQuery();
             expect( res ).to.equal( 'UPDATE Table SET a=A + B' );
@@ -351,66 +298,53 @@ describe( 'QueryBuilder', function()
         } );
 
 
-        it( 'should detect invalid queries', function()
-        {
+        it( 'should detect invalid queries', function() {
             let qb = genQB( 'update' );
 
-            expect( () =>
-            {
+            expect( () => {
                 genQB( 'update', null )._toQuery();
             } ).to.throw( 'Entity is not set' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone()._toQuery();
             } ).to.throw( 'Nothing to set' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).get( 'f' )._toQuery();
             } ).to.throw( 'Unused map "select"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).group( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "group"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).having( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "having"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).order( 'expr' )._toQuery();
             } ).to.throw( 'Unused array "order"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).limit( 10 )._toQuery();
             } ).to.throw( 'Unused array "limit"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( 'a', 'A' ).leftJoin( 'Other' )._toQuery();
             } ).to.throw( 'Unused array "joins"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().set( genQB( 'select' ) )._toQuery();
             } ).to.throw( 'Not an INSERT query for INSERT-SELECT' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().newRow();
             } ).to.throw( 'Not an INSERT query for multi-row' );
         } );
     } );
 
-    describe( 'SELECT', function()
-    {
-        it( 'should generate simple statement', function()
-        {
+    describe( 'SELECT', function() {
+        it( 'should generate simple statement', function() {
             let qb = genQB( 'select', null );
             let res = qb
                 .get( 'a' )
@@ -423,8 +357,7 @@ describe( 'QueryBuilder', function()
             expect( res ).to.equal( 'SELECT a,c,b,D AS d,(SELECT r FROM Table) AS q' );
         } );
 
-        it( 'should generate complex statement', function()
-        {
+        it( 'should generate complex statement', function() {
             let qb = genQB( 'select', [ 'SomeTable', 'ST' ] );
             let res = qb
                 .get( 'ST.*' )
@@ -454,8 +387,7 @@ describe( 'QueryBuilder', function()
                 'LIMIT 10 OFFSET 1' );
         } );
 
-        it( 'should check for undefined in .where() & .having()', function()
-        {
+        it( 'should check for undefined in .where() & .having()', function() {
             let qb = genQB( 'select' );
 
             expect( qb.clone().where( 'a', 0 )._toQuery() )
@@ -472,53 +404,43 @@ describe( 'QueryBuilder', function()
                 .to.equal( 'SELECT * FROM Table HAVING a = NULL' );
         } );
 
-        it( 'should detect invalid queries', function()
-        {
+        it( 'should detect invalid queries', function() {
             let qb = genQB( 'select' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().where( 'val IS NULL' ).set( 'f', 'a' )._toQuery();
             } ).to.throw( 'Unused map "toset"' );
 
-            expect( () =>
-            {
+            expect( () => {
                 qb.clone().innerJoin( genQB( 'select' ).get( 'a' ) );
             } ).to.throw( 'Entity as sub-query format is [QB, alias]: SELECT a FROM Table' );
         } );
     } );
 
-    describe( 'CALL', function()
-    {
-        it( 'should generate simple statement', function()
-        {
+    describe( 'CALL', function() {
+        it( 'should generate simple statement', function() {
             let qb = genQB( 'Call', 'Prc' )._callParams( [ 123, 'abc', true ] );
             let res = qb._toQuery();
             expect( res ).to.equal( 'CALL Prc(123,^abc^,TRUE)' );
         } );
     } );
 
-    describe( 'GENERIC', function()
-    {
-        it( 'should be supported for helper calls', function()
-        {
+    describe( 'GENERIC', function() {
+        it( 'should be supported for helper calls', function() {
             let qb = genQB( null, null );
             expect( qb._state.type ).to.equal( 'GENERIC' );
             expect( qb.escape( 'ab^c' ) )
                 .to.be.equal( '^ab\\^c^' );
         } );
 
-        it( 'should not be buildable', function()
-        {
+        it( 'should not be buildable', function() {
             let qb = genQB( null, null );
             expect( () => qb._toQuery() ).to.throw( 'GENERIC query cannot be built' );
         } );
     } );
 
-    describe( 'Conditions', function()
-    {
-        it( 'should generate complex statement', function()
-        {
+    describe( 'Conditions', function() {
+        it( 'should generate complex statement', function() {
             let qb = genQB( 'DELETE' );
             let res = qb
                 .where( 'val IS NULL' )
@@ -555,23 +477,18 @@ describe( 'QueryBuilder', function()
         } );
     } );
 
-    describe( '#execute', function()
-    {
-        it( 'should execute and return raw result', function( done )
-        {
+    describe( '#execute', function() {
+        it( 'should execute and return raw result', function( done ) {
             const as = $as();
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     mockFace.select( 'SomeTable' ).execute( as );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( res ).to.eql( mockFace._result );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
                 }
@@ -581,16 +498,13 @@ describe( 'QueryBuilder', function()
         } );
 
 
-        it( 'should execute and return associative result', function( done )
-        {
+        it( 'should execute and return associative result', function( done ) {
             const as = $as();
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     mockFace.select( 'SomeTable' ).executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { id: 1,
                                 name: 'aaa' },
@@ -602,8 +516,7 @@ describe( 'QueryBuilder', function()
                         expect( affected, 123 );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
                 }
@@ -612,123 +525,99 @@ describe( 'QueryBuilder', function()
                 .execute();
         } );
 
-        it( 'should detect other error', function()
-        {
-            expect( function()
-            {
+        it( 'should detect other error', function() {
+            expect( function() {
                 mockFace.delete( null )._toQuery();
             } )
                 .to.throw( 'Entity is not set' );
-            expect( function()
-            {
+            expect( function() {
                 mockFace.insert( null )._toQuery();
             } )
                 .to.throw( 'Entity is not set' );
-            expect( function()
-            {
+            expect( function() {
                 mockFace.update( null )._toQuery();
             } )
                 .to.throw( 'Entity is not set' );
 
-            expect( function()
-            {
+            expect( function() {
                 mockFace.update( [ 'a', 'b', 'c' ] );
             } )
                 .to.throw( `Entity as array format is [name, alias]: ${[ 'a', 'b', 'c' ]}` );
 
-            expect( function()
-            {
+            expect( function() {
                 mockFace.update( [ mockFace.delete(), 'A' ] );
             } )
                 .to.throw( 'Not a SELECT sub-query' );
 
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().get( 123 );
             } )
                 .to.throw( 'Not supported fields definition: 123' );
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().set( 123 );
             } )
                 .to.throw( 'Not supported set definition: 123' );
 
 
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().get( 'M', 123 );
             } )
                 .to.throw( 'Expression must be QueryBuilder, Expression or string' );
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().get( 'M', true );
             } )
                 .to.throw( 'Expression must be QueryBuilder, Expression or string' );
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().get( { M: true } );
             } )
                 .to.throw( 'Expression must be QueryBuilder, Expression or string' );
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().get( new Map( [ [ 'M', true ] ] ) );
             } )
                 .to.throw( 'Expression must be QueryBuilder, Expression or string' );
 
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select( {} );
             } )
                 .to.throw( `Unknown entity type: ${{}}` );
 
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().where( 'a BETWEEN', 'b' );
             } )
                 .to.throw( `BETWEEN requires array with two elements` );
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().where( 'a BETWEEN', [ 1, 2, 3 ] );
             } )
                 .to.throw( `BETWEEN requires array with two elements` );
 
-            expect( function()
-            {
+            expect( function() {
                 mockFace.update( 'Tab' ).set( 'a', 1 ).execute( $as() );
             } )
                 .to.throw( 'Unsafe DML' );
-            expect( function()
-            {
+            expect( function() {
                 mockFace.delete( 'Tab' ).execute( $as() );
             } )
                 .to.throw( 'Unsafe DML' );
 
-            expect( function()
-            {
+            expect( function() {
                 mockFace.delete( 'Tab' ).where( 123 );
             } )
                 .to.throw( 'Unknown condition type: 123' );
 
             //--
             mockFace._db_type = 'mockfail';
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {} );
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {} );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select( 'A' );
             } )
                 .to.throw( 'Not implemented' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.Helpers
-                    {
-                        entity( v )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.Helpers {
+                        entity( v ) {
                             return v;
                         }
                     } );
@@ -737,24 +626,18 @@ describe( 'QueryBuilder', function()
             mockFace.select( 'A' );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().escape( 'a' );
             } )
                 .to.throw( 'Not implemented' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.Helpers
-                    {
-                        entity( v )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.Helpers {
+                        entity( v ) {
                             return v;
                         }
-                        escape( v )
-                        {
+                        escape( v ) {
                             return v;
                         }
                     } );
@@ -763,28 +646,21 @@ describe( 'QueryBuilder', function()
             mockFace.select().escape( 'a' );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().expr( 'a' );
             } )
                 .to.throw( 'Not implemented' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.Helpers
-                    {
-                        entity( v )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.Helpers {
+                        entity( v ) {
                             return v;
                         }
-                        escape( v )
-                        {
+                        escape( v ) {
                             return v;
                         }
-                        expr( v )
-                        {
+                        expr( v ) {
                             return v;
                         }
                     } );
@@ -793,32 +669,24 @@ describe( 'QueryBuilder', function()
             mockFace.select().expr( 'a' );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().identifier( 'a' );
             } )
                 .to.throw( 'Not implemented' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.Helpers
-                    {
-                        entity( v )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.Helpers {
+                        entity( v ) {
                             return v;
                         }
-                        escape( v )
-                        {
+                        escape( v ) {
                             return v;
                         }
-                        expr( v )
-                        {
+                        expr( v ) {
                             return v;
                         }
-                        identifier( v )
-                        {
+                        identifier( v ) {
                             return v;
                         }
                     } );
@@ -827,79 +695,60 @@ describe( 'QueryBuilder', function()
             mockFace.select().identifier( 'a' );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.update().get( '345' );
             } )
                 .to.throw( 'Invalid field name: 345' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.Helpers
-                    {
-                        entity( v )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.Helpers {
+                        entity( v ) {
                             return v;
                         }
-                        escape( v )
-                        {
+                        escape( v ) {
                             return v;
                         }
-                        expr( v )
-                        {
+                        expr( v ) {
                             return v;
                         }
-                        identifier( v )
-                        {
+                        identifier( v ) {
                             return v;
                         }
                     } );
                 }
 
-                checkField( v )
-                {}
+                checkField( v ) {}
             } );
             mockFace.select().get( '345' );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().get( '345' )._toQuery();
             } )
                 .to.throw( 'Not implemented' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.Helpers
-                    {
-                        entity( v )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.Helpers {
+                        entity( v ) {
                             return v;
                         }
-                        escape( v )
-                        {
+                        escape( v ) {
                             return v;
                         }
-                        expr( v )
-                        {
+                        expr( v ) {
                             return v;
                         }
-                        identifier( v )
-                        {
+                        identifier( v ) {
                             return v;
                         }
                     } );
                 }
 
-                checkField( v )
-                {}
+                checkField( v ) {}
 
-                build( state )
-                {
+                build( state ) {
                     return state;
                 }
             } );
@@ -907,23 +756,17 @@ describe( 'QueryBuilder', function()
             //--
 
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.SQLDriver
-            {} );
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.SQLDriver {} );
 
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.select().escape( 'a' );
             } )
                 .to.throw( 'Not implemented' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.SQLDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.SQLHelpers
-                    {
-                        _escapeSimple( v )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.SQLDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.SQLHelpers {
+                        _escapeSimple( v ) {
                             return v;
                         }
                     } );
@@ -932,22 +775,17 @@ describe( 'QueryBuilder', function()
             mockFace.select().escape( 'a' );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.queryBuilder( 'RAW' )._toQuery();
             } )
                 .to.throw( 'Unsupported query type RAW' );
 
             //--
             QueryBuilder.addDriver( 'mockfail',
-                () => new class extends QueryBuilder.SQLDriver
-                {
-                    constructor()
-                    {
-                        super( new class extends QueryBuilder.SQLHelpers
-                        {
-                            _escapeSimple( v )
-                            {
+                () => new class extends QueryBuilder.SQLDriver {
+                    constructor() {
+                        super( new class extends QueryBuilder.SQLHelpers {
+                            _escapeSimple( v ) {
                                 return v;
                             }
                         } );
@@ -967,20 +805,16 @@ describe( 'QueryBuilder', function()
         } );
     } );
 
-    describe( '#prepare', function()
-    {
-        it( 'should create simple reusable statement', function()
-        {
+    describe( '#prepare', function() {
+        it( 'should create simple reusable statement', function() {
             const qb = genQB( 'select' )
                 .get( [ 'a', 'b', 'c' ] )
                 .where( 'a BETWEEN', [ 1, 10 ] );
             const p = qb.prepare();
             qb.limit( 10 );
 
-            for ( let i = 0; i < 3; ++i )
-            {
-                p.execute( ( q ) =>
-                {
+            for ( let i = 0; i < 3; ++i ) {
+                p.execute( ( q ) => {
                     expect( q ).to.equal(
                         'SELECT a,b,c FROM Table '+
                         'WHERE a BETWEEN 1 AND 10' );
@@ -988,8 +822,7 @@ describe( 'QueryBuilder', function()
             }
         } );
 
-        it( 'should create parametrized reusable statement', function()
-        {
+        it( 'should create parametrized reusable statement', function() {
             const qb = genQB( 'select' );
             qb.get( [ 'a', 'b', 'c' ] )
                 .where( 'a BETWEEN', [
@@ -999,10 +832,8 @@ describe( 'QueryBuilder', function()
             const p = qb.prepare();
             qb.limit( 10 );
 
-            for ( let i = 0; i < 3; ++i )
-            {
-                p.execute( ( q ) =>
-                {
+            for ( let i = 0; i < 3; ++i ) {
+                p.execute( ( q ) => {
                     expect( q ).to.equal(
                         'SELECT a,b,c FROM Table '+
                         `WHERE a BETWEEN ${1+i} AND ${10+i}` );
@@ -1013,18 +844,15 @@ describe( 'QueryBuilder', function()
             }
         } );
 
-        it( 'should execute and return associative result', function( done )
-        {
+        it( 'should execute and return associative result', function( done ) {
             const as = $as();
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     mockFace.select( 'SomeTable' )
                         .prepare()
                         .executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { id: 1,
                                 name: 'aaa' },
@@ -1036,8 +864,7 @@ describe( 'QueryBuilder', function()
                         expect( affected, 123 );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
                 }
@@ -1046,13 +873,11 @@ describe( 'QueryBuilder', function()
                 .execute();
         } );
 
-        it( 'should support caching in iface', function( done )
-        {
+        it( 'should support caching in iface', function( done ) {
             const as = $as();
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const sym = Symbol( 'abc' );
                     mockFace.getPrepared( sym, ( db ) =>
                         db.select( 'SomeTable' )
@@ -1060,8 +885,7 @@ describe( 'QueryBuilder', function()
                     );
                     mockFace.getPrepared( sym ).executeAssoc( as );
 
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { id: 1,
                                 name: 'aaa' },
@@ -1073,8 +897,7 @@ describe( 'QueryBuilder', function()
                         expect( affected, 123 );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
                 }
@@ -1084,10 +907,8 @@ describe( 'QueryBuilder', function()
         } );
     } );
 
-    describe( '#_replaceParams', function()
-    {
-        it( 'should properly handle placeholders', function()
-        {
+    describe( '#_replaceParams', function() {
+        it( 'should properly handle placeholders', function() {
             const helpers = QueryBuilder.getDriver( 'mocksql' ).helpers;
             expect(
                 QueryBuilder._replaceParams(
@@ -1099,11 +920,9 @@ describe( 'QueryBuilder', function()
             ).to.equal( 'Some 3 2 1 3' );
         } );
 
-        it( 'should detected unused params', function()
-        {
+        it( 'should detected unused params', function() {
             const helpers = QueryBuilder.getDriver( 'mocksql' ).helpers;
-            expect( function()
-            {
+            expect( function() {
                 QueryBuilder._replaceParams(
                     helpers,
                     'Some :v :vvv :v',
@@ -1115,15 +934,12 @@ describe( 'QueryBuilder', function()
     } );
 } );
 
-describe( 'XferBuilder', function()
-{
+describe( 'XferBuilder', function() {
     const XferBuilder = require( '../XferBuilder' );
     const L2Face = require( '../L2Face' );
 
-    const mockFace = new class extends L2Face
-    {
-        constructor()
-        {
+    const mockFace = new class extends L2Face {
+        constructor() {
             super(
                 { limiters: {} },
                 { funcs: {},
@@ -1133,24 +949,17 @@ describe( 'XferBuilder', function()
             this._db_type = 'mocksql';
         }
 
-        query( as, q )
-        {
-            as.add( ( as ) =>
-            {
+        query( as, q ) {
+            as.add( ( as ) => {
                 as.success( this._qresult );
             } );
         }
 
-        xfer( as, ql, iso_level )
-        {
-            if ( typeof as === 'function' )
-            {
+        xfer( as, ql, iso_level ) {
+            if ( typeof as === 'function' ) {
                 as( ql, iso_level );
-            }
-            else
-            {
-                as.add( ( as ) =>
-                {
+            } else {
+                as.add( ( as ) => {
                     as.success( this._xresult );
                 } );
             }
@@ -1159,8 +968,7 @@ describe( 'XferBuilder', function()
 
     QueryBuilder.addDriver( 'mocksql', new MockSQLDriver );
 
-    beforeEach( function()
-    {
+    beforeEach( function() {
         mockFace._qresult = null;
         mockFace._xresult = [
             {
@@ -1181,16 +989,14 @@ describe( 'XferBuilder', function()
         ];
     } );
 
-    it( 'should have correct constants', function()
-    {
+    it( 'should have correct constants', function() {
         expect( mockFace.READ_UNCOMMITTED ).to.equal( 'RU' );
         expect( mockFace.READ_COMMITTED ).to.equal( 'RC' );
         expect( mockFace.REPEATABL_READ ).to.equal( 'RR' );
         expect( mockFace.SERIALIZABLE ).to.equal( 'SRL' );
     } );
 
-    it( 'should build transactions', function()
-    {
+    it( 'should build transactions', function() {
         let xb;
 
         xb = mockFace.newXfer();
@@ -1201,8 +1007,7 @@ describe( 'XferBuilder', function()
         xb.call( 'Prc', [ 123, 'abc', true ] );
         xb.raw( 'Something Cazy :b, :a', { a: 1,
             b: 'c' } );
-        xb.clone().execute( function( ql, isol )
-        {
+        xb.clone().execute( function( ql, isol ) {
             expect( isol ).to.equal( 'RC' );
             expect( ql ).to.eql( [
                 { q: 'SELECT RAND() AS a FROM Tab AS T',
@@ -1217,19 +1022,16 @@ describe( 'XferBuilder', function()
         }, true );
     } );
 
-    it( 'should return associative results', function( done )
-    {
+    it( 'should return associative results', function( done ) {
         const as = $as();
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const xfer = mockFace.newXfer( 'ABC' );
                 xfer.select();
                 xfer.executeAssoc( as );
 
-                as.add( ( as, res, affected ) =>
-                {
+                as.add( ( as, res, affected ) => {
                     expect( res ).to.eql( [
                         {
                             rows: [
@@ -1254,8 +1056,7 @@ describe( 'XferBuilder', function()
                     expect( affected, 123 );
                 } );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( as.state.error_info );
                 done( as.state.last_exception || err );
             }
@@ -1264,52 +1065,42 @@ describe( 'XferBuilder', function()
             .execute();
     } );
 
-    it( 'should use isolation level', function()
-    {
+    it( 'should use isolation level', function() {
         $as()
-            .add( ( as ) =>
-            {
+            .add( ( as ) => {
                 const xfer = mockFace.newXfer( 'ABC' );
                 xfer.select();
                 xfer.execute( as );
             } )
-            .add( ( as, ql, isol ) =>
-            {
+            .add( ( as, ql, isol ) => {
                 expect( isol ).to.equal( 'ABC' );
             } )
             .execute();
     } );
 
-    it( 'should forbid direct clone()/execute() on QueryBuilder', function()
-    {
-        expect( function()
-        {
+    it( 'should forbid direct clone()/execute() on QueryBuilder', function() {
+        expect( function() {
             mockFace.newXfer( 'ABC' ).select().clone();
         } )
             .to.throw( 'Cloning is not allowed' );
-        expect( function()
-        {
+        expect( function() {
             mockFace.newXfer( 'ABC' ).select().execute( $as() );
         } )
             .to.throw( 'Please use XferBuilder.execute()' );
-        expect( function()
-        {
+        expect( function() {
             mockFace.newXfer( 'ABC' ).select().executeAssoc( $as() );
         } )
             .to.throw( 'Please use XferBuilder.execute()' );
     } );
 
-    it( 'should check query options', function()
-    {
-        expect( function()
-        {
+    it( 'should check query options', function() {
+        expect( function() {
             mockFace.newXfer( 'ABC' ).select( 'a', { return: true } );
         } )
             .to.throw( 'Invalid query option: return' );
     } );
 
-    it( 'should support QB shortcuts', function()
-    {
+    it( 'should support QB shortcuts', function() {
         expect( mockFace.newXfer( 'ABC' ).expr( 'abc' ) )
             .to.be.instanceof( QueryBuilder.Expression );
         expect( mockFace.newXfer( 'ABC' ).expr( 'abc' ).toQuery() )
@@ -1323,17 +1114,14 @@ describe( 'XferBuilder', function()
         expect( mockFace.newXfer( 'ABC' ).escape( 'ab^c' ) )
             .to.be.equal( '^ab\\^c^' );
 
-        expect( function()
-        {
+        expect( function() {
             mockFace.newXfer( 'ABC' ).identifier( 'abc' );
         } )
             .to.throw( 'Not implemented' );
     } );
 
-    describe( '#prepare', function()
-    {
-        it( 'should prepare simple transactions', function()
-        {
+    describe( '#prepare', function() {
+        it( 'should prepare simple transactions', function() {
             let xb;
 
             xb = mockFace.newXfer();
@@ -1347,8 +1135,7 @@ describe( 'XferBuilder', function()
             let p = xb.prepare( true );
             xb.raw( 'Must not be there' );
 
-            p.execute( function( ql, isol )
-            {
+            p.execute( function( ql, isol ) {
                 expect( isol ).to.equal( 'RC' );
                 expect( ql ).to.eql( [
                     { q: 'SELECT RAND() AS a FROM Tab AS T',
@@ -1363,8 +1150,7 @@ describe( 'XferBuilder', function()
             } );
         } );
 
-        it( 'should prepare parametrized transactions', function()
-        {
+        it( 'should prepare parametrized transactions', function() {
             let xb;
 
             xb = mockFace.newXfer();
@@ -1377,8 +1163,7 @@ describe( 'XferBuilder', function()
             let p = xb.prepare( true );
             xb.raw( 'Must not be there' );
 
-            p.execute( function( ql, isol )
-            {
+            p.execute( function( ql, isol ) {
                 expect( isol ).to.equal( 'RC' );
                 expect( ql ).to.eql( [
                     { q: 'SELECT RAND() AS a FROM Tab AS T',
@@ -1398,18 +1183,15 @@ describe( 'XferBuilder', function()
             } );
         } );
 
-        it( 'should return associative results', function( done )
-        {
+        it( 'should return associative results', function( done ) {
             const as = $as();
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     mockFace.newXfer( 'ABC' )
                         .prepare()
                         .executeAssoc( as, {} );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             {
                                 rows: [
@@ -1434,8 +1216,7 @@ describe( 'XferBuilder', function()
                         expect( affected, 123 );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
                 }
@@ -1444,68 +1225,54 @@ describe( 'XferBuilder', function()
                 .execute();
         } );
 
-        it( 'should detect FOR clause errors', function()
-        {
+        it( 'should detect FOR clause errors', function() {
             //---
             mockFace._db_type = 'mocksql';
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.newXfer().delete( 'A' ).forUpdate();
             } )
                 .to.throw( 'FOR clause is supported only for SELECT' );
 
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.newXfer().select( 'A' ).forUpdate().forUpdate();
             } )
                 .to.throw( 'FOR clause is already set' );
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.newXfer().select( 'A' ).forUpdate().forSharedRead();
             } )
                 .to.throw( 'FOR clause is already set' );
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.newXfer().select( 'A' ).forUpdate()._toQuery();
             } )
                 .to.throw( 'Unused generic "forClause"' );
         } );
 
-        it( 'should detect other error', function()
-        {
+        it( 'should detect other error', function() {
             //--
             mockFace._db_type = 'mockfail';
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                entity( entity )
-                {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                entity( entity ) {
                     return entity;
                 }
             } );
 
             //--
-            expect( () =>
-            {
+            expect( () => {
                 mockFace.newXfer().select( 'A' ).backref( 1, 'f', true );
             } )
                 .to.throw( 'Not implemented' );
 
-            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver
-            {
-                constructor()
-                {
-                    super( new class extends QueryBuilder.Helpers
-                    {
-                        entity( entity )
-                        {
+            QueryBuilder.addDriver( 'mockfail', class extends QueryBuilder.IDriver {
+                constructor() {
+                    super( new class extends QueryBuilder.Helpers {
+                        entity( entity ) {
                             return entity;
                         }
                     } );
                 }
 
-                backref( ...args )
-                {
+                backref( ...args ) {
                     return args;
                 }
             } );

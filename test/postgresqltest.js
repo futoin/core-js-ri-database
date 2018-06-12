@@ -6,14 +6,12 @@ const expect = require( 'chai' ).expect;
 const $as = require( 'futoin-asyncsteps' );
 
 
-describe( 'PostgreSQLDriver', function()
-{
+describe( 'PostgreSQLDriver', function() {
     const { QueryBuilder } = require( '../main' );
     const drv = QueryBuilder.getDriver( 'postgresql' );
     const helpers = drv.helpers;
 
-    it( 'should escape values correctly', () =>
-    {
+    it( 'should escape values correctly', () => {
         expect( helpers.escape( true ) ).to.equal( 'TRUE' );
         expect( helpers.escape( false ) ).to.equal( 'FALSE' );
         expect( helpers.escape( 0 ) ).to.equal( '0' );
@@ -26,22 +24,19 @@ describe( 'PostgreSQLDriver', function()
         expect( helpers.escape( "\\ab'c" ) ).to.equal( "E'\\\\ab''c'" );
     } );
 
-    it( 'should escape identifiers correctly', () =>
-    {
+    it( 'should escape identifiers correctly', () => {
         expect( helpers.identifier( 'one' ) ).to.equal( '"one"' );
         expect( helpers.identifier( 'one.two' ) ).to.equal( '"one"."two"' );
         expect( helpers.identifier( 'on"e.t"w"o' ) ).to.equal( '"on""e"."t""w""o"' );
         expect( helpers.identifier( 'one.*' ) ).to.equal( '"one".*' );
     } );
 
-    it( 'should create xfer back references', () =>
-    {
+    it( 'should create xfer back references', () => {
         expect( drv.backref( 3, 'field' ).toQuery() ).to.equal( "$'3:field:s'$" );
         expect( drv.backref( 3, 'field', true ).toQuery() ).to.equal( "$'3:field:m'$" );
     } );
 
-    it( 'should support RETURNING clause', () =>
-    {
+    it( 'should support RETURNING clause', () => {
         let qb;
 
         qb = new QueryBuilder( null, 'postgresql', 'insert', 'tbl' );
@@ -65,8 +60,7 @@ describe( 'PostgreSQLDriver', function()
 } );
 
 
-describe( 'PostgreSQLService', () =>
-{
+describe( 'PostgreSQLService', () => {
     const Executor = require( 'futoin-executor/Executor' );
     const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
     const L1Face = require( '../L1Face' );
@@ -81,20 +75,17 @@ describe( 'PostgreSQLService', () =>
         haveStored: true,
     };
 
-    beforeEach( () =>
-    {
+    beforeEach( () => {
         const as = vars.as = $as();
         const ccm = vars.ccm = new AdvancedCCM();
         const executor = vars.executor = new Executor( ccm );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( arguments );
         } );
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 PostgreSQLService.register( as, executor, {
                     host: '127.0.0.1',
                     port: 5432,
@@ -108,32 +99,27 @@ describe( 'PostgreSQLService', () =>
                 ccm.alias( 'pl1', 'l1' );
                 ccm.alias( 'pl2', 'l2' );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
             }
         );
     } );
 
-    afterEach( () =>
-    {
+    afterEach( () => {
         const ccm = vars.ccm;
         const executor = vars.executor;
         ccm.close();
         executor.close();
     } );
 
-    describe( 'specific', function()
-    {
-        it ( 'should execute basic native queries', ( done ) =>
-        {
+    describe( 'specific', function() {
+        it ( 'should execute basic native queries', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     ccm.iface( 'pl1' ).query( as, 'DROP SCHEMA IF EXISTS test CASCADE' );
                     ccm.iface( 'pl2' ).query( as, 'CREATE SCHEMA test' );
                     ccm.iface( 'pl2' ).query( as,
@@ -159,8 +145,7 @@ describe( 'PostgreSQLService', () =>
                             '$$ SELECT pg_sleep(10); $$ LANGUAGE SQL' );
                     as.add( ( as ) => done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -169,22 +154,18 @@ describe( 'PostgreSQLService', () =>
             as.execute();
         } );
 
-        it ( 'should catch invalid query', ( done ) =>
-        {
+        it ( 'should catch invalid query', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'pl1' );
                     iface.query( as, 'Obviously invalid()' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         as.success();
                         return;
                     }
@@ -195,16 +176,13 @@ describe( 'PostgreSQLService', () =>
                 }
             );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'pl1' );
                     iface.query( as, ' ' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         as.success();
                         return;
                     }
@@ -215,16 +193,13 @@ describe( 'PostgreSQLService', () =>
                 }
             );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'pl1' );
                     iface.query( as, 'SELECT a b c FROM X' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         done();
                         as.success();
                         return;
@@ -238,21 +213,18 @@ describe( 'PostgreSQLService', () =>
             as.execute();
         } );
 
-        it ( 'should support RETURNING clause', ( done ) =>
-        {
+        it ( 'should support RETURNING clause', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     ccm.iface( 'pl1' )
                         .insert( 'test.Tbl' )
                         .set( 'name', 'ret1' )
                         .get( 'name' )
                         .executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { name: 'ret1' },
                         ] );
@@ -265,8 +237,7 @@ describe( 'PostgreSQLService', () =>
                         .where( 'name', 'ret1' )
                         .get( 'name' )
                         .executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { name: 'ret2' },
                         ] );
@@ -278,8 +249,7 @@ describe( 'PostgreSQLService', () =>
                         .where( 'name', 'ret2' )
                         .get( 'Name', 'name' )
                         .executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { Name: 'ret2' },
                         ] );
@@ -291,8 +261,7 @@ describe( 'PostgreSQLService', () =>
 
                     as.add( ( as ) => done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );

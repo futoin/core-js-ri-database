@@ -6,22 +6,18 @@ const expect = require( 'chai' ).expect;
 const moment = require( 'moment' );
 process.on( 'warning', e => console.warn( e.stack ) );
 
-module.exports = function( describe, it, vars )
-{
+module.exports = function( describe, it, vars ) {
     const Schema = vars.schema || 'test.';
     const Tbl = Schema + 'Tbl';
     const Snd = Schema + 'Snd';
 
-    describe( 'QueryBuilder', function()
-    {
-        it ( 'should work with query builder', function( done )
-        {
+    describe( 'QueryBuilder', function() {
+        it ( 'should work with query builder', function( done ) {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'l1' );
                     const helpers = iface.queryBuilder().helpers();
                     iface.insert( Tbl ).set( 'name', 'aaa' ).execute( as );
@@ -31,8 +27,7 @@ module.exports = function( describe, it, vars )
                         .set( 'ts', helpers.date( '2017-08-08T12:00:00Z' ) )
                         .getInsertID( 'id' )
                         .executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { $id: 2 },
                         ] );
@@ -47,14 +42,10 @@ module.exports = function( describe, it, vars )
                     iface.delete( Tbl ).where( 'name', 'ccc' ).execute( as );
 
                     iface.select( Tbl ).get( 'C', 'COUNT(*)' ).executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
-                        try
-                        {
+                    as.add( ( as, res, affected ) => {
+                        try {
                             expect( res ).to.eql( [ { C: '2' } ] );
-                        }
-                        catch ( e )
-                        {
+                        } catch ( e ) {
                             expect( res ).to.eql( [ { C: 2 } ] );
                         }
 
@@ -62,8 +53,7 @@ module.exports = function( describe, it, vars )
                     } );
 
                     iface.select( Tbl ).executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( res ).to.eql( [
                             { id: 1,
                                 name: 'aaa',
@@ -75,22 +65,16 @@ module.exports = function( describe, it, vars )
                         expect( affected ).to.equal( 0 );
                     } );
 
-                    if ( vars.haveStored )
-                    {
+                    if ( vars.haveStored ) {
                         iface.callStored( as, 'test.Proc', [ 1 ] );
-                    }
-                    else
-                    {
+                    } else {
                         as.add(
-                            ( as ) =>
-                            {
+                            ( as ) => {
                                 iface.callStored( as, 'test.Proc', [ 1 ] );
                                 as.add( ( as ) => as.error( 'Fail' ) );
                             },
-                            ( as, err ) =>
-                            {
-                                if ( err === 'InvalidQuery' )
-                                {
+                            ( as, err ) => {
+                                if ( err === 'InvalidQuery' ) {
                                     as.success();
                                 }
                             } );
@@ -101,15 +85,13 @@ module.exports = function( describe, it, vars )
                         .newRow().set( 'name', 'row2' )
                         .newRow().set( 'name', 'row3' )
                         .executeAssoc( as );
-                    as.add( ( as, res, affected ) =>
-                    {
+                    as.add( ( as, res, affected ) => {
                         expect( affected ).to.equal( 3 );
                     } );
 
                     as.add( ( as ) => done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -118,29 +100,25 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should work query queue', function( done )
-        {
+        it ( 'should work query queue', function( done ) {
             const as = vars.as;
             const ccm = vars.ccm;
 
             this.timeout( 10e3 );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'l1' );
 
                     const p = as.parallel();
 
-                    for ( let i = 0; i < 20; ++i )
-                    {
+                    for ( let i = 0; i < 20; ++i ) {
                         p.add( ( as ) => iface.select( Tbl )
                             .where( 'name', 'aaa' ).execute( as ) );
                     }
 
                     as.add( ( as ) => done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -150,30 +128,26 @@ module.exports = function( describe, it, vars )
         } );
 
 
-        it ( 'should work with prepared query', function( done )
-        {
+        it ( 'should work with prepared query', function( done ) {
             const as = vars.as;
             const ccm = vars.ccm;
 
             this.timeout( 10e3 );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'l1' );
                     const qb = iface.insert( Tbl );
                     qb.set( 'name', qb.param( 'nm' ) );
                     const pq = qb.prepare();
                     const p = as.parallel();
 
-                    for ( let i = 0; i <= 1000; ++i )
-                    {
+                    for ( let i = 0; i <= 1000; ++i ) {
                         p.add( ( as ) => pq.execute( as, { nm: i } ) );
                     }
 
                     as.add( ( as ) => done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -183,23 +157,19 @@ module.exports = function( describe, it, vars )
         } );
 
 
-        it ( 'should catch duplicates', function( done )
-        {
+        it ( 'should catch duplicates', function( done ) {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'l1' );
                     iface.insert( Tbl ).set( 'name', 'ddd' ).execute( as );
                     iface.insert( Tbl ).set( 'name', 'ddd' ).execute( as );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'Duplicate' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'Duplicate' ) {
                         done();
                         as.success();
                         return;
@@ -214,24 +184,20 @@ module.exports = function( describe, it, vars )
         } );
 
 
-        it ( 'should catch errors', function( done )
-        {
+        it ( 'should catch errors', function( done ) {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'l1' );
                     iface.select( `${Schema}Toblo` ).execute( as );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     if ( err === 'OtherExecError' ||
                         err === 'InvalidQuery'
-                    )
-                    {
+                    ) {
                         done();
                         as.success();
                         return;
@@ -245,23 +211,19 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should catch high limit', function( done )
-        {
+        it ( 'should catch high limit', function( done ) {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'l1' );
                     iface.select( Tbl ).execute( as );
 
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'LimitTooHigh' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'LimitTooHigh' ) {
                         done();
                         as.success();
                         return;
@@ -276,24 +238,19 @@ module.exports = function( describe, it, vars )
         } );
     } );
 
-    describe( 'XferBuilder', function()
-    {
-        it ( 'should support isolation levels', function( done )
-        {
+    describe( 'XferBuilder', function() {
+        it ( 'should support isolation levels', function( done ) {
             const as = vars.as;
 
             as.add(
-                ( as ) =>
-                {
-                    for ( let isol of [ 'RU', 'RC', 'RR', 'SRL' ] )
-                    {
+                ( as ) => {
+                    for ( let isol of [ 'RU', 'RC', 'RR', 'SRL' ] ) {
                         const xfer = vars.ccm.iface( 'l2' ).newXfer( isol );
                         xfer.select( Tbl ).where( 'name', '123' );
                         xfer.execute( as );
                     }
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -303,13 +260,11 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should execute simple transaction', function( done )
-        {
+        it ( 'should execute simple transaction', function( done ) {
             const as = vars.as;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     let xfer = vars.ccm.iface( 'l2' ).newXfer();
                     xfer.insert( Tbl, { affected: 1 } ).set( 'name', 'xfer1' );
                     xfer.insert( Tbl, { affected: 1 } ).set( 'name', 'xfer3' );
@@ -337,14 +292,12 @@ module.exports = function( describe, it, vars )
                         [ 'OR', { name: 'xfer2' }, { name: 'xfer3' } ]
                     );
 
-                    if ( vars.haveStored )
-                    {
+                    if ( vars.haveStored ) {
                         xfer.call( `${Schema}Proc`, [ 123 ] );
                     }
 
                     xfer.executeAssoc( as );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( res ).to.eql( [
                             {
                                 rows: [
@@ -357,8 +310,7 @@ module.exports = function( describe, it, vars )
                         done();
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -367,14 +319,12 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should execute prepared transaction', function( done )
-        {
+        it ( 'should execute prepared transaction', function( done ) {
             this.timeout( 10e3 );
             const as = vars.as;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = vars.ccm.iface( 'l2' );
                     let xfer = iface.newXfer();
                     let nm = xfer.param( 'nm' );
@@ -402,25 +352,21 @@ module.exports = function( describe, it, vars )
                         [ 'OR', { name: 'xfer2' }, { name: nm } ]
                     );
 
-                    if ( vars.haveStored )
-                    {
+                    if ( vars.haveStored ) {
                         xfer.call( `${Schema}Proc`, [ 123 ] );
                     }
 
                     const pxfer = xfer.prepare();
 
-                    expect( function()
-                    {
+                    expect( function() {
                         pxfer.executeAssoc( as, { nm: 'xfer5',
                             unused: '2' } );
                     } ).to.throw( 'Unused param "unused"' );
 
                     // Run sequentially
-                    as.repeat( 3, ( as, i ) =>
-                    {
+                    as.repeat( 3, ( as, i ) => {
                         pxfer.executeAssoc( as, { nm: 'xfer5' } );
-                        as.add( ( as, res ) =>
-                        {
+                        as.add( ( as, res ) => {
                             expect( res ).to.eql( [
                                 {
                                     rows: [
@@ -435,17 +381,13 @@ module.exports = function( describe, it, vars )
 
                     // Get to deadlock
                     as.add(
-                        ( as ) =>
-                        {
+                        ( as ) => {
                             const p = as.parallel();
 
-                            for ( let i = 0; i < 10; ++i )
-                            {
-                                p.add( ( as ) =>
-                                {
+                            for ( let i = 0; i < 10; ++i ) {
+                                p.add( ( as ) => {
                                     pxfer.executeAssoc( as, { nm: 'xfer4' } );
-                                    as.add( ( as, res ) =>
-                                    {
+                                    as.add( ( as, res ) => {
                                         expect( res ).to.eql( [
                                             {
                                                 rows: [
@@ -460,17 +402,14 @@ module.exports = function( describe, it, vars )
                             }
                             //as.add((as) => as.error('Fail'));
                         },
-                        ( as, err ) =>
-                        {
-                            if ( err === 'DeadLock' )
-                            {
+                        ( as, err ) => {
+                            if ( err === 'DeadLock' ) {
                                 as.success();
                             }
                         }
                     );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -480,15 +419,12 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should fail on conditions', function( done )
-        {
+        it ( 'should fail on conditions', function( done ) {
             const as = vars.as;
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         xfer.insert( Tbl ).set( 'name', 'fail' );
                         xfer.select( Tbl, { selected: false } )
@@ -496,21 +432,16 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferCondition' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferCondition' ) {
                             as.success();
-                        }
-                        else
-                        {
+                        } else {
                             console.log( 'Cond #1' );
                         }
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         xfer.insert( Tbl ).set( 'name', 'fail' );
                         xfer.select( Tbl, { selected: true } )
@@ -518,21 +449,16 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferCondition' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferCondition' ) {
                             as.success();
-                        }
-                        else
-                        {
+                        } else {
                             console.log( 'Cond #2' );
                         }
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         xfer.insert( Tbl ).set( 'name', 'fail' );
                         xfer.select( Tbl, { selected: 0 } )
@@ -540,21 +466,16 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferCondition' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferCondition' ) {
                             as.success();
-                        }
-                        else
-                        {
+                        } else {
                             console.log( 'Cond #3' );
                         }
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         xfer.insert( Tbl ).set( 'name', 'fail' );
                         xfer.update( Tbl, { affected: false } )
@@ -563,21 +484,16 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferCondition' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferCondition' ) {
                             as.success();
-                        }
-                        else
-                        {
+                        } else {
                             console.log( 'Cond #4' );
                         }
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         xfer.insert( Tbl ).set( 'name', 'fail' );
                         xfer.update( Tbl, { affected: true } )
@@ -586,21 +502,16 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferCondition' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferCondition' ) {
                             as.success();
-                        }
-                        else
-                        {
+                        } else {
                             console.log( 'Cond #5' );
                         }
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         xfer.insert( Tbl ).set( 'name', 'fail' );
                         xfer.update( Tbl, { affected: 0 } )
@@ -609,20 +520,15 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferCondition' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferCondition' ) {
                             as.success();
-                        }
-                        else
-                        {
+                        } else {
                             console.log( 'Cond #6' );
                         }
                     }
                 );
-            }, ( as, err ) =>
-            {
+            }, ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
@@ -631,14 +537,12 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should execute template transaction', function( done )
-        {
+        it ( 'should execute template transaction', function( done ) {
             this.timeout( 10e3 );
             const as = vars.as;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = vars.ccm.iface( 'l2' );
                     let xfer = iface.newXfer();
 
@@ -668,8 +572,7 @@ module.exports = function( describe, it, vars )
                         .where( 'id IN', [ 7, 9, 10019, 10029 ] );
 
                     xfer.executeAssoc( as );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( res[1] ).to.eql(
                             {
                                 rows: [
@@ -691,8 +594,7 @@ module.exports = function( describe, it, vars )
                         );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -702,15 +604,12 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should detect xfer back reference errors', function( done )
-        {
+        it ( 'should detect xfer back reference errors', function( done ) {
             const as = vars.as;
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         const x1 = xfer.select( Tbl );
                         const x2 = xfer.select( Tbl )
@@ -720,10 +619,8 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferBackRef' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferBackRef' ) {
                             expect( as.state.error_info )
                                 .to.equal( 'Invalid template query ID: 1' );
                             as.success();
@@ -731,8 +628,7 @@ module.exports = function( describe, it, vars )
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         const x1 = xfer.select( Tbl ).where( 'name', 'not existing' );
                         const x2 = xfer.select( Tbl );
@@ -740,10 +636,8 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferBackRef' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferBackRef' ) {
                             expect( as.state.error_info )
                                 .to.equal( 'Empty query result for #0' );
                             as.success();
@@ -751,8 +645,7 @@ module.exports = function( describe, it, vars )
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         const x1 = xfer.select( Tbl ).limit( 10 );
                         const x2 = xfer.select( Tbl );
@@ -760,10 +653,8 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferBackRef' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferBackRef' ) {
                             expect( as.state.error_info )
                                 .to.equal( 'Invalid template field "Missing" for #0' );
                             as.success();
@@ -771,8 +662,7 @@ module.exports = function( describe, it, vars )
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         let xfer = vars.ccm.iface( 'l2' ).newXfer();
                         const x1 = xfer.select( Tbl ).limit( 10 );
                         const x2 = xfer.select( Tbl );
@@ -780,18 +670,15 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'XferBackRef' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'XferBackRef' ) {
                             expect( as.state.error_info )
                                 .to.equal( 'More than one row in result #0' );
                             as.success();
                         }
                     }
                 );
-            }, ( as, err ) =>
-            {
+            }, ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
@@ -800,18 +687,15 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should support lface()', function( done )
-        {
+        it ( 'should support lface()', function( done ) {
             const as = vars.as;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = vars.ccm.iface( 'l2' );
                     expect( iface.newXfer().lface() ).to.equal( iface );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -821,29 +705,24 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should allow empty query list', function( done )
-        {
+        it ( 'should allow empty query list', function( done ) {
             const as = vars.as;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = vars.ccm.iface( 'l2' );
 
                     iface.newXfer().execute( as );
-                    as.add( ( as, results ) =>
-                    {
+                    as.add( ( as, results ) => {
                         expect( results.length ).to.equal( 0 );
                     } );
 
                     iface.newXfer().executeAssoc( as );
-                    as.add( ( as, results ) =>
-                    {
+                    as.add( ( as, results ) => {
                         expect( results.length ).to.equal( 0 );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -854,14 +733,11 @@ module.exports = function( describe, it, vars )
         } );
     } );
 
-    describe( 'JOINs', function()
-    {
-        it ( 'should use proper join', function( done )
-        {
+    describe( 'JOINs', function() {
+        it ( 'should use proper join', function( done ) {
             const as = vars.as;
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 const iface = vars.ccm.iface( 'l1' );
 
                 const s = iface.select( Tbl );
@@ -893,8 +769,7 @@ module.exports = function( describe, it, vars )
                     .get( 'C', 'COUNT(*)' )
                     .executeAssoc( as );
                 as.add( ( as, res ) => expect( res[0].C ).to.equal( as.state.SndC ) );
-            }, ( as, err ) =>
-            {
+            }, ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
@@ -904,14 +779,11 @@ module.exports = function( describe, it, vars )
         } );
     } );
 
-    describe( 'Helpers', function()
-    {
-        it ( 'should support dates', function( done )
-        {
+    describe( 'Helpers', function() {
+        it ( 'should support dates', function( done ) {
             const as = vars.as;
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 const iface = vars.ccm.iface( 'l1' );
                 const helpers = iface.helpers();
 
@@ -920,8 +792,7 @@ module.exports = function( describe, it, vars )
                 s
                     .get( 'f', s.escape( helpers.now() ) )
                     .executeAssoc( as );
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     expect( res[0].f.substring( 0, 13 ) )
                         .to.equal( helpers.date( moment.utc() ).toString().substring( 0, 13 ) );
 
@@ -941,8 +812,7 @@ module.exports = function( describe, it, vars )
                     .get( 't', helpers.dateModify( s.escape( '2010-01-02' ), 60*60*24 ) )
                     .get( 'y', helpers.dateModify( s.escape( '2010-01-02' ), -60*60*24 ) )
                     .executeAssoc( as );
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     expect( res[0].t ).to.equal(
                         helpers.date( '2010-01-03' ) );
                     expect( res[0].y ).to.equal(
@@ -951,12 +821,10 @@ module.exports = function( describe, it, vars )
 
                 expect( vars.ccm.iface( 'l2' ).newXfer()
                     .helpers().dateModify( 'abc' ) ).to.equal( 'abc' );
-                expect( function()
-                {
+                expect( function() {
                     helpers.dateModify( 'abc', 'xyz' );
                 } ).to.throw( 'Seconds must be a number' );
-            }, ( as, err ) =>
-            {
+            }, ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
@@ -965,12 +833,10 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should support concat', function( done )
-        {
+        it ( 'should support concat', function( done ) {
             const as = vars.as;
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 const iface = vars.ccm.iface( 'l1' );
                 const helpers = iface.helpers();
 
@@ -983,8 +849,7 @@ module.exports = function( describe, it, vars )
                     ) ) )
                     .executeAssoc( as );
                 as.add( ( as, res ) => expect( res[0].f ).to.equal( 'START11END' ) );
-            }, ( as, err ) =>
-            {
+            }, ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
@@ -993,12 +858,10 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should support cast', function( done )
-        {
+        it ( 'should support cast', function( done ) {
             const as = vars.as;
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 const iface = vars.ccm.iface( 'l1' );
                 const helpers = iface.helpers();
 
@@ -1009,26 +872,21 @@ module.exports = function( describe, it, vars )
                     .get( 'd', helpers.escape( helpers.cast( '234', 'DECIMAL(6,3)' ) ) )
                     .get( 'j', helpers.escape( helpers.cast( '123', 'JSON' ) ) )
                     .executeAssoc( as );
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     const r = res[0];
                     expect( r.t ).to.equal( 'SomeText' );
                     expect( r.b.toString() ).to.equal( 'SomeBlob' );
 
-                    try
-                    {
+                    try {
                         expect( r.d ).to.equal( '234.000' );
-                    }
-                    catch ( e )
-                    {
+                    } catch ( e ) {
                         // SQLite...
                         expect( r.d ).to.equal( 234 );
                     }
 
                     expect( r.j ).to.equal( '123' );
                 } );
-            }, ( as, err ) =>
-            {
+            }, ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
@@ -1037,12 +895,10 @@ module.exports = function( describe, it, vars )
             as.execute();
         } );
 
-        it ( 'should support arithmetic ops', function( done )
-        {
+        it ( 'should support arithmetic ops', function( done ) {
             const as = vars.as;
 
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 const iface = vars.ccm.iface( 'l1' );
                 const helpers = iface.helpers();
 
@@ -1056,8 +912,7 @@ module.exports = function( describe, it, vars )
                     .get( 'l', helpers.escape( helpers.least( 4, 5, 6 ) ) )
                     .get( 'g', helpers.escape( helpers.greatest( 4, 5, 6 ) ) )
                     .executeAssoc( as );
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     const r = res[0];
                     expect( r.a | 0 ).to.equal( 6 );
                     expect( r.s | 0 ).to.equal( 2 );
@@ -1067,8 +922,7 @@ module.exports = function( describe, it, vars )
                     expect( r.l | 0 ).to.equal( 4 );
                     expect( r.g | 0 ).to.equal( 6 );
                 } );
-            }, ( as, err ) =>
-            {
+            }, ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
@@ -1078,33 +932,25 @@ module.exports = function( describe, it, vars )
         } );
     } );
 
-    if ( vars.haveStored )
-    {
-        describe( 'Call abort', function()
-        {
-            it ( 'should cancel queries', function( done )
-            {
+    if ( vars.haveStored ) {
+        describe( 'Call abort', function() {
+            it ( 'should cancel queries', function( done ) {
                 this.timeout( 5e3 );
                 const as = vars.as;
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         as.setTimeout( 0.2 );
                         const p = as.parallel();
 
-                        for ( let i = 0; i < 3; ++i )
-                        {
-                            p.add( ( as ) =>
-                            {
+                        for ( let i = 0; i < 3; ++i ) {
+                            p.add( ( as ) => {
                                 vars.ccm.iface( 'l1' ).callStored( as, 'test.CancelTest', [] );
                             } );
                         }
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'Timeout' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'Timeout' ) {
                             as.success();
                             return;
                         }
@@ -1115,20 +961,16 @@ module.exports = function( describe, it, vars )
                     }
                 );
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         const p = as.parallel();
 
-                        for ( let i = 0; i < 3; ++i )
-                        {
-                            p.add( ( as ) =>
-                            {
+                        for ( let i = 0; i < 3; ++i ) {
+                            p.add( ( as ) => {
                                 vars.ccm.iface( 'l1' ).callStored( as, 'test.Proc', [ 1 ] );
                             } );
                         }
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         console.log( as.state.error_info );
                         console.log( as.state.last_exception );
                         done( as.state.last_exception );

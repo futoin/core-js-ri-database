@@ -6,14 +6,12 @@ const expect = require( 'chai' ).expect;
 const $as = require( 'futoin-asyncsteps' );
 
 
-describe( 'SQLiteDriver', function()
-{
+describe( 'SQLiteDriver', function() {
     const { QueryBuilder } = require( '../main' );
     const drv = QueryBuilder.getDriver( 'sqlite' );
     const helpers = drv.helpers;
 
-    it( 'should escape values correctly', () =>
-    {
+    it( 'should escape values correctly', () => {
         expect( helpers.escape( true ) ).to.equal( 'TRUE' );
         expect( helpers.escape( false ) ).to.equal( 'FALSE' );
         expect( helpers.escape( 0 ) ).to.equal( '0' );
@@ -25,23 +23,20 @@ describe( 'SQLiteDriver', function()
             .to.equal( "'Some '' string '' \" \\'" );
     } );
 
-    it( 'should escape identifiers correctly', () =>
-    {
+    it( 'should escape identifiers correctly', () => {
         expect( helpers.identifier( 'one' ) ).to.equal( '"one"' );
         expect( helpers.identifier( 'one.two' ) ).to.equal( '"one"."two"' );
         expect( helpers.identifier( 'on"e.t"w"o' ) ).to.equal( '"on""e"."t""w""o"' );
     } );
 
-    it( 'should create xfer back references', () =>
-    {
+    it( 'should create xfer back references', () => {
         expect( drv.backref( 3, 'field' ).toQuery() ).to.equal( "$'3:field:s'$" );
         expect( drv.backref( 3, 'field', true ).toQuery() ).to.equal( "$'3:field:m'$" );
     } );
 } );
 
 
-describe( 'SQLiteService', () =>
-{
+describe( 'SQLiteService', () => {
     const Executor = require( 'futoin-executor/Executor' );
     const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
     const L1Face = require( '../L1Face' );
@@ -57,20 +52,17 @@ describe( 'SQLiteService', () =>
         schema: 'main.',
     };
 
-    beforeEach( function()
-    {
+    beforeEach( function() {
         const as = vars.as = $as();
         const ccm = vars.ccm = new AdvancedCCM();
         const executor = vars.executor = new Executor( ccm );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( arguments );
         } );
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 SQLiteService.register( as, executor, {
                     port: __dirname + '/sqlite.db',
                     raw: {
@@ -85,16 +77,14 @@ describe( 'SQLiteService', () =>
                 ccm.alias( 'sl1', 'l1' );
                 ccm.alias( 'sl2', 'l2' );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
             }
         );
     } );
 
-    afterEach( function( done )
-    {
+    afterEach( function( done ) {
         const ccm = vars.ccm;
         const executor = vars.executor;
         ccm.once( 'close', done );
@@ -104,16 +94,13 @@ describe( 'SQLiteService', () =>
         vars.executor = null;
     } );
 
-    describe( 'specific', function()
-    {
-        it ( 'should execute basic native queries', ( done ) =>
-        {
+    describe( 'specific', function() {
+        it ( 'should execute basic native queries', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     ccm.iface( 'sl1' ).query( as, 'DROP TABLE IF EXISTS main.Tbl' );
                     ccm.iface( 'sl1' ).query( as, 'DROP TABLE IF EXISTS main.Snd' );
                     ccm.iface( 'sl2' ).query( as,
@@ -131,8 +118,7 @@ describe( 'SQLiteService', () =>
                             ')' );
                     as.add( ( as ) => done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -141,22 +127,18 @@ describe( 'SQLiteService', () =>
             as.execute();
         } );
 
-        it ( 'should catch invalid query', ( done ) =>
-        {
+        it ( 'should catch invalid query', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'sl1' );
                     iface.query( as, 'Obviously invalid()' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         as.success();
                         return;
                     }
@@ -167,16 +149,13 @@ describe( 'SQLiteService', () =>
                 }
             );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'sl1' );
                     iface.query( as, ' ' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         as.success();
                         return;
                     }
@@ -187,16 +166,13 @@ describe( 'SQLiteService', () =>
                 }
             );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'sl1' );
                     iface.query( as, 'SELECT a b c FROM X' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         done();
                         as.success();
                         return;

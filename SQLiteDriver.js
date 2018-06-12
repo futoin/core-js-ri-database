@@ -23,32 +23,25 @@ const QueryBuilder = require( './QueryBuilder' );
 const Expression = QueryBuilder.Expression;
 const moment = require( 'moment' );
 
-class SQLiteHelpers extends QueryBuilder.SQLHelpers
-{
-    now()
-    {
+class SQLiteHelpers extends QueryBuilder.SQLHelpers {
+    now() {
         return new Expression( 'CURRENT_TIMESTAMP' );
     }
 
-    date( value )
-    {
+    date( value ) {
         return moment.utc( value ).format( 'YYYY-MM-DD HH:mm:ss' );
     }
 
-    nativeDate( value )
-    {
+    nativeDate( value ) {
         return moment.utc( value );
     }
 
-    dateModify( expr, seconds )
-    {
-        if ( !seconds )
-        {
+    dateModify( expr, seconds ) {
+        if ( !seconds ) {
             return expr;
         }
 
-        if ( typeof seconds !== 'number' )
-        {
+        if ( typeof seconds !== 'number' ) {
             throw new Error( 'Seconds must be a number' );
         }
 
@@ -56,10 +49,8 @@ class SQLiteHelpers extends QueryBuilder.SQLHelpers
         return new Expression( expr );
     }
 
-    _escapeSimple( value )
-    {
-        switch ( typeof value )
-        {
+    _escapeSimple( value ) {
+        switch ( typeof value ) {
         case 'boolean':
             return value ? 'TRUE' : 'FALSE';
 
@@ -70,13 +61,11 @@ class SQLiteHelpers extends QueryBuilder.SQLHelpers
             return `${value}`;
 
         default:
-            if ( value === null )
-            {
+            if ( value === null ) {
                 return 'NULL';
             }
 
-            if ( value instanceof Expression )
-            {
+            if ( value instanceof Expression ) {
                 return value.toQuery();
             }
 
@@ -84,32 +73,27 @@ class SQLiteHelpers extends QueryBuilder.SQLHelpers
         }
     }
 
-    identifier( name )
-    {
+    identifier( name ) {
         return name
             .split( '.' )
             .map( v => ( v === '*' ) ? v : `"${v.replace( /"/g, '""' ).replace( /\\/g, "\\\\" )}"` )
             .join( '.' );
     }
 
-    cast( a, type )
-    {
-        if ( type.toUpperCase() === 'JSON' )
-        {
+    cast( a, type ) {
+        if ( type.toUpperCase() === 'JSON' ) {
             type = 'TEXT';
         }
 
         return super.cast( a, type );
     }
 
-    least( ...args )
-    {
+    least( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression( `MIN(${escaped.join( ',' )})` );
     }
 
-    greatest( ...args )
-    {
+    greatest( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression( `MAX(${escaped.join( ',' )})` );
     }
@@ -121,27 +105,21 @@ class SQLiteHelpers extends QueryBuilder.SQLHelpers
  * @note It is normally automatically added when main.js is executed.
  * @private
  */
-class SQLiteDriver extends QueryBuilder.SQLDriver
-{
-    constructor()
-    {
+class SQLiteDriver extends QueryBuilder.SQLDriver {
+    constructor() {
         super( new SQLiteHelpers );
     }
 
-    build( state )
-    {
+    build( state ) {
         if ( state.type === 'INSERT' &&
              state.select.size === 1 &&
-             state.select.keys().next().value === '$id' )
-        {
+             state.select.keys().next().value === '$id' ) {
             // last insert ID is always selected as '$id'
             const pure_state = Object.create( state );
             pure_state.select = null;
 
             return super.build( pure_state );
-        }
-        else if ( state.type === 'SELECT' && state.forClause )
-        {
+        } else if ( state.type === 'SELECT' && state.forClause ) {
             const pure_state = Object.create( state );
             pure_state.forClause = null;
 
@@ -152,8 +130,7 @@ class SQLiteDriver extends QueryBuilder.SQLDriver
         return super.build( state );
     }
 
-    _build_call( _entity, _params )
-    {
+    _build_call( _entity, _params ) {
         throw new Error( 'Not supported' );
     }
 }

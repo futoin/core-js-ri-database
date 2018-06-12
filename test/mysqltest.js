@@ -6,14 +6,12 @@ const expect = require( 'chai' ).expect;
 const $as = require( 'futoin-asyncsteps' );
 
 
-describe( 'MySQLDriver', function()
-{
+describe( 'MySQLDriver', function() {
     const { QueryBuilder } = require( '../main' );
     const drv = QueryBuilder.getDriver( 'mysql' );
     const helpers = drv.helpers;
 
-    it( 'should escape values correctly', () =>
-    {
+    it( 'should escape values correctly', () => {
         expect( helpers.escape( true ) ).to.equal( 'true' );
         expect( helpers.escape( false ) ).to.equal( 'false' );
         expect( helpers.escape( 0 ) ).to.equal( '0' );
@@ -25,22 +23,19 @@ describe( 'MySQLDriver', function()
             .to.equal( "'Some \\' string \\' \\\" \\\\'" );
     } );
 
-    it( 'should escape identifiers correctly', () =>
-    {
+    it( 'should escape identifiers correctly', () => {
         expect( helpers.identifier( 'one' ) ).to.equal( '`one`' );
         expect( helpers.identifier( 'one.two' ) ).to.equal( '`one`.`two`' );
         expect( helpers.identifier( 'on`e.t`w`o' ) ).to.equal( '`on``e`.`t``w``o`' );
     } );
 
-    it( 'should create xfer back references', () =>
-    {
+    it( 'should create xfer back references', () => {
         expect( drv.backref( 3, 'field' ).toQuery() ).to.equal( "$'3:field:s'$" );
         expect( drv.backref( 3, 'field', true ).toQuery() ).to.equal( "$'3:field:m'$" );
     } );
 } );
 
-describe( 'MySQLService', () =>
-{
+describe( 'MySQLService', () => {
     const Executor = require( 'futoin-executor/Executor' );
     const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
     const L1Face = require( '../L1Face' );
@@ -55,20 +50,17 @@ describe( 'MySQLService', () =>
         haveStored: true,
     };
 
-    beforeEach( () =>
-    {
+    beforeEach( () => {
         const as = vars.as = $as();
         const ccm = vars.ccm = new AdvancedCCM();
         const executor = vars.executor = new Executor( ccm );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( arguments );
         } );
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 MySQLService.register( as, executor, {
                     host: '127.0.0.1',
                     port: 3306,
@@ -82,32 +74,27 @@ describe( 'MySQLService', () =>
                 ccm.alias( 'ml1', 'l1' );
                 ccm.alias( 'ml2', 'l2' );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
             }
         );
     } );
 
-    afterEach( () =>
-    {
+    afterEach( () => {
         const ccm = vars.ccm;
         const executor = vars.executor;
         ccm.close();
         executor.close();
     } );
 
-    describe( 'specific', function()
-    {
-        it ( 'should execute basic native queries', ( done ) =>
-        {
+    describe( 'specific', function() {
+        it ( 'should execute basic native queries', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     ccm.iface( 'ml1' ).query( as, 'DROP DATABASE IF EXISTS test' );
                     ccm.iface( 'ml2' ).query( as, 'CREATE DATABASE test' );
                     ccm.iface( 'ml2' ).query( as,
@@ -131,8 +118,7 @@ describe( 'MySQLService', () =>
                         'CREATE PROCEDURE test.CancelTest() BEGIN CALL SLEEP(10); END' );
                     as.add( ( as ) => done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
@@ -141,22 +127,18 @@ describe( 'MySQLService', () =>
             as.execute();
         } );
 
-        it ( 'should catch invalid query', ( done ) =>
-        {
+        it ( 'should catch invalid query', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'ml1' );
                     iface.query( as, 'Obviously invalid()' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         as.success();
                         return;
                     }
@@ -167,16 +149,13 @@ describe( 'MySQLService', () =>
                 }
             );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'ml1' );
                     iface.query( as, ' ' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         as.success();
                         return;
                     }
@@ -187,16 +166,13 @@ describe( 'MySQLService', () =>
                 }
             );
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'ml1' );
                     iface.query( as, 'SELECT a b c FROM X' );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'InvalidQuery' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'InvalidQuery' ) {
                         done();
                         as.success();
                         return;
@@ -210,23 +186,19 @@ describe( 'MySQLService', () =>
             as.execute();
         } );
 
-        it ( 'query multi res', ( done ) =>
-        {
+        it ( 'query multi res', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const xfer = ccm.iface( 'l2' ).callStored( as, 'test.MultiRes', [ 1 ] );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     if ( err === 'InvalidQuery' &&
                         as.state.error_info === 'More than one result'
-                    )
-                    {
+                    ) {
                         as.success();
                         return;
                     }
@@ -240,25 +212,21 @@ describe( 'MySQLService', () =>
             as.execute();
         } );
 
-        it ( 'xfer multi res for selected condition', ( done ) =>
-        {
+        it ( 'xfer multi res for selected condition', ( done ) => {
             const as = vars.as;
             const ccm = vars.ccm;
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const xfer = ccm.iface( 'l2' ).newXfer();
                     xfer.raw( 'CALL test.MultiRes(1)', null, { selected: 1 } );
                     xfer.execute( as );
                     as.add( ( as ) => done( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     if ( err === 'XferCondition' &&
                         as.state.error_info === 'Multiple results for conditions'
-                    )
-                    {
+                    ) {
                         as.success();
                         return;
                     }

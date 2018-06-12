@@ -29,15 +29,12 @@ const IS_DEBUG = process && process.env.NODE_ENV !== 'production';
 /**
  * Wrapper for raw expression to prevent escaping
  */
-class Expression
-{
-    constructor( expr )
-    {
+class Expression {
+    constructor( expr ) {
         this._expr = expr;
     }
 
-    toQuery()
-    {
+    toQuery() {
         return this._expr;
     }
 
@@ -45,8 +42,7 @@ class Expression
      * Allows easy joining with raw query
      * @returns {string} as is
      */
-    toString()
-    {
+    toString() {
         return this._expr;
     }
 }
@@ -54,8 +50,7 @@ class Expression
 /**
  * Interface for prepared statement execution
  */
-class Prepared
-{
+class Prepared {
     /**
      * @func
      * @name Prepared#execute
@@ -74,29 +69,24 @@ class Prepared
 /**
  * Additional helpers interface
  */
-class Helpers
-{
-    entity( entity )
-    {
+class Helpers {
+    entity( entity ) {
         void entity;
         throw new Error( 'Not implemented' );
     }
 
-    escape( value, op=undefined )
-    {
+    escape( value, op=undefined ) {
         void value;
         void op;
         throw new Error( 'Not implemented' );
     }
 
-    identifier( name )
-    {
+    identifier( name ) {
         void name;
         throw new Error( 'Not implemented' );
     }
 
-    expr( expr )
-    {
+    expr( expr ) {
         void expr;
         throw new Error( 'Not implemented' );
     }
@@ -217,63 +207,47 @@ class Helpers
  * Basic interface for DB flavour support
  * @private
  */
-class IDriver
-{
-    get helpers()
-    {
+class IDriver {
+    get helpers() {
         return this._helpers;
     }
 
-    constructor( helpers )
-    {
+    constructor( helpers ) {
         this.COND = COND;
         this._helpers = helpers || new Helpers();
     }
 
 
-    backref( query_id, field, multi )
-    {
+    backref( query_id, field, multi ) {
         void query_id;
         void field;
         void multi;
         throw new Error( 'Not implemented' );
     }
 
-    checkField( field )
-    {
-        if ( typeof field !== 'string' || !field.match( FIELD_RE ) )
-        {
+    checkField( field ) {
+        if ( typeof field !== 'string' || !field.match( FIELD_RE ) ) {
             throw new Error( `Invalid field name: ${field}` );
         }
     }
 
-    build( _state )
-    {
+    build( _state ) {
         throw new Error( 'Not implemented' );
     }
 
-    _ensureUsed( state, used )
-    {
-        for ( let f in state )
-        {
+    _ensureUsed( state, used ) {
+        for ( let f in state ) {
             let v = state[f];
 
-            if ( v instanceof Map )
-            {
-                if ( v.size && !used[f] )
-                {
+            if ( v instanceof Map ) {
+                if ( v.size && !used[f] ) {
                     throw new Error( `Unused map "${f}"` );
                 }
-            }
-            else if ( v instanceof Array )
-            {
-                if ( v.length && !used[f] )
-                {
+            } else if ( v instanceof Array ) {
+                if ( v.length && !used[f] ) {
                     throw new Error( `Unused array "${f}"` );
                 }
-            }
-            else if ( v && !used[f] )
-            {
+            } else if ( v && !used[f] ) {
                 throw new Error( `Unused generic "${f}"` );
             }
         }
@@ -283,18 +257,12 @@ class IDriver
 /**
  * Basic logic for SQL-based helpers
  */
-class SQLHelpers extends Helpers
-{
-    entity( entity )
-    {
-        if ( typeof entity === 'string' )
-        {
+class SQLHelpers extends Helpers {
+    entity( entity ) {
+        if ( typeof entity === 'string' ) {
             return entity;
-        }
-        else if ( entity instanceof Array )
-        {
-            if ( entity.length !== 2 )
-            {
+        } else if ( entity instanceof Array ) {
+            if ( entity.length !== 2 ) {
                 throw new Error(
                     `Entity as array format is [name, alias]: ${entity}`
                 );
@@ -303,10 +271,8 @@ class SQLHelpers extends Helpers
             let q = entity[0];
             const alias = entity[1];
 
-            if ( q instanceof QueryBuilder )
-            {
-                if ( q._state.type !== 'SELECT' )
-                {
+            if ( q instanceof QueryBuilder ) {
+                if ( q._state.type !== 'SELECT' ) {
                     throw new Error( 'Not a SELECT sub-query' );
                 }
 
@@ -315,48 +281,35 @@ class SQLHelpers extends Helpers
             }
 
             return `${q} AS ${alias}`;
-        }
-        else if ( entity === null )
-        {
+        } else if ( entity === null ) {
             return null;
-        }
-        else if ( entity instanceof QueryBuilder )
-        {
+        } else if ( entity instanceof QueryBuilder ) {
             throw new Error(
                 `Entity as sub-query format is [QB, alias]: ${entity}`
             );
-        }
-        else
-        {
+        } else {
             throw new Error( `Unknown entity type: ${entity}` );
         }
     }
 
-    escape( value, op=undefined )
-    {
-        if ( value instanceof QueryBuilder )
-        {
+    escape( value, op=undefined ) {
+        if ( value instanceof QueryBuilder ) {
             const raw_query = value._toQuery();
             return `(${raw_query})`;
         }
 
 
-        if ( op === 'BETWEEN' || op === 'NOT BETWEEN' )
-        {
-            if ( value instanceof Array && value.length === 2 )
-            {
+        if ( op === 'BETWEEN' || op === 'NOT BETWEEN' ) {
+            if ( value instanceof Array && value.length === 2 ) {
                 const a = this.escape( value[0] );
                 const b = this.escape( value[1] );
                 return `${a} AND ${b}`;
-            }
-            else
-            {
+            } else {
                 throw new Error( `BETWEEN requires array with two elements` );
             }
         }
 
-        if ( value instanceof Array )
-        {
+        if ( value instanceof Array ) {
             const raw_query = value.map( v => this.escape( v ) ).join( ',' );
             return `(${raw_query})`;
         }
@@ -364,8 +317,7 @@ class SQLHelpers extends Helpers
         return this._escapeSimple( value );
     }
 
-    _escapeSimple( _value )
-    {
+    _escapeSimple( _value ) {
         throw new Error( 'Not implemented' );
 
         /*
@@ -394,92 +346,77 @@ class SQLHelpers extends Helpers
         */
     }
 
-    expr( expr )
-    {
+    expr( expr ) {
         return new Expression( this._expr( expr ) );
     }
 
-    _expr( expr )
-    {
-        if ( expr instanceof QueryBuilder )
-        {
+    _expr( expr ) {
+        if ( expr instanceof QueryBuilder ) {
             const raw_query = expr._toQuery();
             return `(${raw_query})`;
         }
 
-        if ( expr instanceof Expression )
-        {
+        if ( expr instanceof Expression ) {
             return expr.toString();
         }
 
-        if ( typeof expr !== 'string' )
-        {
+        if ( typeof expr !== 'string' ) {
             throw new Error( 'Expression must be QueryBuilder, Expression or string' );
         }
 
         return this._escapeExpr( expr );
     }
 
-    _escapeExpr( expr )
-    {
+    _escapeExpr( expr ) {
         return expr;
     }
 
-    concat( ...args )
-    {
+    concat( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression(
             this.expr( `(${escaped.join( '||' )})` )
         );
     }
 
-    cast( a, type )
-    {
+    cast( a, type ) {
         const expr = this.escape( a );
         return new Expression( `CAST(${expr} AS ${type})` );
     }
 
-    add( ...args )
-    {
+    add( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression( `(${escaped.join( '+' )})` );
     }
 
-    sub( a, b )
-    {
+    sub( a, b ) {
         a = this.escape( a );
         b = this.escape( b );
         return new Expression( `(${a}-${b})` );
     }
 
-    mul( ...args )
-    {
+    mul( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression( `(${escaped.join( '*' )})` );
     }
 
-    div( a, b )
-    {
+    div( a, b ) {
         a = this.escape( a );
         b = this.escape( b );
         return new Expression( `(${a}/${b})` );
     }
 
-    mod( a, b )
-    {
+    mod( a, b ) {
         a = this.escape( a );
         b = this.escape( b );
         return new Expression( `(${a}%${b})` );
     }
 
-    least( ...args )
-    {
+    least( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression( `LEAST(${escaped.join( ',' )})` );
     }
 
-    greatest( ...args )
-    {
+    greatest( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression( `GREATEST(${escaped.join( ',' )})` );
     }
@@ -489,23 +426,19 @@ class SQLHelpers extends Helpers
  * Basic logic for SQL-based databases
  * @private
  */
-class SQLDriver extends IDriver
-{
-    constructor( helpers )
-    {
+class SQLDriver extends IDriver {
+    constructor( helpers ) {
         super( helpers || new SQLHelpers() );
     }
 
-    backref( query_id, field, multi )
-    {
+    backref( query_id, field, multi ) {
         if ( field !== '$id' ) this.checkField( field );
 
         multi = multi === true ? 'm' : 's';
         return new Expression( `$'${query_id}:${field}:${multi}'$` );
     }
 
-    build( state )
-    {
+    build( state ) {
         const type = state.type;
         const entity = state.entity;
         const q = [];
@@ -524,37 +457,27 @@ class SQLDriver extends IDriver
             params: false,
         };
 
-        const build_cond = ( c ) =>
-        {
-            if ( c instanceof Array )
-            {
-                if ( c[0] === COND )
-                {
-                    if ( c.length == 2 )
-                    {
+        const build_cond = ( c ) => {
+            if ( c instanceof Array ) {
+                if ( c[0] === COND ) {
+                    if ( c.length == 2 ) {
                         return c[1];
-                    }
-                    else if ( c.length === 4 )
-                    {
+                    } else if ( c.length === 4 ) {
                         return `${c[1]} ${c[2]} ${c[3]}`;
                     }
-                }
-                else
-                {
+                } else {
                     const op = c[0];
                     const res = [];
                     const iter = c[Symbol.iterator]();
 
                     iter.next();
 
-                    for ( let iv = iter.next(); !iv.done; iv = iter.next() )
-                    {
+                    for ( let iv = iter.next(); !iv.done; iv = iter.next() ) {
                         let v = iv.value;
                         let r = build_cond( v );
 
                         if ( ( v[0] === 'OR' && v.length > 2 ) ||
-                             ( op === 'OR' && v[0] !== COND ) )
-                        {
+                             ( op === 'OR' && v[0] !== COND ) ) {
                             r = `(${r})`;
                         }
 
@@ -568,41 +491,33 @@ class SQLDriver extends IDriver
             throw new Error( `Must not get here: ${c}` );
         };
 
-        const add_cond = ( kw, cond ) =>
-        {
-            if ( cond.length )
-            {
+        const add_cond = ( kw, cond ) => {
+            if ( cond.length ) {
                 q.push( ` ${kw} ` );
                 q.push( build_cond( cond ) );
             }
         };
 
-        const add_where = () =>
-        {
+        const add_where = () => {
             use.where = true;
             add_cond( 'WHERE', state.where );
         };
 
-        const require_entity = () =>
-        {
-            if ( !entity )
-            {
+        const require_entity = () => {
+            if ( !entity ) {
                 throw new Error( 'Entity is not set' );
             }
         };
 
-        const require_toset = () =>
-        {
-            if ( !state.toset.size )
-            {
+        const require_toset = () => {
+            if ( !state.toset.size ) {
                 throw new Error( 'Nothing to set' );
             }
 
             use.toset = true;
         };
 
-        switch ( type )
-        {
+        switch ( type ) {
         case 'DELETE':
             require_entity();
             q.push( `DELETE FROM ${entity}` );
@@ -614,27 +529,22 @@ class SQLDriver extends IDriver
             require_entity();
             q.push( `INSERT INTO ${entity} ` );
 
-            if ( toset instanceof Array )
-            {
+            if ( toset instanceof Array ) {
                 use.toset = true;
                 const fields = toset[0];
 
-                if ( fields.length )
-                {
+                if ( fields.length ) {
                     q.push( `(${fields.join( ',' )}) ` );
                 }
 
                 q.push( toset[1] );
-            }
-            else if ( state.multiset )
-            {
+            } else if ( state.multiset ) {
                 const multiset = state.multiset;
                 use.multiset = true;
                 use.toset = true;
 
                 // NOTE: side effect
-                if ( state.toset.size )
-                {
+                if ( state.toset.size ) {
                     multiset.push( state.toset );
                     state.toset = new Map();
                 }
@@ -649,21 +559,17 @@ class SQLDriver extends IDriver
 
                 const row_count = multiset.length;
 
-                for ( let i = 1; i < row_count; ++i )
-                {
+                for ( let i = 1; i < row_count; ++i ) {
                     const row = multiset[i];
 
-                    if ( row.size != first.size )
-                    {
+                    if ( row.size != first.size ) {
                         throw new Error( 'Multi-row field count mismatch' );
                     }
 
-                    const vals = first_keys.map( f =>
-                    {
+                    const vals = first_keys.map( f => {
                         const v = row.get( f );
 
-                        if ( v === undefined )
-                        {
+                        if ( v === undefined ) {
                             throw new Error( `Multi-row missing field: ${f}` );
                         }
 
@@ -672,9 +578,7 @@ class SQLDriver extends IDriver
 
                     q.push( ',(' + vals.join( ',' ) + ')' );
                 }
-            }
-            else
-            {
+            } else {
                 require_toset();
                 q.push( '(' );
                 q.push( Array.from( toset.keys() ).join( ',' ) );
@@ -689,13 +593,10 @@ class SQLDriver extends IDriver
         case 'SELECT': {
             q.push( 'SELECT ' );
 
-            if ( state.select.size )
-            {
+            if ( state.select.size ) {
                 q.push( this._build_select_part( state.select ) );
                 use.select = true;
-            }
-            else
-            {
+            } else {
                 q.push( '*' );
             }
 
@@ -705,8 +606,7 @@ class SQLDriver extends IDriver
             q.push( ` FROM ${entity}` );
 
             //---
-            for ( let j of state.joins )
-            {
+            for ( let j of state.joins ) {
                 q.push( ` ${j.type} JOIN ${j.entity}` );
                 add_cond( 'ON', j.cond );
             }
@@ -719,8 +619,7 @@ class SQLDriver extends IDriver
             //---
             const group = state.group;
 
-            if ( group.length )
-            {
+            if ( group.length ) {
                 q.push( ` GROUP BY ${group.join( ',' )}` );
                 use.group = true;
             }
@@ -732,8 +631,7 @@ class SQLDriver extends IDriver
             //---
             const order = state.order;
 
-            if ( order.length )
-            {
+            if ( order.length ) {
                 const order_parts = order.map( ( v ) => `${v[0]} ${v[1]}` );
                 q.push( ` ORDER BY ${order_parts.join( ',' )}` );
                 use.order = true;
@@ -742,15 +640,13 @@ class SQLDriver extends IDriver
             //---
             const limit = state.limit;
 
-            if ( limit && this._isLimitOffsetSupport() )
-            {
+            if ( limit && this._isLimitOffsetSupport() ) {
                 use.limit = true;
                 q.push( ` LIMIT ${limit[0]}` );
 
                 const offset = limit[1];
 
-                if ( offset !== undefined )
-                {
+                if ( offset !== undefined ) {
                     q.push( ` OFFSET ${offset}` );
                 }
             }
@@ -764,8 +660,7 @@ class SQLDriver extends IDriver
             q.push( `UPDATE ${entity} SET ` );
             const fields = [];
 
-            for ( let [ f, v ] of state.toset.entries() )
-            {
+            for ( let [ f, v ] of state.toset.entries() ) {
                 fields.push( `${f}=${v}` );
             }
 
@@ -788,26 +683,20 @@ class SQLDriver extends IDriver
             throw new Error( `Unsupported query type ${type}` );
         }
 
-        if ( IS_DEBUG )
-        {
+        if ( IS_DEBUG ) {
             this._ensureUsed( state, use );
         }
 
         return q.join( '' );
     }
 
-    _build_select_part( select )
-    {
+    _build_select_part( select ) {
         const fields = [];
 
-        for ( let [ f, v ] of select.entries() )
-        {
-            if ( v === f )
-            {
+        for ( let [ f, v ] of select.entries() ) {
+            if ( v === f ) {
                 fields.push( `${f}` );
-            }
-            else
-            {
+            } else {
                 fields.push( `${v} AS ${f}` );
             }
         }
@@ -815,13 +704,11 @@ class SQLDriver extends IDriver
         return fields.join( ',' );
     }
 
-    _build_call( entity, params )
-    {
+    _build_call( entity, params ) {
         return `CALL ${entity}(${params.join( ',' )})`;
     }
 
-    _isLimitOffsetSupport()
-    {
+    _isLimitOffsetSupport() {
         return true;
     }
 }
@@ -830,53 +717,46 @@ class SQLDriver extends IDriver
 /**
  * Neutral query builder
  */
-class QueryBuilder
-{
+class QueryBuilder {
     /**
      * Base for QB Driver implementation
      */
-    static get IDriver()
-    {
+    static get IDriver() {
         return IDriver;
     }
 
     /**
      * Base for SQL-based QB Driver implementation
      */
-    static get SQLDriver()
-    {
+    static get SQLDriver() {
         return SQLDriver;
     }
 
     /**
      * Wrapper for raw expressions
      */
-    static get Expression()
-    {
+    static get Expression() {
         return Expression;
     }
 
     /**
      * Interface of Prepared statement
      */
-    static get Prepared()
-    {
+    static get Prepared() {
         return Prepared;
     }
 
     /**
      * Base for Helpers
      */
-    static get Helpers()
-    {
+    static get Helpers() {
         return Helpers;
     }
 
     /**
      * Base for SQLHelpers
      */
-    static get SQLHelpers()
-    {
+    static get SQLHelpers() {
         return SQLHelpers;
     }
 
@@ -887,16 +767,12 @@ class QueryBuilder
      * @param {string} type - type of driver
      * @param {string|null} entity - primary target to operate on
      */
-    constructor( qb_or_lface, db_type=null, type=null, entity=null )
-    {
-        if ( qb_or_lface instanceof QueryBuilder )
-        {
+    constructor( qb_or_lface, db_type=null, type=null, entity=null ) {
+        if ( qb_or_lface instanceof QueryBuilder ) {
             this._lface = qb_or_lface._lface;
             this._db_type = qb_or_lface._db_type;
             this._state = _cloneDeep( qb_or_lface._state );
-        }
-        else
-        {
+        } else {
             this._lface = qb_or_lface;
             this._db_type = db_type;
             this._state = {
@@ -921,8 +797,7 @@ class QueryBuilder
      * @param {string} type - type of driver
      * @param {IDriver|function|string|object} module - implementation
      */
-    static addDriver( type, module )
-    {
+    static addDriver( type, module ) {
         _driverImpl.set( type, module );
     }
 
@@ -931,37 +806,24 @@ class QueryBuilder
      * @param {string} type - type of driver
      * @returns {IDriver} actual implementation of query builder driver
      */
-    static getDriver( type )
-    {
+    static getDriver( type ) {
         let impl = _driverImpl.get( type );
 
-        if ( typeof impl === 'undefined' )
-        {
+        if ( typeof impl === 'undefined' ) {
             throw new Error( `Unknown DB type: ${type}` );
-        }
-        else if ( impl instanceof IDriver )
-        {
+        } else if ( impl instanceof IDriver ) {
             return impl;
-        }
-        else if ( typeof impl === 'string' && typeof module !== 'undefined' )
-        {
+        } else if ( typeof impl === 'string' && typeof module !== 'undefined' ) {
             impl = module.require( impl );
             impl = new impl( type );
-        }
-        else if ( typeof impl === 'function' )
-        {
+        } else if ( typeof impl === 'function' ) {
             if ( typeof impl.prototype === 'object' &&
-                impl.prototype instanceof IDriver )
-            {
+                impl.prototype instanceof IDriver ) {
                 impl = new impl;
-            }
-            else
-            {
+            } else {
                 impl = impl();
             }
-        }
-        else
-        {
+        } else {
             throw new Error( 'Not supported driver definition' );
         }
 
@@ -973,8 +835,7 @@ class QueryBuilder
      * Get related QB driver
      * @returns {IDriver} actual implementation of query builder driver
      */
-    getDriver()
-    {
+    getDriver() {
         return this.constructor.getDriver( this._db_type );
     }
 
@@ -982,8 +843,7 @@ class QueryBuilder
      * Get a copy of Query Builder
      * @returns {QueryBuilder} copy which can be processed independently
      */
-    clone()
-    {
+    clone() {
         return new QueryBuilder( this );
     }
 
@@ -992,8 +852,7 @@ class QueryBuilder
      * @param {*} value - value, array or sub-query to escape
      * @returns {string} driver-specific escape
      */
-    escape( value )
-    {
+    escape( value ) {
         return this.helpers().escape( value );
     }
 
@@ -1002,8 +861,7 @@ class QueryBuilder
      * @param {string} name - raw identifier to escape
      * @returns {string} driver-specific escape
      */
-    identifier( name )
-    {
+    identifier( name ) {
         return this.helpers().identifier( name );
     }
 
@@ -1012,8 +870,7 @@ class QueryBuilder
      * @param {string} expr - expression to wrap
      * @return {Expression} wrapped expression
      */
-    expr( expr )
-    {
+    expr( expr ) {
         return this.helpers().expr( expr );
     }
 
@@ -1023,8 +880,7 @@ class QueryBuilder
      * @param {string} name - name to wrap
      * @return {Expression} wrapped expression
      */
-    param( name )
-    {
+    param( name ) {
         return this.expr( `:${name}` );
     }
 
@@ -1032,8 +888,7 @@ class QueryBuilder
      * Get additional helpers
      * @returns {Helpers} - db-specific helpers object
      */
-    helpers()
-    {
+    helpers() {
         return this.getDriver().helpers;
     }
 
@@ -1055,48 +910,33 @@ class QueryBuilder
      * @param {*} [value=undefined] - optional value for
      * @returns {QueryBuilder} self
      */
-    get( fields, value=undefined )
-    {
+    get( fields, value=undefined ) {
         const select = this._state.select;
         const driver = this.getDriver();
         const helpers = driver.helpers;
 
-        if ( value !== undefined )
-        {
+        if ( value !== undefined ) {
             driver.checkField( fields );
             select.set( fields, helpers.expr( value ) );
-        }
-        else if ( fields instanceof Map )
-        {
-            for ( let [ f, v ] of fields.entries() )
-            {
+        } else if ( fields instanceof Map ) {
+            for ( let [ f, v ] of fields.entries() ) {
                 driver.checkField( f );
                 select.set( f, helpers.expr( v ) );
             }
-        }
-        else if ( fields instanceof Array )
-        {
-            for ( let f of fields )
-            {
+        } else if ( fields instanceof Array ) {
+            for ( let f of fields ) {
                 driver.checkField( f );
                 select.set( f, f );
             }
-        }
-        else if ( typeof fields === 'object' )
-        {
-            for ( let f in fields )
-            {
+        } else if ( typeof fields === 'object' ) {
+            for ( let f in fields ) {
                 driver.checkField( f );
                 select.set( f, helpers.expr( fields[f] ) );
             }
-        }
-        else if ( typeof fields === 'string' )
-        {
+        } else if ( typeof fields === 'string' ) {
             driver.checkField( fields );
             select.set( fields, fields );
-        }
-        else
-        {
+        } else {
             throw new Error( `Not supported fields definition: ${fields}` );
         }
 
@@ -1115,8 +955,7 @@ class QueryBuilder
      * @param {string} field - field name with auto-generated value
      * @returns {QueryBuilder} self
      */
-    getInsertID( field )
-    {
+    getInsertID( field ) {
         const select = this._state.select;
         const driver = this.getDriver();
 
@@ -1130,27 +969,22 @@ class QueryBuilder
      * Save current set() context and start new INSERT row
      * @returns {QueryBuilder} self
      */
-    newRow()
-    {
+    newRow() {
         const state = this._state;
 
-        if ( state.type !== 'INSERT' )
-        {
+        if ( state.type !== 'INSERT' ) {
             throw new Error( 'Not an INSERT query for multi-row' );
         }
 
-        if ( state.toset instanceof Array )
-        {
+        if ( state.toset instanceof Array ) {
             throw new Error( 'INSERT-SELECT can not be mixed with multirow' );
         }
 
-        if ( !state.multiset )
-        {
+        if ( !state.multiset ) {
             state.multiset = [];
         }
 
-        if ( state.toset.size )
-        {
+        if ( state.toset.size ) {
             state.multiset.push( state.toset );
             state.toset = new Map();
         }
@@ -1171,59 +1005,43 @@ class QueryBuilder
      * @param {string|number|null|QueryBuilder} [value=undefined] - value to assign
      * @returns {QueryBuilder} self
      */
-    set( field, value=undefined )
-    {
+    set( field, value=undefined ) {
         const toset = this._state.toset;
         const driver = this.getDriver();
         const helpers = driver.helpers;
 
-        if ( toset instanceof Array )
-        {
+        if ( toset instanceof Array ) {
             throw new Error( 'INSERT-SELECT can not be mixed with others' );
         }
 
-        if ( value !== undefined )
-        {
+        if ( value !== undefined ) {
             driver.checkField( field );
             toset.set( field, helpers.escape( value ) );
-        }
-        else if ( field instanceof Map )
-        {
-            for ( let [ f, v ] of field.entries() )
-            {
+        } else if ( field instanceof Map ) {
+            for ( let [ f, v ] of field.entries() ) {
                 driver.checkField( f );
                 toset.set( f, helpers.escape( v ) );
             }
-        }
-        else if ( field instanceof QueryBuilder )
-        {
-            if ( toset.size )
-            {
+        } else if ( field instanceof QueryBuilder ) {
+            if ( toset.size ) {
                 throw new Error( 'INSERT-SELECT can not be mixed with others' );
             }
 
-            if ( field._state.type !== 'SELECT' )
-            {
+            if ( field._state.type !== 'SELECT' ) {
                 throw new Error( 'Not a SELECT sub-query' );
             }
 
-            if ( this._state.type !== 'INSERT' )
-            {
+            if ( this._state.type !== 'INSERT' ) {
                 throw new Error( 'Not an INSERT query for INSERT-SELECT' );
             }
 
             this._state.toset = [ Array.from( field._state.select.keys() ), field._toQuery() ];
-        }
-        else if ( typeof field === 'object' )
-        {
-            for ( let f in field )
-            {
+        } else if ( typeof field === 'object' ) {
+            for ( let f in field ) {
                 driver.checkField( f );
                 toset.set( f, helpers.escape( field[f] ) );
             }
-        }
-        else
-        {
+        } else {
             throw new Error( `Not supported set definition: ${field}` );
         }
 
@@ -1236,10 +1054,8 @@ class QueryBuilder
      * @param {*} [value=undefined] - optional value for single field
      * @returns {QueryBuilder} self
      */
-    where( conditions, value=undefined )
-    {
-        if ( value !== undefined )
-        {
+    where( conditions, value=undefined ) {
+        if ( value !== undefined ) {
             conditions = { [conditions]: value };
         }
 
@@ -1255,10 +1071,8 @@ class QueryBuilder
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
-    having( conditions, value=undefined )
-    {
-        if ( value !== undefined )
-        {
+    having( conditions, value=undefined ) {
+        if ( value !== undefined ) {
             conditions = { [conditions]: value };
         }
 
@@ -1271,8 +1085,7 @@ class QueryBuilder
      * @param {string} field_expr - field or expressions
      * @returns {QueryBuilder} self
      */
-    group( field_expr )
-    {
+    group( field_expr ) {
         this._state.group.push( field_expr );
         return this;
     }
@@ -1283,8 +1096,7 @@ class QueryBuilder
      * @param {Boolean} [ascending=true] - ascending sorting, if true
      * @returns {QueryBuilder} self
      */
-    order( field_expr, ascending=true )
-    {
+    order( field_expr, ascending=true ) {
         const order = ascending ? 'ASC' : 'DESC';
         this._state.order.push( [ field_expr, order ] );
         return this;
@@ -1298,8 +1110,7 @@ class QueryBuilder
      * @returns {QueryBuilder} self
      * @note if @p count is omitted then @p start is used as count!
      */
-    limit( count, offset = undefined )
-    {
+    limit( count, offset = undefined ) {
         this._state.limit = [ count, offset ];
         return this;
     }
@@ -1312,13 +1123,11 @@ class QueryBuilder
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
-    join( type, entity, conditions=undefined )
-    {
+    join( type, entity, conditions=undefined ) {
         const joins = this._state.joins;
         const cond = [];
 
-        if ( conditions )
-        {
+        if ( conditions ) {
             this._processConditions( cond, conditions );
         }
 
@@ -1338,8 +1147,7 @@ class QueryBuilder
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
-    innerJoin( entity, conditions=undefined )
-    {
+    innerJoin( entity, conditions=undefined ) {
         return this.join( 'INNER', entity, conditions );
     }
 
@@ -1350,8 +1158,7 @@ class QueryBuilder
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
-    leftJoin( entity, conditions=undefined )
-    {
+    leftJoin( entity, conditions=undefined ) {
         return this.join( 'LEFT', entity, conditions );
     }
 
@@ -1361,8 +1168,7 @@ class QueryBuilder
      * @param {Boolean} unsafe_dml - raise error, if DML without conditions
      * @see L1Face.query
      */
-    execute( as, unsafe_dml=false )
-    {
+    execute( as, unsafe_dml=false ) {
         const q = this._toQuery( unsafe_dml );
         this._lface.query( as, q );
     }
@@ -1374,11 +1180,9 @@ class QueryBuilder
      * @see L1Face.query
      * @see L1Face.associateResult
      */
-    executeAssoc( as, unsafe_dml=false )
-    {
+    executeAssoc( as, unsafe_dml=false ) {
         this.execute( as, unsafe_dml );
-        as.add( ( as, res ) =>
-        {
+        as.add( ( as, res ) => {
             const rows = this._lface.associateResult( res );
             as.success( rows, res.affected );
         } );
@@ -1389,31 +1193,23 @@ class QueryBuilder
      * @param {Boolean} unsafe_dml - raise error, if DML without conditions
      * @returns {ExecPrepared} closue with prepared statement
      */
-    prepare( unsafe_dml=false )
-    {
+    prepare( unsafe_dml=false ) {
         const q = this._toQuery( unsafe_dml );
         const iface = this._lface;
 
-        return new class extends Prepared
-        {
-            execute( as, params=null )
-            {
-                if ( params )
-                {
+        return new class extends Prepared {
+            execute( as, params=null ) {
+                if ( params ) {
                     iface.paramQuery( as, q, params );
-                }
-                else
-                {
+                } else {
                     iface.query( as, q );
                 }
             }
 
-            executeAssoc( as, params )
-            {
+            executeAssoc( as, params ) {
                 this.execute( as, params );
 
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     const rows = iface.associateResult( res );
                     as.success( rows, res.affected );
                 } );
@@ -1421,15 +1217,13 @@ class QueryBuilder
         };
     }
 
-    _toQuery( unsafe_dml=true )
-    {
+    _toQuery( unsafe_dml=true ) {
         const state = this._state;
 
         if ( !unsafe_dml &&
             ( state.type !== 'SELECT' ) &&
             ( state.type !== 'INSERT' ) &&
-            !state.where.length )
-        {
+            !state.where.length ) {
             throw new Error( 'Unsafe DML' );
         }
 
@@ -1437,49 +1231,37 @@ class QueryBuilder
         return this.getDriver().build( state );
     }
 
-    _processConditions( target, conditions )
-    {
-        if ( !target.length )
-        {
+    _processConditions( target, conditions ) {
+        if ( !target.length ) {
             target.push( 'AND' );
         }
 
-        if ( conditions instanceof Array )
-        {
+        if ( conditions instanceof Array ) {
             let dst = target;
             const op = conditions[0];
             const iter = conditions[Symbol.iterator]();
 
-            if ( op === 'OR' || op === 'AND' )
-            {
+            if ( op === 'OR' || op === 'AND' ) {
                 iter.next();
 
-                if ( op !== target[0] )
-                {
+                if ( op !== target[0] ) {
                     dst = [ op ];
                     target.push( dst );
                 }
             }
 
-            for ( let iv = iter.next(); !iv.done; iv = iter.next() )
-            {
+            for ( let iv = iter.next(); !iv.done; iv = iter.next() ) {
                 this._processConditions( dst, iv.value );
             }
-        }
-        else if ( typeof conditions === 'string' )
-        {
+        } else if ( typeof conditions === 'string' ) {
             target.push( [ COND, conditions ] );
-        }
-        else
-        {
+        } else {
             const helpers = this.helpers();
-            const confField = ( f, v ) =>
-            {
+            const confField = ( f, v ) => {
                 const m = f.match( COND_RE );
                 let op = '=';
 
-                if ( m )
-                {
+                if ( m ) {
                     f = m[1];
                     op = m[2];
                 }
@@ -1492,55 +1274,41 @@ class QueryBuilder
                 ];
             };
 
-            if ( conditions instanceof Map )
-            {
-                for ( let [ f, v ] of conditions.entries() )
-                {
+            if ( conditions instanceof Map ) {
+                for ( let [ f, v ] of conditions.entries() ) {
                     target.push( confField( f, v ) );
                 }
-            }
-            else if ( typeof conditions === 'object' )
-            {
-                for ( let f in conditions )
-                {
+            } else if ( typeof conditions === 'object' ) {
+                for ( let f in conditions ) {
                     target.push( confField( f, conditions[f] ) );
                 }
-            }
-            else
-            {
+            } else {
                 throw new Error( `Unknown condition type: ${conditions}` );
             }
         }
     }
 
-    _callParams( args )
-    {
+    _callParams( args ) {
         const params = this._state.params;
         const helpers = this.helpers();
         args.forEach( ( v ) => params.push( helpers.escape( v ) ) );
         return this;
     }
 
-    toString()
-    {
+    toString() {
         return this._toQuery( true );
     }
 
-    static _replaceParams( helpers, q, params, used_params=null )
-    {
-        for ( let p in params )
-        {
+    static _replaceParams( helpers, q, params, used_params=null ) {
+        for ( let p in params ) {
             let v = helpers.escape( params[p] );
             let nq = q.replace(
                 new RegExp( `(:${p})($|\\W)`, 'g' ),
                 `${v}$2` );
 
-            if ( nq === q )
-            {
+            if ( nq === q ) {
                 if ( !used_params ) throw new Error( `Unused param "${p}"` );
-            }
-            else if ( used_params )
-            {
+            } else if ( used_params ) {
                 used_params[p] = true;
             }
 

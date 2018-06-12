@@ -33,15 +33,12 @@ const QueryBuilder = require( './QueryBuilder' );
 /**
  * Version of QueryBuilder which forbids direct execution.
  */
-class XferQueryBuilder extends QueryBuilder
-{
-    execute( as, _unsafe_dml=false )
-    {
+class XferQueryBuilder extends QueryBuilder {
+    execute( as, _unsafe_dml=false ) {
         throw new Error( 'Please use XferBuilder.execute()' );
     }
 
-    clone()
-    {
+    clone() {
         throw new Error( 'Cloning is not allowed' );
     }
 
@@ -53,21 +50,17 @@ class XferQueryBuilder extends QueryBuilder
      * @param {boolean} [multi=false] - reference single result row or multiple
      * @returns {Expression} with DB-specific escape sequence
      */
-    backref( xqb, field, multi=false )
-    {
+    backref( xqb, field, multi=false ) {
         this._state.template = true;
         return this.getDriver().backref( xqb._seq_id, field, multi );
     }
 
-    _forClause( mode )
-    {
-        if ( this._state.type !== 'SELECT' )
-        {
+    _forClause( mode ) {
+        if ( this._state.type !== 'SELECT' ) {
             throw new Error( 'FOR clause is supported only for SELECT' );
         }
 
-        if ( this._state.forClause )
-        {
+        if ( this._state.forClause ) {
             throw new Error( 'FOR clause is already set' );
         }
 
@@ -78,8 +71,7 @@ class XferQueryBuilder extends QueryBuilder
      * Mark select FOR UPDATE
      * @returns {XferQueryBuilder} self
      */
-    forUpdate()
-    {
+    forUpdate() {
         this._forClause( 'UPDATE' );
         return this;
     }
@@ -88,8 +80,7 @@ class XferQueryBuilder extends QueryBuilder
      * Mark select FOR SHARED READ
      * @returns {XferQueryBuilder} self
      */
-    forSharedRead()
-    {
+    forSharedRead() {
         this._forClause( 'SHARE' );
         return this;
     }
@@ -104,19 +95,14 @@ class XferQueryBuilder extends QueryBuilder
  * - selected - integer or boolean to check DQL result
  * - result - mark query result to be returned in response list
  */
-class XferBuilder
-{
-    constructor( xb_or_lface, db_type=null, iso_level=null )
-    {
-        if ( xb_or_lface instanceof XferBuilder )
-        {
+class XferBuilder {
+    constructor( xb_or_lface, db_type=null, iso_level=null ) {
+        if ( xb_or_lface instanceof XferBuilder ) {
             this._lface = xb_or_lface._lface;
             this._db_type = xb_or_lface._db_type;
             this._iso_level = xb_or_lface._iso_level;
             this._query_list = _cloneDeep( xb_or_lface._query_list );
-        }
-        else
-        {
+        } else {
             this._lface = xb_or_lface;
             this._db_type = db_type;
             this._iso_level = iso_level;
@@ -128,8 +114,7 @@ class XferBuilder
      * Get a copy of XferBuilder for independent processing.
      * @returns {XferBuilder} transaction builder instance
      */
-    clone()
-    {
+    clone() {
         return new XferBuilder( this );
     }
 
@@ -137,8 +122,7 @@ class XferBuilder
      * Get related QV driver
      * @returns {IDriver} actual implementation of query builder driver
      */
-    getDriver()
-    {
+    getDriver() {
         return QueryBuilder.getDriver( this._db_type );
     }
 
@@ -148,8 +132,7 @@ class XferBuilder
      * @param {*} value - value, array or sub-query to escape
      * @returns {string} driver-specific escape
      */
-    escape( value )
-    {
+    escape( value ) {
         return this.helpers().escape( value );
     }
 
@@ -158,8 +141,7 @@ class XferBuilder
      * @param {string} name - raw identifier to escape
      * @returns {string} driver-specific escape
      */
-    identifier( name )
-    {
+    identifier( name ) {
         return this.helpers().identifier( name );
     }
 
@@ -168,8 +150,7 @@ class XferBuilder
      * @param {string} expr - expression to wrap
      * @return {Expression} wrapped expression
      */
-    expr( expr )
-    {
+    expr( expr ) {
         return this.helpers().expr( expr );
     }
 
@@ -179,8 +160,7 @@ class XferBuilder
      * @param {string} name - name to wrap
      * @return {Expression} wrapped expression
      */
-    param( name )
-    {
+    param( name ) {
         return this.helpers().expr( `:${name}` );
     }
 
@@ -188,8 +168,7 @@ class XferBuilder
      * Get additional helpers
      * @returns {Helpers} - db-specific helpers object
      */
-    helpers()
-    {
+    helpers() {
         return this.getDriver().helpers;
     }
 
@@ -197,8 +176,7 @@ class XferBuilder
      * Get reference to L2 interface. Valid use case - sub-queries.
      * @returns {L2Face} - associated L2 interface implementation
      */
-    lface()
-    {
+    lface() {
         return this._lface;
     }
 
@@ -209,14 +187,11 @@ class XferBuilder
      * @param {QueryOptions} [query_options={}] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
-    query( type, entity, query_options={} )
-    {
+    query( type, entity, query_options={} ) {
         const qb = this._newBuilder( type, entity );
 
-        for ( let qo in query_options )
-        {
-            switch( qo )
-            {
+        for ( let qo in query_options ) {
+            switch( qo ) {
             case 'affected':
             case 'result':
             case 'selected':
@@ -240,8 +215,7 @@ class XferBuilder
      * @param {QueryOptions} [query_options={}] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
-    delete( entity, query_options={} )
-    {
+    delete( entity, query_options={} ) {
         return this.query( 'DELETE', entity, query_options );
     }
 
@@ -251,8 +225,7 @@ class XferBuilder
      * @param {QueryOptions} [query_options={}] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
-    insert( entity, query_options={} )
-    {
+    insert( entity, query_options={} ) {
         return this.query( 'INSERT', entity, query_options );
     }
 
@@ -262,8 +235,7 @@ class XferBuilder
      * @param {QueryOptions} [query_options={}] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
-    update( entity, query_options={} )
-    {
+    update( entity, query_options={} ) {
         return this.query( 'UPDATE', entity, query_options );
     }
 
@@ -273,8 +245,7 @@ class XferBuilder
      * @param {QueryOptions} [query_options={}] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
-    select( entity, query_options={} )
-    {
+    select( entity, query_options={} ) {
         return this.query( 'SELECT', entity, query_options );
     }
 
@@ -284,8 +255,7 @@ class XferBuilder
      * @param {array} [args=[]] - positional arguments
      * @param {QueryOptions} [query_options={}] - constraints
      */
-    call( name, args=[], query_options={} )
-    {
+    call( name, args=[], query_options={} ) {
         const qb = this._newBuilder( 'CALL', name );
         qb._callParams( args );
 
@@ -302,17 +272,13 @@ class XferBuilder
      * @param {QueryOptions} [query_options={}] - constraints
      * @note Pass null in {@p params}, if you want to use prepare()
      */
-    raw( q, params=null, query_options={} )
-    {
+    raw( q, params=null, query_options={} ) {
         const item = _cloneDeep( query_options );
 
-        if ( params )
-        {
+        if ( params ) {
             const helpers = this.helpers();
             item.q = QueryBuilder._replaceParams( helpers, q, params );
-        }
-        else
-        {
+        } else {
             item.q = q;
         }
 
@@ -325,17 +291,13 @@ class XferBuilder
      * @param {Boolean} unsafe_dml - raise error, if DML without conditions
      * @see L1Face.query
      */
-    execute( as, unsafe_dml=false )
-    {
+    execute( as, unsafe_dml=false ) {
         const ql = this._query_list;
 
-        if ( ql.length > 0 )
-        {
+        if ( ql.length > 0 ) {
             this._prepareQueryList( ql, unsafe_dml );
             this._lface.xfer( as, ql, this._iso_level );
-        }
-        else
-        {
+        } else {
             as.add( ( as ) => as.success( [] ) );
         }
     }
@@ -347,8 +309,7 @@ class XferBuilder
      * @see L1Face.query
      * @see L1Face.associateResult
      */
-    executeAssoc( as, unsafe_dml=false )
-    {
+    executeAssoc( as, unsafe_dml=false ) {
         this.execute( as, unsafe_dml );
         as.add( this.constructor._assocResult( this._lface ) );
     }
@@ -359,48 +320,38 @@ class XferBuilder
      * @param {Boolean} unsafe_dml - raise error, if DML without conditions
      * @returns {ExecPrepared} closue with prepared statement
      */
-    prepare( unsafe_dml=false )
-    {
+    prepare( unsafe_dml=false ) {
         const ql = _cloneDeep( this._query_list );
         const isol = this._iso_level;
         const db_type = this._db_type;
         const iface = this._lface;
         this._prepareQueryList( ql, unsafe_dml );
 
-        return new class extends QueryBuilder.Prepared
-        {
-            execute( as, params=null )
-            {
-                if ( params )
-                {
+        return new class extends QueryBuilder.Prepared {
+            execute( as, params=null ) {
+                if ( params ) {
                     const helpers = QueryBuilder.getDriver( db_type ).helpers;
                     const pql = _cloneDeep( ql );
                     const used_params = {};
 
-                    pql.forEach( ( v ) =>
-                    {
+                    pql.forEach( ( v ) => {
                         v.q = QueryBuilder._replaceParams(
                             helpers, v.q, params, used_params );
                     } );
 
-                    for ( let p in params )
-                    {
-                        if ( !used_params[p] )
-                        {
+                    for ( let p in params ) {
+                        if ( !used_params[p] ) {
                             throw new Error( `Unused param "${p}"` );
                         }
                     }
 
                     iface.xfer( as, pql, isol );
-                }
-                else
-                {
+                } else {
                     iface.xfer( as, ql, isol );
                 }
             }
 
-            executeAssoc( as, params )
-            {
+            executeAssoc( as, params ) {
                 this.execute( as, params );
                 as.add( XferBuilder._assocResult( iface ) );
             }
@@ -408,8 +359,7 @@ class XferBuilder
     }
 
 
-    _newBuilder( type, entity=null )
-    {
+    _newBuilder( type, entity=null ) {
         const res = new XferQueryBuilder(
             this._lface,
             this._db_type,
@@ -420,16 +370,12 @@ class XferBuilder
         return res;
     }
 
-    _prepareQueryList( ql, unsafe_dml )
-    {
-        ql.forEach( ( v ) =>
-        {
+    _prepareQueryList( ql, unsafe_dml ) {
+        ql.forEach( ( v ) => {
             const qb = v.q;
 
-            if ( qb instanceof XferQueryBuilder )
-            {
-                if ( qb._state.template )
-                {
+            if ( qb instanceof XferQueryBuilder ) {
+                if ( qb._state.template ) {
                     v.template = true;
                     qb._state.template = undefined;
                 }
@@ -442,12 +388,9 @@ class XferBuilder
         } );
     }
 
-    static _assocResult( iface )
-    {
-        return function( as, res )
-        {
-            const assoc_res = res.map( ( v ) =>
-            {
+    static _assocResult( iface ) {
+        return function( as, res ) {
+            const assoc_res = res.map( ( v ) => {
                 const rows = iface.associateResult( v );
                 return {
                     rows,

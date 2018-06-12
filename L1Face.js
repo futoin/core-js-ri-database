@@ -27,10 +27,8 @@ const QueryBuilder = require ( './QueryBuilder' );
 /**
  * Level 1 Database Face
  */
-class L1Face extends PingFace
-{
-    constructor( ...args )
-    {
+class L1Face extends PingFace {
+    constructor( ...args ) {
         super( ...args );
         this._db_type = null;
     }
@@ -38,21 +36,18 @@ class L1Face extends PingFace
     /**
      * Latest supported FTN17 version
      */
-    static get LATEST_VERSION()
-    {
+    static get LATEST_VERSION() {
         return '1.0';
     }
 
     /**
      * Latest supported FTN4 version
      */
-    static get PING_VERSION()
-    {
+    static get PING_VERSION() {
         return '1.0';
     }
 
-    static get IFACE_NAME()
-    {
+    static get IFACE_NAME() {
         return 'futoin.db.l1';
     }
 
@@ -67,8 +62,7 @@ class L1Face extends PingFace
      * @param {object} [options={}] - interface options
      * @param {string} [options.version=1.0] - interface version to use
      */
-    static register( as, ccm, name, endpoint, credentials=null, options={} )
-    {
+    static register( as, ccm, name, endpoint, credentials=null, options={} ) {
         const ifacever = options.version || this.LATEST_VERSION;
 
         options.nativeImpl = this;
@@ -84,8 +78,7 @@ class L1Face extends PingFace
             options
         );
 
-        as.add( ( as ) =>
-        {
+        as.add( ( as ) => {
             ccm.iface( name ).getFlavour( as );
         } );
     }
@@ -95,21 +88,16 @@ class L1Face extends PingFace
      *
      * @param {AsyncSteps} as - steps interface
      */
-    getFlavour( as )
-    {
+    getFlavour( as ) {
         const db_type = this._db_type;
 
-        if ( !db_type )
-        {
+        if ( !db_type ) {
             this.call( as, 'getFlavour' );
-            as.add( ( as, res ) =>
-            {
+            as.add( ( as, res ) => {
                 this._db_type = res;
                 as.success( res );
             } );
-        }
-        else
-        {
+        } else {
             as.success( db_type );
         }
     }
@@ -121,8 +109,7 @@ class L1Face extends PingFace
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
      */
-    queryBuilder( type=null, entity=null )
-    {
+    queryBuilder( type=null, entity=null ) {
         return new QueryBuilder( this, this._db_type, type, entity );
     }
 
@@ -132,8 +119,7 @@ class L1Face extends PingFace
      * Helps avoiding temporary variables for cleaner code.
      * @returns {Helpers} for specific type
      */
-    helpers()
-    {
+    helpers() {
         return QueryBuilder.getDriver( this._db_type ).helpers;
     }
 
@@ -142,8 +128,7 @@ class L1Face extends PingFace
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
      */
-    delete( entity )
-    {
+    delete( entity ) {
         return this.queryBuilder( 'DELETE', entity );
     }
 
@@ -152,8 +137,7 @@ class L1Face extends PingFace
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
      */
-    insert( entity )
-    {
+    insert( entity ) {
         return this.queryBuilder( 'INSERT', entity );
     }
 
@@ -162,8 +146,7 @@ class L1Face extends PingFace
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
      */
-    select( entity=null )
-    {
+    select( entity=null ) {
         return this.queryBuilder( 'SELECT', entity );
     }
 
@@ -172,8 +155,7 @@ class L1Face extends PingFace
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
      */
-    update( entity )
-    {
+    update( entity ) {
         return this.queryBuilder( 'UPDATE', entity );
     }
 
@@ -192,8 +174,7 @@ class L1Face extends PingFace
      * @note Placeholders must be in form ":name"
      * @note see query() for results
      */
-    paramQuery( as, q, params={} )
-    {
+    paramQuery( as, q, params={} ) {
         const helpers = QueryBuilder.getDriver( this._db_type ).helpers;
         q = QueryBuilder._replaceParams( helpers, q, params );
         this.query( as, q );
@@ -214,21 +195,17 @@ class L1Face extends PingFace
      * @returns {array} Array of maps.
      * @note original result has "rows" as array of arrays and "fields" map
      */
-    associateResult( as_result )
-    {
+    associateResult( as_result ) {
         const res = [];
 
         const fields = as_result.fields;
 
-        if ( fields )
-        {
-            for ( let r of as_result.rows )
-            {
+        if ( fields ) {
+            for ( let r of as_result.rows ) {
                 let ar = {};
 
                 for ( let i = 0, c = r.length;
-                    i < c; ++i )
-                {
+                    i < c; ++i ) {
                     ar[fields[i]] = r[i];
                 }
 
@@ -245,20 +222,17 @@ class L1Face extends PingFace
      * @param {callable} cb - a callback returning a prepared statement
      * @returns {Prepared} - associated prepared statement
      */
-    getPrepared( sym, cb )
-    {
+    getPrepared( sym, cb ) {
         let cache = this._prep_cache;
 
-        if ( !cache )
-        {
+        if ( !cache ) {
             cache = new Map;
             this._prep_cache = cache;
         }
 
         let res = cache.get( sym );
 
-        if ( res === undefined )
-        {
+        if ( res === undefined ) {
             res = cb( this );
             cache.set( sym, res );
         }
@@ -266,8 +240,7 @@ class L1Face extends PingFace
         return res;
     }
 
-    static spec()
-    {
+    static spec() {
         return [
             path.resolve( __dirname, 'specs' ),
             PingFace.spec( this.PING_VERSION ),

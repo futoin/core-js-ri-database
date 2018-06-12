@@ -24,32 +24,25 @@ const SqlString = require( 'sqlstring' );
 const Expression = QueryBuilder.Expression;
 const moment = require( 'moment' );
 
-class MySQLHelpers extends QueryBuilder.SQLHelpers
-{
-    now()
-    {
+class MySQLHelpers extends QueryBuilder.SQLHelpers {
+    now() {
         return new Expression( 'UTC_TIMESTAMP()' );
     }
 
-    date( value )
-    {
+    date( value ) {
         return moment.utc( value ).format( 'YYYY-MM-DD HH:mm:ss' );
     }
 
-    nativeDate( value )
-    {
+    nativeDate( value ) {
         return moment.utc( value );
     }
 
-    dateModify( expr, seconds )
-    {
-        if ( !seconds )
-        {
+    dateModify( expr, seconds ) {
+        if ( !seconds ) {
             return expr;
         }
 
-        if ( typeof seconds !== 'number' )
-        {
+        if ( typeof seconds !== 'number' ) {
             throw new Error( 'Seconds must be a number' );
         }
 
@@ -58,29 +51,24 @@ class MySQLHelpers extends QueryBuilder.SQLHelpers
         return new Expression( expr );
     }
 
-    _escapeSimple( value )
-    {
-        switch ( typeof value )
-        {
+    _escapeSimple( value ) {
+        switch ( typeof value ) {
         case 'boolean':
         case 'string':
         case 'number':
             return SqlString.escape( value );
 
         default:
-            if ( value === null )
-            {
+            if ( value === null ) {
                 return 'NULL';
             }
 
-            if ( value instanceof Expression )
-            {
+            if ( value instanceof Expression ) {
                 return value.toQuery();
             }
 
             // Fixes backref() with BIGINT/DECIMAL
-            if ( value instanceof Buffer )
-            {
+            if ( value instanceof Buffer ) {
                 return SqlString.escape( value );
             }
 
@@ -88,21 +76,17 @@ class MySQLHelpers extends QueryBuilder.SQLHelpers
         }
     }
 
-    identifier( name )
-    {
+    identifier( name ) {
         return SqlString.escapeId( name );
     }
 
-    concat( ...args )
-    {
+    concat( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression( `CONCAT(${escaped.join( ',' )})` );
     }
 
-    cast( a, type )
-    {
-        switch ( type.toUpperCase() )
-        {
+    cast( a, type ) {
+        switch ( type.toUpperCase() ) {
         case 'TEXT':
             type = 'CHAR';
             break;
@@ -127,34 +111,27 @@ class MySQLHelpers extends QueryBuilder.SQLHelpers
  * @note It is normally automatically added when main.js is executed.
  * @private
  */
-class MySQLDriver extends QueryBuilder.SQLDriver
-{
-    constructor()
-    {
+class MySQLDriver extends QueryBuilder.SQLDriver {
+    constructor() {
         super( new MySQLHelpers );
     }
 
-    build( state )
-    {
+    build( state ) {
         if ( state.type === 'INSERT' &&
              state.select.size === 1 &&
-             state.select.keys().next().value === '$id' )
-        {
+             state.select.keys().next().value === '$id' ) {
             // last insert ID is always selected as '$id'
             const pure_state = Object.create( state );
             pure_state.select = null;
 
             return super.build( pure_state );
-        }
-        else if ( state.type === 'SELECT' && state.forClause )
-        {
+        } else if ( state.type === 'SELECT' && state.forClause ) {
             const pure_state = Object.create( state );
             pure_state.forClause = null;
 
             const q = super.build( pure_state );
 
-            switch ( state.forClause )
-            {
+            switch ( state.forClause ) {
             case 'UPDATE':
                 return `${q} FOR UPDATE`;
 

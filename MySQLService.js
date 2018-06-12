@@ -37,10 +37,8 @@ const IsoLevels = {
  *
  * @note If host is localhost then 'socketPath' is from 'port' option.
  */
-class MySQLService extends L2Service
-{
-    constructor( options )
-    {
+class MySQLService extends L2Service {
+    constructor( options ) {
         super( new MySQLDriver );
 
         const raw = options.raw ? _cloneDeep( options.raw ) : {};
@@ -67,18 +65,15 @@ class MySQLService extends L2Service
             'user',
             'password',
             'database',
-        ] )
-        {
+        ] ) {
             const val = options[f];
 
-            if ( val )
-            {
+            if ( val ) {
                 raw[f] = val;
             }
         }
 
-        if ( raw.host === 'localhost' )
-        {
+        if ( raw.host === 'localhost' ) {
             raw.socketPath = raw.port;
         }
 
@@ -87,52 +82,40 @@ class MySQLService extends L2Service
         this._pool = pool;
     }
 
-    _close()
-    {
+    _close() {
         this._pool.end();
     }
 
-    _withConnection( as, isol, callback )
-    {
-        const releaseConn = ( as ) =>
-        {
+    _withConnection( as, isol, callback ) {
+        const releaseConn = ( as ) => {
             const state = as.state;
             const conn = state.dbConn;
 
-            if ( conn )
-            {
+            if ( conn ) {
                 conn.release();
                 state.dbConn = null;
             }
         };
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 as.waitExternal();
 
-                this._pool.getConnection( ( err, conn ) =>
-                {
-                    if ( !as.state )
-                    {
-                        if ( conn )
-                        {
+                this._pool.getConnection( ( err, conn ) => {
+                    if ( !as.state ) {
+                        if ( conn ) {
                             conn.release();
                         }
 
                         return;
                     }
 
-                    if ( err )
-                    {
-                        try
-                        {
+                    if ( err ) {
+                        try {
                             as.state.last_db_error= err;
                             as.state.last_exception = err;
                             as.error( err.code );
-                        }
-                        catch ( e )
-                        {
+                        } catch ( e ) {
                             return;
                         }
                     }
@@ -144,35 +127,27 @@ class MySQLService extends L2Service
             ( as, err ) => releaseConn( as )
         );
         as.add(
-            ( as, conn ) =>
-            {
-                if ( !conn._futoin_isol )
-                {
-                    as.add( ( as ) =>
-                    {
+            ( as, conn ) => {
+                if ( !conn._futoin_isol ) {
+                    as.add( ( as ) => {
                         const q = 'SET AUTOCOMMIT = 1';
                         const dbq = conn.query( q );
                         this._handleResult( as, dbq );
                     } );
                 }
 
-                if ( conn._futoin_isol !== isol )
-                {
-                    as.add( ( as ) =>
-                    {
+                if ( conn._futoin_isol !== isol ) {
+                    as.add( ( as ) => {
                         const q = `SET SESSION TRANSACTION ISOLATION LEVEL ${IsoLevels[isol]}`;
                         const dbq = conn.query( q );
                         this._handleResult( as, dbq );
                     } );
 
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         conn._futoin_isol = isol;
                         callback( as, conn );
                     } );
-                }
-                else
-                {
+                } else {
                     callback( as, conn );
                 }
             },
@@ -181,8 +156,7 @@ class MySQLService extends L2Service
         as.add( releaseConn );
     }
 
-    _handleResult( as, dbq, multi=false, cb=null )
-    {
+    _handleResult( as, dbq, multi=false, cb=null ) {
         as.waitExternal();
 
         let rows = null;
@@ -191,18 +165,13 @@ class MySQLService extends L2Service
         let multi_res = [];
         const MAX_ROWS = this.MAX_ROWS;
 
-        dbq.on( 'fields', ( packets, stmt_id ) =>
-        {
-            if ( stmt_id && !multi )
-            {
+        dbq.on( 'fields', ( packets, stmt_id ) => {
+            if ( stmt_id && !multi ) {
                 if ( !as.state ) return;
 
-                try
-                {
+                try {
                     as.error( 'InvalidQuery', 'More than one result' );
-                }
-                catch ( e )
-                {
+                } catch ( e ) {
                     return;
                 }
             }
@@ -217,19 +186,16 @@ class MySQLService extends L2Service
             multi_res.push( res );
         } );
 
-        dbq.on( 'result', ( packet, stmt_id ) =>
-        {
+        dbq.on( 'result', ( packet, stmt_id ) => {
             const affected = packet.affectedRows;
 
             // OK packet for CALL procedure case
-            if ( stmt_id && !multi && ( affected !== undefined ) )
-            {
+            if ( stmt_id && !multi && ( affected !== undefined ) ) {
                 res.affected = affected;
                 return;
             }
 
-            if ( affected !== undefined )
-            {
+            if ( affected !== undefined ) {
                 rows = null;
                 fields = null;
                 res = {
@@ -240,48 +206,37 @@ class MySQLService extends L2Service
 
                 const insert_id = packet.insertId;
 
-                if ( insert_id )
-                {
+                if ( insert_id ) {
                     res.rows.push( [ insert_id ] );
                     res.fields[0] = '$id';
                 }
 
                 multi_res.push( res );
-            }
-            else if ( rows.length <= MAX_ROWS )
-            {
+            } else if ( rows.length <= MAX_ROWS ) {
                 const row = fields.map( ( v ) => packet[v] );
                 rows.push( row );
-            }
-            else if ( as.state )
-            {
+            } else if ( as.state ) {
                 const conn = as.state.dbConn;
                 as.state.dbConn = null;
                 conn.destroy();
 
-                try
-                {
+                try {
                     as.error( 'LimitTooHigh' );
-                }
-                catch ( e )
-                {
+                } catch ( e ) {
                     // ignore
                 }
             }
         } );
 
-        dbq.on( 'error', ( err ) =>
-        {
+        dbq.on( 'error', ( err ) => {
             if ( !as.state ) return;
 
             as.state.last_db_error= err;
             as.state.last_exception = err;
             const code = err.code;
 
-            try
-            {
-                switch ( code )
-                {
+            try {
+                switch ( code ) {
                 case 'ER_DUP_ENTRY':
                     as.error( 'Duplicate', err.message );
                     break;
@@ -299,25 +254,17 @@ class MySQLService extends L2Service
                 default:
                     as.error( 'OtherExecError', err.message );
                 }
-            }
-            catch ( e )
-            {
+            } catch ( e ) {
                 // ignore
             }
         } );
 
-        dbq.on( 'end', () =>
-        {
-            if ( as.state )
-            {
-                if ( cb )
-                {
-                    try
-                    {
+        dbq.on( 'end', () => {
+            if ( as.state ) {
+                if ( cb ) {
+                    try {
                         cb( multi ? multi_res : res );
-                    }
-                    catch ( e )
-                    {
+                    } catch ( e ) {
                         return;
                     }
                 }
@@ -327,19 +274,15 @@ class MySQLService extends L2Service
         } );
     }
 
-    query( as, reqinfo )
-    {
-        this._withConnection( as, 'RC', ( as, conn ) =>
-        {
+    query( as, reqinfo ) {
+        this._withConnection( as, 'RC', ( as, conn ) => {
             this._handleResult( as, conn.query( reqinfo.params().q ), false,
                 ( res ) => reqinfo.result( res ) );
         } );
     }
 
-    callStored( as, reqinfo )
-    {
-        this._withConnection( as, 'RC', ( as, conn ) =>
-        {
+    callStored( as, reqinfo ) {
+        this._withConnection( as, 'RC', ( as, conn ) => {
             const p = reqinfo.params();
             const args = p.args.map( ( v ) => conn.escape( v ) ).join( ',' );
             const q = `CALL ${conn.escapeId( p.name )}(${args})`;
@@ -348,39 +291,32 @@ class MySQLService extends L2Service
         } );
     }
 
-    getFlavour( as, reqinfo )
-    {
+    getFlavour( as, reqinfo ) {
         reqinfo.result( 'mysql' );
     }
 
-    xfer( as, reqinfo )
-    {
+    xfer( as, reqinfo ) {
         const p = reqinfo.params();
 
-        this._withConnection( as, p.isol, ( as, conn ) =>
-        {
+        this._withConnection( as, p.isol, ( as, conn ) => {
             const ql = p.ql;
             const prev_results = [];
             const results = [];
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     // Begin
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         const dbq = conn.beginTransaction();
                         this._handleResult( as, dbq );
                     } );
 
                     // Loop through query list
-                    as.forEach( ql, ( as, stmt_id, xfer ) =>
-                    {
+                    as.forEach( ql, ( as, stmt_id, xfer ) => {
                         const q = this._xferTemplate( as, xfer, prev_results );
                         const dbq = conn.query( q );
                         this._handleResult( as, dbq, true,
-                            ( qresults ) =>
-                            {
+                            ( qresults ) => {
                                 prev_results.push( qresults[0] );
                                 this._xferCommon(
                                     as, xfer, qresults, stmt_id, results, q );
@@ -389,15 +325,13 @@ class MySQLService extends L2Service
                     } );
 
                     // Commit
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         reqinfo.result( results );
                         const dbq = conn.commit();
                         this._handleResult( as, dbq );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     conn.rollback();
                 }
             );

@@ -7,31 +7,23 @@ const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
 const $as = require( 'futoin-asyncsteps' );
 const expect = require( 'chai' ).expect;
 
-describe( 'AutoConfig', function()
-{
-    it( 'should auto-configure connections', function( done )
-    {
+describe( 'AutoConfig', function() {
+    it( 'should auto-configure connections', function( done ) {
         const as = $as();
         as.add(
-            ( as ) =>
-            {
-                AutoConfig.register( 'funcfake', function()
-                {
+            ( as ) => {
+                AutoConfig.register( 'funcfake', function() {
                     const L2Service = require( '../L2Service' );
-                    return class extends L2Service
-                    {
-                        getFlavour( as, reqinfo )
-                        {
+                    return class extends L2Service {
+                        getFlavour( as, reqinfo ) {
                             return 'funcfake';
                         }
                     };
                 } );
 
                 AutoConfig.register( 'objfake',
-                    class extends require( '../L1Service' )
-                    {
-                        getFlavour( as, reqinfo )
-                        {
+                    class extends require( '../L1Service' ) {
+                        getFlavour( as, reqinfo ) {
                             return 'objfake';
                         }
                     } );
@@ -99,8 +91,7 @@ describe( 'AutoConfig', function()
                 as.add( ( as ) => ccm.close() );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( `${err}: ${as.state.error_info}` );
                 done( as.state.last_exception );
             }
@@ -108,13 +99,11 @@ describe( 'AutoConfig', function()
         as.execute();
     } );
 
-    it( 'should handle notExpected', function( done )
-    {
+    it( 'should handle notExpected', function( done ) {
         const as = $as();
         const ccm = new AdvancedCCM();
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const LogFace = require( 'futoin-invoker/LogFace' );
                 const Executor = require( 'futoin-executor/Executor' );
                 const executor = new Executor( ccm );
@@ -129,15 +118,11 @@ describe( 'AutoConfig', function()
                 as.add( ( as ) => ccm.db( 'err' ).query( as, 'SELECT 1' ) );
                 as.add( ( as ) => as.error( 'Fail' ) );
             },
-            ( as, err ) =>
-            {
-                if ( err === 'InternalError' )
-                {
+            ( as, err ) => {
+                if ( err === 'InternalError' ) {
                     ccm.close();
                     done();
-                }
-                else
-                {
+                } else {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
@@ -146,12 +131,10 @@ describe( 'AutoConfig', function()
         as.execute();
     } );
 
-    it( 'should detect type mismatch', function( done )
-    {
+    it( 'should detect type mismatch', function( done ) {
         const as = $as();
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const ccm = new AdvancedCCM();
                 AutoConfig( as, ccm, {
                     default: {
@@ -166,23 +149,18 @@ describe( 'AutoConfig', function()
                 } );
                 as.add( ( as ) => as.error( 'Fail' ) );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 if ( err === 'InternalError' &&
-                    as.state.error_info === 'DB type mismatch for default: mysql,postgresql != somesql' )
-                {
+                    as.state.error_info === 'DB type mismatch for default: mysql,postgresql != somesql' ) {
                     as.success();
-                }
-                else
-                {
+                } else {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
             }
         );
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const ccm = new AdvancedCCM();
                 AutoConfig( as, ccm, {
                     default: {
@@ -197,16 +175,12 @@ describe( 'AutoConfig', function()
                 } );
                 as.add( ( as ) => as.error( 'Fail' ) );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 if ( err === 'InternalError' &&
-                    as.state.error_info === 'DB type mismatch for default: mysql != postgresql' )
-                {
+                    as.state.error_info === 'DB type mismatch for default: mysql != postgresql' ) {
                     as.success();
                     done();
-                }
-                else
-                {
+                } else {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
@@ -215,12 +189,10 @@ describe( 'AutoConfig', function()
         as.execute();
     } );
 
-    it( 'should detect invalid factory', function( done )
-    {
+    it( 'should detect invalid factory', function( done ) {
         const as = $as();
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 AutoConfig.register( 'invfactory', {} );
                 const ccm = new AdvancedCCM();
                 AutoConfig( as, ccm, null, {
@@ -228,16 +200,12 @@ describe( 'AutoConfig', function()
                 } );
                 as.add( ( as ) => as.error( 'Fail' ) );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 if ( err === 'InternalError' &&
-                    as.state.error_info === 'Unknown factory type [object Object] for invfactory' )
-                {
+                    as.state.error_info === 'Unknown factory type [object Object] for invfactory' ) {
                     as.success();
                     done();
-                }
-                else
-                {
+                } else {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
@@ -246,16 +214,12 @@ describe( 'AutoConfig', function()
         as.execute();
     } );
 
-    it( 'should detect invalid service', function( done )
-    {
+    it( 'should detect invalid service', function( done ) {
         const as = $as();
         as.add(
-            ( as ) =>
-            {
-                AutoConfig.register( 'invfactory', class extends require( '../L1Service' )
-                {
-                    static register()
-                    {
+            ( as ) => {
+                AutoConfig.register( 'invfactory', class extends require( '../L1Service' ) {
+                    static register() {
                         return {};
                     }
                 } );
@@ -266,16 +230,12 @@ describe( 'AutoConfig', function()
                 } );
                 as.add( ( as ) => as.error( 'Fail' ) );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 if ( err === 'InternalError' &&
-                    as.state.error_info === 'Unknown service type "object" for default' )
-                {
+                    as.state.error_info === 'Unknown service type "object" for default' ) {
                     as.success();
                     done();
-                }
-                else
-                {
+                } else {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
@@ -284,27 +244,21 @@ describe( 'AutoConfig', function()
         as.execute();
     } );
 
-    it( 'should properly fallback to DB_PORT', function( done )
-    {
+    it( 'should properly fallback to DB_PORT', function( done ) {
         const as = $as();
         as.add(
-            ( as ) =>
-            {
-                AutoConfig.register( 'mock', function()
-                {
+            ( as ) => {
+                AutoConfig.register( 'mock', function() {
                     const L2Service = require( '../L2Service' );
-                    return class extends L2Service
-                    {
-                        constructor( options )
-                        {
+                    return class extends L2Service {
+                        constructor( options ) {
                             super();
                             expect( options.type ).to.equal( 'mock' );
                             expect( options.port ).to.equal( 1234 );
                             expect( options.conn_limit ).to.equal( 123 );
                         }
 
-                        getFlavour( as, reqinfo )
-                        {
+                        getFlavour( as, reqinfo ) {
                             return 'mock';
                         }
                     };
@@ -318,8 +272,7 @@ describe( 'AutoConfig', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( `${err}: ${as.state.error_info}` );
                 done( as.state.last_exception );
             }
