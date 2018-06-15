@@ -104,11 +104,12 @@ class SQLiteService extends L2Service {
                         this._query( as, db, `PRAGMA ${v}` );
                     } );
                 } );
-            }
-
-            as.add( ( as ) => {
+                as.add( ( as ) => {
+                    cb( as, this._db );
+                } );
+            } else {
                 cb( as, this._db );
-            } );
+            }
         } );
     }
 
