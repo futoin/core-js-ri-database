@@ -7,7 +7,6 @@ require( 'bignumber.js' );
 
 //
 require( 'moment' );
-require( 'websocket-driver' );
 require( 'tough-cookie' );
 
 Object.freeze( Object.prototype );

@@ -1,4 +1,7 @@
 
+=== (next) ===
+CHANGED: upgraded to latest futoin-invoker/futoin-executor v2.1
+
 === 1.9.1 (2018-06-13) ===
 CHANGED: harmonized eslint rules with other FutoIn projects
 FIXED: getPrepared() failures when run through CCM v2
