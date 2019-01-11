@@ -941,13 +941,13 @@ A handy way to store prepared objects and created on demand
 
 <a name="L1Face.LATEST_VERSION"></a>
 
-### L1Face.LATEST_VERSION
+### L1Face.LATEST\_VERSION
 Latest supported FTN17 version
 
 **Kind**: static property of [<code>L1Face</code>](#L1Face)  
 <a name="L1Face.PING_VERSION"></a>
 
-### L1Face.PING_VERSION
+### L1Face.PING\_VERSION
 Latest supported FTN4 version
 
 **Kind**: static property of [<code>L1Face</code>](#L1Face)  
@@ -1029,19 +1029,19 @@ Level 2 Database Face
 
 <a name="L2Face+READ_UNCOMMITTED"></a>
 
-### l2Face.READ_UNCOMMITTED
+### l2Face.READ\_UNCOMMITTED
 Read Uncomitted isolation level constant
 
 **Kind**: instance property of [<code>L2Face</code>](#L2Face)  
 <a name="L2Face+READ_COMMITTED"></a>
 
-### l2Face.READ_COMMITTED
+### l2Face.READ\_COMMITTED
 Read Comitted isolation level constant
 
 **Kind**: instance property of [<code>L2Face</code>](#L2Face)  
 <a name="L2Face+REPEATABL_READ"></a>
 
-### l2Face.REPEATABL_READ
+### l2Face.REPEATABL\_READ
 Repeatable Read isolation level constant
 
 **Kind**: instance property of [<code>L2Face</code>](#L2Face)  
@@ -1072,19 +1072,19 @@ Get new transcation builder.
 
 <a name="L2Face.READ_UNCOMMITTED"></a>
 
-### L2Face.READ_UNCOMMITTED
+### L2Face.READ\_UNCOMMITTED
 Read Uncomitted isolation level constant
 
 **Kind**: static property of [<code>L2Face</code>](#L2Face)  
 <a name="L2Face.READ_COMMITTED"></a>
 
-### L2Face.READ_COMMITTED
+### L2Face.READ\_COMMITTED
 Read Comitted isolation level constant
 
 **Kind**: static property of [<code>L2Face</code>](#L2Face)  
 <a name="L2Face.REPEATABL_READ"></a>
 
-### L2Face.REPEATABL_READ
+### L2Face.REPEATABL\_READ
 Repeatable Read isolation level constant
 
 **Kind**: static property of [<code>L2Face</code>](#L2Face)  
