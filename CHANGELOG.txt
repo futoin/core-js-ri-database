@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.9.2 (2019-01-11) ===
 CHANGED: upgraded to latest futoin-invoker/futoin-executor v2.1
 CHANGED: dropped Node v6
 CHANGED: dependency maintenance
