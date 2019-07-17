@@ -46,27 +46,27 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.12.0",
-    "futoin-asyncsteps": "^2.3.3",
-    "futoin-executor": "^2.2.0",
-    "futoin-invoker": "^2.2.0",
-    "grunt": "^1.0.3",
-    "grunt-eslint": "^21.0.0",
+    "eslint": "^6.0.1",
+    "futoin-asyncsteps": "^2.4.1",
+    "futoin-executor": "^2.3.0",
+    "futoin-invoker": "^2.3.0",
+    "grunt": "^1.0.4",
+    "grunt-eslint": "^22.0.0",
     "grunt-jsdoc-to-markdown": "^4.0.0",
     "grunt-mocha-istanbul": "^5.0.2",
     "grunt-text-replace": "^0.4.0",
     "istanbul": "^0.4.5",
-    "mocha": "^5.2.0"
+    "mocha": "^6.1.4"
   },
   "dependencies": {
-    "futoin-asyncevent": "^2.2.2",
-    "lodash": "^4.17.11",
-    "moment": "^2.23.0"
+    "futoin-asyncevent": "^2.3.0",
+    "lodash": "^4.17.14",
+    "moment": "^2.24.0"
   },
   "optionalDependencies": {
-    "mysql": "^2.16.0",
-    "pg": "^7.8.0",
-    "sqlite3": "^4.0.6",
+    "mysql": "^2.17.1",
+    "pg": "^7.11.0",
+    "sqlite3": "^4.0.9",
     "sqlstring": "^2.3.1"
   },
   "peerDependencies": {
