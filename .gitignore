@@ -5,4 +5,4 @@ dist/
 .vagrant
 test/sqlite.db
 *.tgz
-
+.nyc_output

@@ -1738,11 +1738,6 @@ grunt-legacy-util@~1.1.1:
     underscore.string "~3.3.4"
     which "~1.3.0"
 
-grunt-mocha-istanbul@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/grunt-mocha-istanbul/-/grunt-mocha-istanbul-5.0.2.tgz#23929a8b3f45a66c5fab1f6146e62b58418b7882"
-  integrity sha1-I5Kaiz9Fpmxfqx9hRuYrWEGLeII=
-
 grunt-simple-nyc@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/grunt-simple-nyc/-/grunt-simple-nyc-3.0.0.tgz#46b265f7465941ccddecd003a6f18ab69b40059e"
