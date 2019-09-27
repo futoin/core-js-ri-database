@@ -284,6 +284,7 @@ class SQLiteService extends L2Service {
                 },
                 ( as, err ) => {
                     db.run( 'ROLLBACK' );
+                    db.serialize();
                 }
             );
         } );
