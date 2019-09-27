@@ -1,4 +1,4 @@
-=== (next) ===
+=== 1.9.4 (2019-09-27) ===
 FIXED: to serialize SQLite rollback
 
 === 1.9.3 (2019-07-17) ===
