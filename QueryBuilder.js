@@ -761,7 +761,7 @@ class QueryBuilder {
     }
 
     /**
-     * @private
+     * @internal
      * @param {QueryBuilder|L1Face} qb_or_lface - ref
      * @param {string} db_type - type of driver
      * @param {string} type - type of driver

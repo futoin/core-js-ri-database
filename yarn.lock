@@ -103,10 +103,10 @@
   resolved "https://registry.yarnpkg.com/@futoin/jsbn/-/jsbn-1.1.1.tgz#c74cfc8b4a667f2d670b0b9238db0083109a8545"
   integrity sha512-HG65/jlfLOygdqSW0NJpqxzqg6Z3O9WQ9V45SxWw6nYqrGRtcHOzl8mofk+2SPJ19HXYUuoGK3MbJZTDlTlOEQ==
 
-"@futoin/specs@>=2019.1102.3":
-  version "2019.1102.3"
-  resolved "https://registry.yarnpkg.com/@futoin/specs/-/specs-2019.1102.3.tgz#8d80bc3d47e3ffd48a34c0a243cd684241510e5f"
-  integrity sha512-HwcKbtqFuWrJloW4cLUyJKmKGP98xMhT4ehLRcDZ9OmNvhj6RK8jXCkKVzeaNhN4e04NgTomqRJtUW1/ajzYFA==
+"@futoin/specs@>=2019.1102.4":
+  version "2019.1102.4"
+  resolved "https://registry.yarnpkg.com/@futoin/specs/-/specs-2019.1102.4.tgz#b13685ece194b95f14cd8eaaf9ce7d9d6d5bdcc2"
+  integrity sha512-R0XsNZTYE0Io95/xwFCegncmA05brNm4hqm820Kcu0x2to6HmXyl4ZJQdOLfJ0ywFXTLpJkM3emqsDvNrQN3pg==
 
 abbrev@1:
   version "1.1.1"
@@ -136,7 +136,7 @@ after@0.8.2:
   resolved "https://registry.yarnpkg.com/after/-/after-0.8.2.tgz#fedb394f9f0e02aa9768e702bda23b505fae7e1f"
   integrity sha1-/ts5T58OAqqXaOcCvaI7UF+ufh8=
 
-agentkeepalive@^4.0.2:
+agentkeepalive@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/agentkeepalive/-/agentkeepalive-4.1.0.tgz#a48e040ed16745dd29ce923675f60c9c90f39ee0"
   integrity sha512-CW/n1wxF8RpEuuiq6Vbn9S8m0VSYDMnZESqaJ6F2cWN9fY8rei2qaxweIaRgq+ek8TqfoFIsUjaGNKGGEHElSg==
@@ -1443,57 +1443,57 @@ functional-red-black-tree@^1.0.1:
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
   integrity sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=
 
-futoin-asyncevent@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/futoin-asyncevent/-/futoin-asyncevent-2.3.1.tgz#395810df4976f743cb859ec14c1aee7bfac15537"
-  integrity sha512-HqtYXTLCeoHrg1aCOUfBcy+DwVnQEEtSiDvaooDhfgtb+PMhszM/ODZ/9T8sIPFXr5oUxsRJDBhEa5pRz24UGA==
+futoin-asyncevent@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/futoin-asyncevent/-/futoin-asyncevent-2.3.2.tgz#ffb2ed071fa0672cebee51eae4e96912a28c3de2"
+  integrity sha512-qGhyBkAtir51TxFwCgGkQ+rjJXHu+i0YHY7hdiTxl5RbfjDynob3Y4YYKWFp4ookNMjN5Y/8fG6TBj6Dfg3jxw==
   dependencies:
     grunt-karma "^3.0.2"
     grunt-simple-nyc "^3.0.0"
-    karma "^4.3.0"
+    karma "^4.4.1"
     karma-firefox-launcher "^1.2.0"
     karma-mocha "^1.3.0"
     karma-mocha-reporter "^2.2.5"
 
-futoin-asyncsteps@^2.4.2:
-  version "2.4.2"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-2.4.2.tgz#7e756444993ae34c9686e49c54eb37be5bb0250e"
-  integrity sha512-WNvYXkByX/iD5RPv8lsvHOK+6uyC9J729Fmj3m5Er9/aDljDolLdyYE7aPkQTQBpu5AAn8RS/fRGOtEKGgO7JA==
+futoin-asyncsteps@^2.4.3:
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-2.4.3.tgz#8501ec653a2eb6610d9a20adfbbc83116cc3ca2a"
+  integrity sha512-2rG3xc5nswlCbBaUMaCFh5ybVAXSsIK/+T2VyO2Zo01eKqSR7sYy83uy6M3KbHr0t2LK3c1VQKDpzBnxSu4hXQ==
   dependencies:
     performance-now "^2.1.0"
 
-futoin-executor@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-2.3.1.tgz#7b6b7685c85c97439c62c338c72b0185394439e3"
-  integrity sha512-CweZd0QieZASZUXnRGINqq7FLq7T4uiEqV3/bRoQPj/PTcwnHU1QZuY91BhLEYIlWtCkictrALP13UdiIAoxfA==
+futoin-executor@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-2.3.2.tgz#f4bf3fdffdac0231ddcae377dfcf36c86561b28a"
+  integrity sha512-ePd0ERacXiNR3W9iKghB21nBc/yRhHKAe/kRVHHxZGRDB5naKeMdMHgAy2y/meJ4/q8Z4usvJjoNtUXYOsfM7g==
   dependencies:
     cookie "^0.4.0"
     detect-node "^2.0.4"
-    futoin-asyncevent "^2.3.1"
+    futoin-asyncevent "^2.3.2"
     futoin-ipset "^1.3.4"
     lodash "^4.17.15"
     lru-cache "^5.1.1"
     performance-now "^2.1.0"
-    ws "^7.1.2"
+    ws "^7.2.0"
   optionalDependencies:
     bufferutil "^4.0.1"
     posix "^4.1.2"
     utf-8-validate "^5.0.2"
 
-futoin-invoker@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-2.4.0.tgz#775309278bd8dcf8d20f923a0f6a8763dcb8b796"
-  integrity sha512-B0yUyKPtS9S1bQxO3YxmW0SwhrmFhaf1kclu9wonoLet6HIjn/RMoRePtby0lLP1tzk0TIdTkvw0x9KqtXc7SA==
+futoin-invoker@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-2.4.1.tgz#41aed850f3bc6fc60c0d049613686af964888d00"
+  integrity sha512-eLI+VpO/Z+5t5bIhHT+AMAq27soym5RQh+siB8Lkac4X1LUocqUI38y7xaqp9ZEp3AGdLAncaHP30sLc96OCjg==
   dependencies:
-    "@futoin/specs" ">=2019.1102.3"
-    agentkeepalive "^4.0.2"
+    "@futoin/specs" ">=2019.1102.4"
+    agentkeepalive "^4.1.0"
     detect-node "^2.0.4"
-    futoin-asyncevent "^2.3.1"
+    futoin-asyncevent "^2.3.2"
     futoin-request "^2.1.1"
     lodash "^4.17.15"
     msgpack-lite "^0.1.26"
     performance-now "^2.1.0"
-    ws "^7.1.2"
+    ws "^7.2.0"
   optionalDependencies:
     ajv "^6.10.2"
     borc "^2.1.1"
@@ -2293,7 +2293,7 @@ karma-mocha@^1.3.0:
   dependencies:
     minimist "1.2.0"
 
-karma@^4.3.0:
+karma@^4.4.1:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/karma/-/karma-4.4.1.tgz#6d9aaab037a31136dc074002620ee11e8c2e32ab"
   integrity sha512-L5SIaXEYqzrh6b1wqYC42tNsFMx2PWuxky84pK9coK09MvmL7mxii3G3bZBh/0rvD27lqDd0le9jyhzvwif73A==
@@ -4250,7 +4250,7 @@ write@1.0.3:
   dependencies:
     mkdirp "^0.5.1"
 
-ws@^7.1.2:
+ws@^7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.2.0.tgz#422eda8c02a4b5dba7744ba66eebbd84bcef0ec7"
   integrity sha512-+SqNqFbwTm/0DC18KYzIsMTnEWpLwJsiasW/O17la4iDRRIO9uaHbvKiAS3AHgTiuuWerK/brj4O6MYZkei9xg==

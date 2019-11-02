@@ -1170,6 +1170,7 @@ Basic logic for SQL-based helpers
 Neutral query builder
 
 **Kind**: global class  
+**Internal**:   
 
 * [QueryBuilder](#QueryBuilder)
     * [new QueryBuilder(qb_or_lface, db_type, type, entity)](#new_QueryBuilder_new)
@@ -1569,6 +1570,7 @@ Get implementation of previously registered driver
 SQLite service implementation for FutoIn Database interface.addEventListener()
 
 **Kind**: global class  
+**Note**: database filename is to supplied in options.port parameter.  
 <a name="new_SQLiteService_new"></a>
 
 ### new SQLiteService(options)

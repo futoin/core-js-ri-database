@@ -1,5 +1,6 @@
 === (next) ===
 CHANGED: to use nyc instead of istanbul
+CHANGED: to use @futoin/specs
 
 === 1.9.4 (2019-09-27) ===
 FIXED: to serialize SQLite rollback

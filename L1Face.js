@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-const path = require( 'path' );
-
+const { SPEC_DIRS } = require( '@futoin/specs' );
 const PingFace = require( 'futoin-invoker/PingFace' );
 const QueryBuilder = require ( './QueryBuilder' );
 
@@ -242,10 +241,7 @@ class L1Face extends PingFace {
     }
 
     static spec() {
-        return [
-            path.resolve( __dirname, 'specs' ),
-            PingFace.spec( this.PING_VERSION ),
-        ];
+        return SPEC_DIRS;
     }
 }
 
