@@ -1,3 +1,6 @@
+=== (next) ===
+FIXED: to close PostgreSQL pool on shutdown
+
 === 1.9.6 (2020-01-05) ===
 CHANGED: dependency maintenance
 FIXED: PostgreSQL to use UTC timezone for connection

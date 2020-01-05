@@ -100,6 +100,10 @@ class PostgreSQLService extends L2Service {
         this._pool = pool;
     }
 
+    _close() {
+        this._pool.end();
+    }
+
     _withConnection( as, callback ) {
         const isol = 'RC';
 
