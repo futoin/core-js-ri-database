@@ -1,12 +1,12 @@
 language: node_js
 dist: trusty
 node_js:
-- '11'
+- '12'
 - '10'
 - '8'
 matrix:
   allow_failures:
-    - node_js: '11'
+    - node_js: '12'
 services:
 - mysql
 - postgresql
