@@ -1,5 +1,6 @@
 === (next) ===
 CHANGED: dependency maintenance
+FIXED: PostgreSQL to use UTC timezone for connection
 
 === 1.9.5 (2019-11-02) ===
 CHANGED: to use nyc instead of istanbul

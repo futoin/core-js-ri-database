@@ -161,6 +161,12 @@ class PostgreSQLService extends L2Service {
                     } );
 
                     as.add( ( as ) => {
+                        const q = 'SET SESSION TIME ZONE \'UTC\'';
+                        const dbq = conn.query( q );
+                        this._handleResult( as, dbq );
+                    } );
+
+                    as.add( ( as ) => {
                         conn._futoin_isol = isol;
                         callback( as, conn );
                     } );
