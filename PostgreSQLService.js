@@ -193,7 +193,7 @@ class PostgreSQLService extends L2Service {
                         }
                     }
 
-                    const fields = r.fields.map( ( v ) => v.name );
+                    const fields = r.fields ? r.fields.map( ( v ) => v.name ) : [];
                     const affected = ( r.command === 'SELECT' ) ? 0 : ( r.rowCount || 0 );
                     const res = {
                         rows,

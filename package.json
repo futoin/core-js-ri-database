@@ -46,27 +46,27 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^6.6.0",
+    "eslint": "^6.8.0",
     "futoin-asyncsteps": "^2.4.3",
     "futoin-executor": "^2.3.2",
     "futoin-invoker": "^2.4.1",
     "grunt": "^1.0.4",
     "grunt-eslint": "^22.0.0",
     "grunt-jsdoc-to-markdown": "^5.0.0",
-    "grunt-simple-nyc": "^3.0.0",
+    "grunt-simple-nyc": "^3.0.1",
     "grunt-text-replace": "^0.4.0",
-    "mocha": "^6.2.2"
+    "mocha": "^7.0.0"
   },
   "dependencies": {
-    "@futoin/specs": ">=2019.1102.4",
+    "@futoin/specs": ">=2019.1104.0",
     "futoin-asyncevent": "^2.3.2",
     "lodash": "^4.17.15",
     "moment": "^2.24.0"
   },
   "optionalDependencies": {
     "mysql": "^2.17.1",
-    "pg": "^7.12.1",
-    "sqlite3": "^4.1.0",
+    "pg": "^7.17.0",
+    "sqlite3": "^4.1.1",
     "sqlstring": "^2.3.1"
   },
   "peerDependencies": {
