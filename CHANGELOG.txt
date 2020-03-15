@@ -1,3 +1,6 @@
+=== (next) ===
+CHANGED: dependency maintenance
+
 === 1.9.7 (2020-01-05) ===
 FIXED: to close PostgreSQL pool on shutdown
 
