@@ -49,7 +49,7 @@
     "eslint": "^7.0.0",
     "futoin-asyncsteps": "^2.5.1",
     "futoin-executor": "^2.3.3",
-    "futoin-invoker": "^2.4.2",
+    "futoin-invoker": "^2.4.3",
     "grunt": "^1.1.0",
     "grunt-eslint": "^22.0.0",
     "grunt-jsdoc-to-markdown": "^5.0.0",
