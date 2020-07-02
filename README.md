@@ -1152,6 +1152,31 @@ Allows easy joining with raw query
 Interface for prepared statement execution
 
 **Kind**: global class  
+
+* [Prepared](#Prepared)
+    * [.execute(as, [params])](#Prepared+execute)
+    * [.executeAsync(as, [params])](#Prepared+executeAsync)
+
+<a name="Prepared+execute"></a>
+
+### prepared.execute(as, [params])
+**Kind**: instance method of [<code>Prepared</code>](#Prepared)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| [params] | <code>object</code> | <code></code> | parameters to subsitute |
+
+<a name="Prepared+executeAsync"></a>
+
+### prepared.executeAsync(as, [params])
+**Kind**: instance method of [<code>Prepared</code>](#Prepared)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| [params] | <code>object</code> | <code></code> | parameters to subsitute |
+
 <a name="Helpers"></a>
 
 ## Helpers
