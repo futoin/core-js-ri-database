@@ -149,7 +149,7 @@ class PostgreSQLService extends L2Service {
                     as.success( conn );
                 } );
             },
-            ( as, err ) => releaseConn( as )
+            ( as, err ) => releaseConn( as ),
         );
         as.add(
             ( as, conn ) => {
@@ -178,7 +178,7 @@ class PostgreSQLService extends L2Service {
                     callback( as, conn );
                 }
             },
-            ( as, err ) => releaseConn( as )
+            ( as, err ) => releaseConn( as ),
         );
         as.add( releaseConn );
     }
@@ -317,7 +317,7 @@ class PostgreSQLService extends L2Service {
                                 prev_results.push( qres );
                                 this._xferCommon(
                                     as, xfer, [ qres ], stmt_id, results, q );
-                            }
+                            },
                         );
                     } );
 
@@ -331,7 +331,7 @@ class PostgreSQLService extends L2Service {
                 },
                 ( as, err ) => {
                     conn.query( 'ROLLBACK' );
-                }
+                },
             );
         } );
     }

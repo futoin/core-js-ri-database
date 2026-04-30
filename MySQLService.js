@@ -34,8 +34,7 @@ const IsoLevels = {
 
 /**
  * MySQL service implementation for FutoIn Database interface.addEventListener()
- *
- * @note If host is localhost then 'socketPath' is from 'port' option.
+ * If host is localhost then 'socketPath' is from 'port' option.
  */
 class MySQLService extends L2Service {
     constructor( options ) {
@@ -124,7 +123,7 @@ class MySQLService extends L2Service {
                     as.success( conn );
                 } );
             },
-            ( as, err ) => releaseConn( as )
+            ( as, err ) => releaseConn( as ),
         );
         as.add(
             ( as, conn ) => {
@@ -151,7 +150,7 @@ class MySQLService extends L2Service {
                     callback( as, conn );
                 }
             },
-            ( as, err ) => releaseConn( as )
+            ( as, err ) => releaseConn( as ),
         );
         as.add( releaseConn );
     }
@@ -320,7 +319,7 @@ class MySQLService extends L2Service {
                                 prev_results.push( qresults[0] );
                                 this._xferCommon(
                                     as, xfer, qresults, stmt_id, results, q );
-                            }
+                            },
                         );
                     } );
 
@@ -333,7 +332,7 @@ class MySQLService extends L2Service {
                 },
                 ( as, err ) => {
                     conn.rollback();
-                }
+                },
             );
         } );
     }

@@ -721,7 +721,8 @@ The concept is described in FutoIn specification: [FTN17: FutoIn Interface - Dat
 <dd><p>Base for Level 2 Database service implementation</p>
 </dd>
 <dt><a href="#MySQLService">MySQLService</a></dt>
-<dd><p>MySQL service implementation for FutoIn Database interface.addEventListener()</p>
+<dd><p>MySQL service implementation for FutoIn Database interface.addEventListener()
+If host is localhost then &#39;socketPath&#39; is from &#39;port&#39; option.</p>
 </dd>
 <dt><a href="#PostgreSQLService">PostgreSQLService</a></dt>
 <dd><p>PostgreSQL service implementation for FutoIn Database interface</p>
@@ -787,7 +788,7 @@ Level 1 Database Face
         * [.select(entity)](#L1Face+select) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.update(entity)](#L1Face+update) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.paramQuery(as, q, params)](#L1Face+paramQuery)
-        * [.associateResult(as_result)](#L1Face+associateResult) ⇒ <code>array</code>
+        * [.associateResult(as_result)](#L1Face+associateResult) ⇒ <code>Array</code>
         * [.getPrepared(sym, cb)](#L1Face+getPrepared) ⇒ [<code>Prepared</code>](#Prepared)
     * _static_
         * [.LATEST_VERSION](#L1Face.LATEST_VERSION)
@@ -798,24 +799,23 @@ Level 1 Database Face
 
 ### l1Face.query
 **Kind**: instance property of [<code>L1Face</code>](#L1Face)  
-**Note**: AS result has "rows", "fields" and "affected" members  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | steps interface |
-| q | <code>string</code> | raw query |
+| q | <code>string</code> | raw query AsyncSteps result has "rows", "fields" and "affected" members |
 
 <a name="L1Face+callStored"></a>
 
 ### l1Face.callStored
 **Kind**: instance property of [<code>L1Face</code>](#L1Face)  
-**Note**: see query() for results  
+**See**: query() for results  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | steps interface |
 | name | <code>string</code> | stored procedure name |
-| args | <code>array</code> | positional arguments to pass |
+| args | <code>Array</code> | positional arguments to pass |
 
 <a name="L1Face+getFlavour"></a>
 
@@ -904,23 +904,22 @@ Get neutral query builder for UPDATE
 Execute raw parametrized query
 
 **Kind**: instance method of [<code>L1Face</code>](#L1Face)  
-**Note**: Placeholders must be in form ":name"  
-**Note**: see query() for results  
+**See**: query() for results  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | steps interface |
 | q | <code>string</code> | raw query with placeholders |
-| params | <code>object</code> | named parameters for replacement |
+| params | <code>object</code> | named parameters for replacement Placeholders must be in form ":name" |
 
 <a name="L1Face+associateResult"></a>
 
-### l1Face.associateResult(as_result) ⇒ <code>array</code>
+### l1Face.associateResult(as_result) ⇒ <code>Array</code>
 Convert raw result into array of associated rows (Maps)
 
 **Kind**: instance method of [<code>L1Face</code>](#L1Face)  
-**Returns**: <code>array</code> - Array of maps.  
-**Note**: original result has "rows" as array of arrays and "fields" map  
+**Returns**: <code>Array</code> - Array of maps.
+Original result has "rows" as array of arrays and "fields" map  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -936,8 +935,8 @@ A handy way to store prepared objects and created on demand
 
 | Param | Type | Description |
 | --- | --- | --- |
-| sym | <code>Symbol</code> | unique symbol per prepared statement |
-| cb | <code>callable</code> | a callback returning a prepared statement |
+| sym | <code>symbol</code> | unique symbol per prepared statement |
+| cb | <code>function</code> | a callback returning a prepared statement |
 
 <a name="L1Face.LATEST_VERSION"></a>
 
@@ -963,10 +962,10 @@ CCM registration helper
 | as | <code>AsyncSteps</code> |  | steps interface |
 | ccm | <code>AdvancedCCM</code> |  | CCM instance |
 | name | <code>string</code> |  | CCM registration name |
-| endpoint | <code>\*</code> |  | see AdvancedCCM#register |
-| [credentials] | <code>\*</code> | <code></code> | see AdvancedCCM#register |
-| [options] | <code>object</code> | <code>{}</code> | interface options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+| endpoint | <code>any</code> |  | see AdvancedCCM#register |
+| [credentials] | <code>any</code> | <code></code> | see AdvancedCCM#register |
+| [options] | <code>object</code> |  | interface options |
+| [options.version] | <code>string</code> |  | interface version to use |
 
 <a name="L1Service"></a>
 
@@ -1003,8 +1002,8 @@ Register futoin.db.l1 interface with Executor
 | Name | Type | Description |
 | --- | --- | --- |
 | q | <code>string</code> | raw query |
-| affected | <code>interger</code> \| <code>boolean</code> \| <code>null</code> | expected count of rows to be affected |
-| selected | <code>interger</code> \| <code>boolean</code> \| <code>null</code> | expected count of rows to be selected |
+| affected | <code>number</code> \| <code>boolean</code> \| <code>null</code> | expected count of rows to be affected |
+| selected | <code>number</code> \| <code>boolean</code> \| <code>null</code> | expected count of rows to be selected |
 | result | <code>boolean</code> \| <code>null</code> | mark to return result in response |
 
 <a name="L2Face"></a>
@@ -1066,9 +1065,9 @@ Get new transcation builder.
 - L2Face#SERIALIZABLE
 
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [iso_level] | <code>string</code> | <code>&quot;RC&quot;</code> | RU, RC, RR or SRL |
+| Param | Type | Description |
+| --- | --- | --- |
+| [iso_level] | <code>string</code> | RU, RC, RR or SRL |
 
 <a name="L2Face.READ_UNCOMMITTED"></a>
 
@@ -1124,9 +1123,9 @@ Register futoin.db.l2 interface with Executor
 
 ## MySQLService
 MySQL service implementation for FutoIn Database interface.addEventListener()
+If host is localhost then 'socketPath' is from 'port' option.
 
 **Kind**: global class  
-**Note**: If host is localhost then 'socketPath' is from 'port' option.  
 <a name="PostgreSQLService"></a>
 
 ## PostgreSQLService
@@ -1221,7 +1220,7 @@ Neutral query builder
         * [.leftJoin(entity, conditions)](#QueryBuilder+leftJoin) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
         * [.execute(as, unsafe_dml)](#QueryBuilder+execute)
         * [.executeAssoc(as, unsafe_dml)](#QueryBuilder+executeAssoc)
-        * [.prepare(unsafe_dml)](#QueryBuilder+prepare) ⇒ <code>ExecPrepared</code>
+        * [.prepare(unsafe_dml)](#QueryBuilder+prepare) ⇒ [<code>Prepared</code>](#Prepared)
     * _static_
         * [.IDriver](#QueryBuilder.IDriver)
         * [.SQLDriver](#QueryBuilder.SQLDriver)
@@ -1267,7 +1266,7 @@ Escape value for embedding into raw query
 
 | Param | Type | Description |
 | --- | --- | --- |
-| value | <code>\*</code> | value, array or sub-query to escape |
+| value | <code>any</code> | value, array or sub-query to escape |
 
 <a name="QueryBuilder+identifier"></a>
 
@@ -1318,23 +1317,23 @@ Get additional helpers
 Set fields to retrieve.
 
 Can be called multiple times for appending.
+`fields` can be a Map or object:
+- keys are field names as is
+- values - any expression which is not being escaped automatically
+`fields` can be a list of field names (array)
+- `values` - field names
+`fields` can be a single string
+- optional `value` is expression
+
+Value can be another QueryBuilder instance.
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
 **Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
-**P**: fields can be a Map or object:
-- keys are field names as is
-- values - any expression which is not being escaped automatically  
-**P**: fields can be a list of field names (array)
-- values - field names  
-**P**: fields can be a single string
-- optional @p value is expresion
-
-Value can be another QueryBuilder instance.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| fields | <code>Map</code> \| <code>object</code> \| <code>string</code> \| <code>array</code> | see concept for details |
-| [value] | <code>\*</code> | optional value for |
+| fields | <code>Map</code> \| <code>object</code> \| <code>string</code> \| <code>Array</code> | see concept for details |
+| [value] | <code>any</code> | optional value for |
 
 <a name="QueryBuilder+getInsertID"></a>
 
@@ -1364,14 +1363,14 @@ Save current set() context and start new INSERT row
 
 ### queryBuilder.set(field, [value]) ⇒ [<code>QueryBuilder</code>](#QueryBuilder)
 Add fields to set in UPDATE query.
-
-**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
-**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
-**P**: fields can be Map or object to setup multiple fields at once.
+`fields` can be Map or object to setup multiple fields at once.
 - keys - key name as is, no escape
 - value - any value to be escaped or QueryBuilder instance
 
-Single field => value can be used as shortcut for object form.  
+Single field => value can be used as shortcut for object form.
+
+**Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
+**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1388,8 +1387,8 @@ Control "WHERE" part
 
 | Param | Type | Description |
 | --- | --- | --- |
-| conditions | <code>\*</code> | constraints to add |
-| [value] | <code>\*</code> | optional value for single field |
+| conditions | <code>any</code> | constraints to add |
+| [value] | <code>any</code> | optional value for single field |
 
 <a name="QueryBuilder+having"></a>
 
@@ -1402,8 +1401,8 @@ Control "HAVING" part
 
 | Param | Type | Description |
 | --- | --- | --- |
-| conditions | <code>\*</code> | constraints to add |
-| [value] | <code>\*</code> | optional value for single field |
+| conditions | <code>any</code> | constraints to add |
+| [value] | <code>any</code> | optional value for single field |
 
 <a name="QueryBuilder+group"></a>
 
@@ -1428,7 +1427,7 @@ Append order by
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | field_expr | <code>string</code> |  | field or expressions |
-| [ascending] | <code>Boolean</code> | <code>true</code> | ascending sorting, if true |
+| [ascending] | <code>boolean</code> | <code>true</code> | ascending sorting, if true |
 
 <a name="QueryBuilder+limit"></a>
 
@@ -1436,13 +1435,13 @@ Append order by
 Limit query output
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
-**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self  
-**Note**: if @p count is omitted then @p start is used as count!  
+**Returns**: [<code>QueryBuilder</code>](#QueryBuilder) - self
+If `count` is omitted then `start` is used as count!  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| count | <code>integer</code> |  | size |
-| [offset] | <code>integer</code> | <code>0</code> | offset |
+| Param | Type | Description |
+| --- | --- | --- |
+| count | <code>number</code> | size |
+| [offset] | <code>number</code> | offset |
 
 <a name="QueryBuilder+join"></a>
 
@@ -1456,8 +1455,8 @@ Add "JOIN" part
 | Param | Type | Description |
 | --- | --- | --- |
 | type | <code>string</code> | e.g. INNER, LEFT |
-| entity | <code>string</code> \| <code>array</code> | fornat is the same as of QueryBuilder |
-| conditions | <code>\*</code> | constraints to add |
+| entity | <code>string</code> \| <code>Array</code> | fornat is the same as of QueryBuilder |
+| conditions | <code>any</code> | constraints to add |
 
 <a name="QueryBuilder+innerJoin"></a>
 
@@ -1470,8 +1469,8 @@ Add "INNER JOIN"
 
 | Param | Type | Description |
 | --- | --- | --- |
-| entity | <code>string</code> \| <code>array</code> | fornat is the same as of QueryBuilder |
-| conditions | <code>\*</code> | constraints to add |
+| entity | <code>string</code> \| <code>Array</code> | fornat is the same as of QueryBuilder |
+| conditions | <code>any</code> | constraints to add |
 
 <a name="QueryBuilder+leftJoin"></a>
 
@@ -1484,8 +1483,8 @@ Add "LEFT JOIN"
 
 | Param | Type | Description |
 | --- | --- | --- |
-| entity | <code>string</code> \| <code>array</code> | fornat is the same as of QueryBuilder |
-| conditions | <code>\*</code> | constraints to add |
+| entity | <code>string</code> \| <code>Array</code> | fornat is the same as of QueryBuilder |
+| conditions | <code>any</code> | constraints to add |
 
 <a name="QueryBuilder+execute"></a>
 
@@ -1498,7 +1497,7 @@ Complete query and execute through associated interface.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | steps interface |
-| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+| unsafe_dml | <code>boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
 <a name="QueryBuilder+executeAssoc"></a>
 
@@ -1515,19 +1514,19 @@ Complete query and execute through associated interface.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | steps interface |
-| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+| unsafe_dml | <code>boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
 <a name="QueryBuilder+prepare"></a>
 
-### queryBuilder.prepare(unsafe_dml) ⇒ <code>ExecPrepared</code>
+### queryBuilder.prepare(unsafe_dml) ⇒ [<code>Prepared</code>](#Prepared)
 Prepare statement for efficient execution multiple times
 
 **Kind**: instance method of [<code>QueryBuilder</code>](#QueryBuilder)  
-**Returns**: <code>ExecPrepared</code> - closue with prepared statement  
+**Returns**: [<code>Prepared</code>](#Prepared) - instance with prepared statement  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+| unsafe_dml | <code>boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
 <a name="QueryBuilder.IDriver"></a>
 
@@ -1595,21 +1594,21 @@ Get implementation of previously registered driver
 SQLite service implementation for FutoIn Database interface.addEventListener()
 
 **Kind**: global class  
-**Note**: database filename is to supplied in options.port parameter.  
 <a name="new_SQLiteService_new"></a>
 
 ### new SQLiteService(options)
 Please use SQLiteService.register() for proper setup.
+Database filename is to supplied in options.port parameter.
 
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| options | <code>object</code> |  | see SQLiteService.register() for common options |
-| [options.raw] | <code>objecT</code> | <code>{}</code> | raw options |
-| [options.raw.filename] | <code>string</code> | <code>&quot;options.port&quot;</code> | database file |
-| [options.raw.mode] | <code>integer</code> | <code>OPEN_READWRITE|OPEN_CREATE|SQLITE_OPEN_FULLMUTEX</code> | open mode |
-| [options.raw.busyTimeout] | <code>integer</code> | <code>10000</code> | busyTimeout configuration value |
-| [options.raw.pragma] | <code>array</code> | <code>[]</code> | list of pragma statements to execute on DB open |
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>object</code> | see SQLiteService.register() for common options |
+| [options.raw] | <code>object</code> | raw options |
+| [options.raw.filename] | <code>string</code> | database file |
+| [options.raw.mode] | <code>number</code> | open mode, integer |
+| [options.raw.busyTimeout] | <code>number</code> | busyTimeout configuration value, integer |
+| [options.raw.pragma] | <code>Array</code> | list of pragma statements to execute on DB open |
 
 <a name="QueryOptions"></a>
 
@@ -1619,8 +1618,8 @@ Please use SQLiteService.register() for proper setup.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| affected | <code>integer</code> \| <code>boolean</code> \| <code>null</code> | affected rows constaint |
-| selected | <code>integer</code> \| <code>boolean</code> \| <code>null</code> | selected rows constaint |
+| affected | <code>number</code> \| <code>boolean</code> \| <code>null</code> | affected rows constaint |
+| selected | <code>number</code> \| <code>boolean</code> \| <code>null</code> | selected rows constaint |
 | return | <code>boolean</code> \| <code>null</code> | return result in response |
 
 <a name="XferQueryBuilder"></a>
@@ -1694,7 +1693,7 @@ It's possible to add result constraints to each query for intermediate checks:
     * [.raw(q, [params], [query_options])](#XferBuilder+raw)
     * [.execute(as, unsafe_dml)](#XferBuilder+execute)
     * [.executeAssoc(as, unsafe_dml)](#XferBuilder+executeAssoc)
-    * [.prepare(unsafe_dml)](#XferBuilder+prepare) ⇒ <code>ExecPrepared</code>
+    * [.prepare(unsafe_dml)](#XferBuilder+prepare) ⇒ [<code>Prepared</code>](#QueryBuilder.Prepared)
 
 <a name="XferBuilder+clone"></a>
 
@@ -1720,7 +1719,7 @@ Escape value for embedding into raw query
 
 | Param | Type | Description |
 | --- | --- | --- |
-| value | <code>\*</code> | value, array or sub-query to escape |
+| value | <code>any</code> | value, array or sub-query to escape |
 
 <a name="XferBuilder+identifier"></a>
 
@@ -1780,11 +1779,11 @@ Get generic query builder
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 **Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| type | <code>string</code> |  | query type |
-| entity | <code>string</code> \| <code>null</code> |  | man subject |
-| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+| Param | Type | Description |
+| --- | --- | --- |
+| type | <code>string</code> | query type |
+| entity | <code>string</code> \| <code>null</code> | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | constraints |
 
 <a name="XferBuilder+delete"></a>
 
@@ -1794,10 +1793,10 @@ Get DELETE query builder
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 **Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| entity | <code>string</code> \| <code>null</code> |  | man subject |
-| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+| Param | Type | Description |
+| --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | constraints |
 
 <a name="XferBuilder+insert"></a>
 
@@ -1807,10 +1806,10 @@ Get INSERT query builder
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 **Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| entity | <code>string</code> \| <code>null</code> |  | man subject |
-| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+| Param | Type | Description |
+| --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | constraints |
 
 <a name="XferBuilder+update"></a>
 
@@ -1820,10 +1819,10 @@ Get UPDATE query builder
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 **Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| entity | <code>string</code> \| <code>null</code> |  | man subject |
-| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+| Param | Type | Description |
+| --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | constraints |
 
 <a name="XferBuilder+select"></a>
 
@@ -1833,10 +1832,10 @@ Get SELECT query builder
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 **Returns**: [<code>XferQueryBuilder</code>](#XferQueryBuilder) - individual query builder instance  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| entity | <code>string</code> \| <code>null</code> |  | man subject |
-| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+| Param | Type | Description |
+| --- | --- | --- |
+| entity | <code>string</code> \| <code>null</code> | man subject |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | constraints |
 
 <a name="XferBuilder+call"></a>
 
@@ -1845,25 +1844,25 @@ Add CALL query
 
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| name | <code>string</code> |  | stored procedure name |
-| [args] | <code>array</code> | <code>[]</code> | positional arguments |
-| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | stored procedure name |
+| [args] | <code>Array</code> | positional arguments |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | constraints |
 
 <a name="XferBuilder+raw"></a>
 
 ### xferBuilder.raw(q, [params], [query_options])
 Execute raw query
+Pass null in *params*, if you want to use prepare().
 
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
-**Note**: Pass null in {@p params}, if you want to use prepare()  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | q | <code>string</code> |  | raw query |
 | [params] | <code>object</code> | <code></code> | named argument=>value pairs |
-| [query_options] | [<code>QueryOptions</code>](#QueryOptions) | <code>{}</code> | constraints |
+| [query_options] | [<code>QueryOptions</code>](#QueryOptions) |  | constraints |
 
 <a name="XferBuilder+execute"></a>
 
@@ -1876,7 +1875,7 @@ Complete query and execute through associated interface.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | steps interface |
-| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+| unsafe_dml | <code>boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
 <a name="XferBuilder+executeAssoc"></a>
 
@@ -1893,25 +1892,25 @@ Complete query and execute through associated interface.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | steps interface |
-| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+| unsafe_dml | <code>boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
 <a name="XferBuilder+prepare"></a>
 
-### xferBuilder.prepare(unsafe_dml) ⇒ <code>ExecPrepared</code>
+### xferBuilder.prepare(unsafe_dml) ⇒ [<code>Prepared</code>](#QueryBuilder.Prepared)
 Prepare statement for efficient execution multiple times
 
 **Kind**: instance method of [<code>XferBuilder</code>](#XferBuilder)  
-**Returns**: <code>ExecPrepared</code> - closue with prepared statement  
+**Returns**: [<code>Prepared</code>](#QueryBuilder.Prepared) - instance of prepared statement  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| unsafe_dml | <code>Boolean</code> | <code>false</code> | raise error, if DML without conditions |
+| unsafe_dml | <code>boolean</code> | <code>false</code> | raise error, if DML without conditions |
 
 <a name="AutoConfig"></a>
 
 ## AutoConfig
 **Kind**: global variable  
-**Brief**: Automatically configure database connections
+**Summary**: Automatically configure database connections
        and related internal Executors.
 
 For each config entry an instance of dedicated
@@ -1957,14 +1956,13 @@ Example:
      },
  })
 ```  
-**Note**: it also monkey patches CCM with #db(name="default") method  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | async steps interface |
-| ccm | <code>AdvancedCCM</code> |  | CCM instance |
-| [config] | <code>object</code> | <code></code> | expected connection key => type map |
-| [env] | <code>object</code> | <code>process.env</code> | source of settings |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | async steps interface |
+| ccm | <code>AdvancedCCM</code> | CCM instance |
+| [config] | <code>object</code> | expected connection key => type map |
+| [env] | <code>object</code> | source of settings It also monkey patches CCM with #db(name="default") method |
 
 <a name="AutoConfig.register"></a>
 
@@ -1976,7 +1974,7 @@ Register database service type.
 | Param | Type | Description |
 | --- | --- | --- |
 | type | <code>string</code> | type of database |
-| factory | <code>string</code> \| <code>callable</code> \| <code>object</code> | module name, factory method      or a subclass of L1Service |
+| factory | <code>string</code> \| <code>function</code> \| <code>object</code> | module name, factory method      or a subclass of L1Service |
 
 
 

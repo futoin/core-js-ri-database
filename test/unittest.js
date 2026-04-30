@@ -492,7 +492,7 @@ describe( 'QueryBuilder', function() {
                 ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
-                }
+                },
             )
                 .add( ( as ) => done() )
                 .execute();
@@ -520,7 +520,7 @@ describe( 'QueryBuilder', function() {
                 ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
-                }
+                },
             )
                 .add( ( as ) => done() )
                 .execute();
@@ -868,7 +868,7 @@ describe( 'QueryBuilder', function() {
                 ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
-                }
+                },
             )
                 .add( ( as ) => done() )
                 .execute();
@@ -882,7 +882,7 @@ describe( 'QueryBuilder', function() {
                     const sym = Symbol( 'abc' );
                     mockFace.getPrepared( sym, ( db ) =>
                         db.select( 'SomeTable' )
-                            .prepare()
+                            .prepare(),
                     );
                     mockFace.getPrepared( sym ).executeAssoc( as );
 
@@ -901,7 +901,7 @@ describe( 'QueryBuilder', function() {
                 ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
-                }
+                },
             )
                 .add( ( as ) => done() )
                 .execute();
@@ -917,7 +917,7 @@ describe( 'QueryBuilder', function() {
                     'Some :v :vv :vvv :v',
                     { v: 3,
                         vv: 2,
-                        vvv: 1 } )
+                        vvv: 1 } ),
             ).to.equal( 'Some 3 2 1 3' );
         } );
 
@@ -1061,7 +1061,7 @@ describe( 'XferBuilder', function() {
             ( as, err ) => {
                 console.log( as.state.error_info );
                 done( as.state.last_exception || err );
-            }
+            },
         )
             .add( ( as ) => done() )
             .execute();
@@ -1221,7 +1221,7 @@ describe( 'XferBuilder', function() {
                 ( as, err ) => {
                     console.log( as.state.error_info );
                     done( as.state.last_exception || err );
-                }
+                },
             )
                 .add( ( as ) => done() )
                 .execute();

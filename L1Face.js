@@ -53,14 +53,13 @@ class L1Face extends PingFace {
 
     /**
      * CCM registration helper
-     *
      * @param {AsyncSteps} as - steps interface
      * @param {AdvancedCCM} ccm - CCM instance
      * @param {string} name - CCM registration name
-     * @param {*} endpoint - see AdvancedCCM#register
-     * @param {*} [credentials=null] - see AdvancedCCM#register
-     * @param {object} [options={}] - interface options
-     * @param {string} [options.version=1.0] - interface version to use
+     * @param {any} endpoint - see AdvancedCCM#register
+     * @param {any} [credentials] - see AdvancedCCM#register
+     * @param {object} [options] - interface options
+     * @param {string} [options.version] - interface version to use
      */
     static register( as, ccm, name, endpoint, credentials=null, options={} ) {
         const ifacever = options.version || this.LATEST_VERSION;
@@ -75,7 +74,7 @@ class L1Face extends PingFace {
             `${this.IFACE_NAME}:${ifacever}`,
             endpoint,
             credentials,
-            options
+            options,
         );
 
         as.add( ( as ) => {
@@ -85,7 +84,6 @@ class L1Face extends PingFace {
 
     /**
      * Get type of database
-     *
      * @param {AsyncSteps} as - steps interface
      */
     getFlavour( as ) {
@@ -104,7 +102,6 @@ class L1Face extends PingFace {
 
     /**
      * Get neutral query builder object.
-     *
      * @param {string} type - Type of query: SELECT, INSERT, UPDATE, DELETE, ...
      * @param {string} entity - table/view/etc. name
      * @returns {QueryBuilder} associated instance
@@ -163,7 +160,7 @@ class L1Face extends PingFace {
      * @name L1Face#query
      * @param {AsyncSteps} as - steps interface
      * @param {string} q - raw query
-     * @note AS result has "rows", "fields" and "affected" members
+     * AsyncSteps result has "rows", "fields" and "affected" members
      */
 
     /**
@@ -171,8 +168,8 @@ class L1Face extends PingFace {
      * @param {AsyncSteps} as - steps interface
      * @param {string} q - raw query with placeholders
      * @param {object} params - named parameters for replacement
-     * @note Placeholders must be in form ":name"
-     * @note see query() for results
+     * Placeholders must be in form ":name"
+     * @see query() for results
      */
     paramQuery( as, q, params={} ) {
         const helpers = QueryBuilder.getDriver( this._db_type ).helpers;
@@ -185,15 +182,15 @@ class L1Face extends PingFace {
      * @name L1Face#callStored
      * @param {AsyncSteps} as - steps interface
      * @param {string} name - stored procedure name
-     * @param {array} args - positional arguments to pass
-     * @note see query() for results
+     * @param {Array} args - positional arguments to pass
+     * @see query() for results
      */
 
     /**
      * Convert raw result into array of associated rows (Maps)
      * @param {object} as_result - $as result of query() call
-     * @returns {array} Array of maps.
-     * @note original result has "rows" as array of arrays and "fields" map
+     * @returns {Array} Array of maps.
+     * Original result has "rows" as array of arrays and "fields" map
      */
     associateResult( as_result ) {
         const res = [];
@@ -218,8 +215,8 @@ class L1Face extends PingFace {
 
     /**
      * A handy way to store prepared objects and created on demand
-     * @param {Symbol} sym - unique symbol per prepared statement
-     * @param {callable} cb - a callback returning a prepared statement
+     * @param {symbol} sym - unique symbol per prepared statement
+     * @param {Function} cb - a callback returning a prepared statement
      * @returns {Prepared} - associated prepared statement
      */
     getPrepared( sym, cb ) {

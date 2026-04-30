@@ -25,8 +25,8 @@ const QueryBuilder = require( './QueryBuilder' );
 /**
  * @class
  * @name QueryOptions
- * @property {integer|boolean|null} affected - affected rows constaint
- * @property {integer|boolean|null} selected - selected rows constaint
+ * @property {number|boolean|null} affected - affected rows constaint
+ * @property {number|boolean|null} selected - selected rows constaint
  * @property {boolean|null} return - return result in response
  */
 
@@ -47,7 +47,7 @@ class XferQueryBuilder extends QueryBuilder {
      * @param {XferQueryBuilder} xqb - any previous transaction
      *      query builder instances.
      * @param {string} field - field to reference by name
-     * @param {boolean} [multi=false] - reference single result row or multiple
+     * @param {boolean} [multi] - reference single result row or multiple
      * @returns {Expression} with DB-specific escape sequence
      */
     backref( xqb, field, multi=false ) {
@@ -129,7 +129,7 @@ class XferBuilder {
 
     /**
      * Escape value for embedding into raw query
-     * @param {*} value - value, array or sub-query to escape
+     * @param {any} value - value, array or sub-query to escape
      * @returns {string} driver-specific escape
      */
     escape( value ) {
@@ -148,7 +148,7 @@ class XferBuilder {
     /**
      * Wrap raw expression to prevent escaping.
      * @param {string} expr - expression to wrap
-     * @return {Expression} wrapped expression
+     * @returns {Expression} wrapped expression
      */
     expr( expr ) {
         return this.helpers().expr( expr );
@@ -158,7 +158,7 @@ class XferBuilder {
     /**
      * Wrap parameter name to prevent escaping.
      * @param {string} name - name to wrap
-     * @return {Expression} wrapped expression
+     * @returns {Expression} wrapped expression
      */
     param( name ) {
         return this.helpers().expr( `:${name}` );
@@ -184,7 +184,7 @@ class XferBuilder {
      * Get generic query builder
      * @param {string} type - query type
      * @param {string|null} entity - man subject
-     * @param {QueryOptions} [query_options={}] - constraints
+     * @param {QueryOptions} [query_options] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
     query( type, entity, query_options={} ) {
@@ -212,7 +212,7 @@ class XferBuilder {
     /**
      * Get DELETE query builder
      * @param {string|null} entity - man subject
-     * @param {QueryOptions} [query_options={}] - constraints
+     * @param {QueryOptions} [query_options] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
     delete( entity, query_options={} ) {
@@ -222,7 +222,7 @@ class XferBuilder {
     /**
      * Get INSERT query builder
      * @param {string|null} entity - man subject
-     * @param {QueryOptions} [query_options={}] - constraints
+     * @param {QueryOptions} [query_options] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
     insert( entity, query_options={} ) {
@@ -232,7 +232,7 @@ class XferBuilder {
     /**
      * Get UPDATE query builder
      * @param {string|null} entity - man subject
-     * @param {QueryOptions} [query_options={}] - constraints
+     * @param {QueryOptions} [query_options] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
     update( entity, query_options={} ) {
@@ -242,7 +242,7 @@ class XferBuilder {
     /**
      * Get SELECT query builder
      * @param {string|null} entity - man subject
-     * @param {QueryOptions} [query_options={}] - constraints
+     * @param {QueryOptions} [query_options] - constraints
      * @returns {XferQueryBuilder} individual query builder instance
      */
     select( entity, query_options={} ) {
@@ -252,8 +252,8 @@ class XferBuilder {
     /**
      * Add CALL query
      * @param {string} name - stored procedure name
-     * @param {array} [args=[]] - positional arguments
-     * @param {QueryOptions} [query_options={}] - constraints
+     * @param {Array} [args] - positional arguments
+     * @param {QueryOptions} [query_options] - constraints
      */
     call( name, args=[], query_options={} ) {
         const qb = this._newBuilder( 'CALL', name );
@@ -267,10 +267,10 @@ class XferBuilder {
 
     /**
      * Execute raw query
+     * Pass null in *params*, if you want to use prepare().
      * @param {string} q - raw query
-     * @param {object} [params=null] - named argument=>value pairs
-     * @param {QueryOptions} [query_options={}] - constraints
-     * @note Pass null in {@p params}, if you want to use prepare()
+     * @param {object} [params] - named argument=>value pairs
+     * @param {QueryOptions} [query_options] - constraints
      */
     raw( q, params=null, query_options={} ) {
         const item = _cloneDeep( query_options );
@@ -288,7 +288,7 @@ class XferBuilder {
     /**
      * Complete query and execute through associated interface.
      * @param {AsyncSteps} as - steps interface
-     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
+     * @param {boolean} unsafe_dml - raise error, if DML without conditions
      * @see L1Face.query
      */
     execute( as, unsafe_dml=false ) {
@@ -305,7 +305,7 @@ class XferBuilder {
     /**
      * Complete query and execute through associated interface.
      * @param {AsyncSteps} as - steps interface
-     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
+     * @param {boolean} unsafe_dml - raise error, if DML without conditions
      * @see L1Face.query
      * @see L1Face.associateResult
      */
@@ -317,8 +317,8 @@ class XferBuilder {
 
     /**
      * Prepare statement for efficient execution multiple times
-     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
-     * @returns {ExecPrepared} closue with prepared statement
+     * @param {boolean} unsafe_dml - raise error, if DML without conditions
+     * @returns {QueryBuilder.Prepared} instance of prepared statement
      */
     prepare( unsafe_dml=false ) {
         const ql = _cloneDeep( this._query_list );
@@ -364,7 +364,7 @@ class XferBuilder {
             this._lface,
             this._db_type,
             type,
-            entity
+            entity,
         );
         res._seq_id = this._query_list.length;
         return res;

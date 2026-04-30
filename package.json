@@ -45,28 +45,29 @@
     "email": "support@futoin.org"
   },
   "devDependencies": {
-    "chai": "^4.3.7",
-    "eslint": "^8.36.0",
-    "futoin-asyncsteps": "^2.5.4",
-    "futoin-executor": "^2.3.7",
-    "futoin-invoker": "^2.4.9",
-    "grunt": "^1.6.1",
-    "grunt-eslint": "^24.0.1",
+    "chai": "^6.2.2",
+    "eslint": "^10.2.1",
+    "eslint-plugin-jsdoc": "^62.9.0",
+    "futoin-asyncsteps": "^2.5.6",
+    "futoin-executor": "^2.3.8",
+    "futoin-invoker": "^2.4.10",
+    "grunt": "^1.6.2",
+    "grunt-eslint": "^26.0.0",
     "grunt-jsdoc-to-markdown": "^6.0.0",
     "grunt-simple-nyc": "^3.0.1",
     "grunt-text-replace": "^0.4.0",
-    "mocha": "^10.2.0"
+    "mocha": "^11.7.5"
   },
   "dependencies": {
     "@futoin/specs": ">=2019.1104.0",
-    "futoin-asyncevent": "^2.3.7",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.4"
+    "futoin-asyncevent": "^2.3.9",
+    "lodash": "^4.18.1",
+    "moment": "^2.30.1"
   },
   "optionalDependencies": {
     "mysql": "^2.18.1",
-    "pg": "^8.10.0",
-    "sqlite3": "^5.1.6",
+    "pg": "^8.20.0",
+    "sqlite3": "^6.0.1",
     "sqlstring": "^2.3.3"
   },
   "peerDependencies": {

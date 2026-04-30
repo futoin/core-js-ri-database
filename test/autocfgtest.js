@@ -94,7 +94,7 @@ describe( 'AutoConfig', function() {
             ( as, err ) => {
                 console.log( `${err}: ${as.state.error_info}` );
                 done( as.state.last_exception );
-            }
+            },
         );
         as.execute();
     } );
@@ -126,7 +126,7 @@ describe( 'AutoConfig', function() {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
-            }
+            },
         );
         as.execute();
     } );
@@ -157,7 +157,7 @@ describe( 'AutoConfig', function() {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
-            }
+            },
         );
         as.add(
             ( as ) => {
@@ -184,7 +184,7 @@ describe( 'AutoConfig', function() {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
-            }
+            },
         );
         as.execute();
     } );
@@ -209,7 +209,7 @@ describe( 'AutoConfig', function() {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
-            }
+            },
         );
         as.execute();
     } );
@@ -239,7 +239,7 @@ describe( 'AutoConfig', function() {
                     console.log( `${err}: ${as.state.error_info}` );
                     done( as.state.last_exception );
                 }
-            }
+            },
         );
         as.execute();
     } );
@@ -275,7 +275,7 @@ describe( 'AutoConfig', function() {
             ( as, err ) => {
                 console.log( `${err}: ${as.state.error_info}` );
                 done( as.state.last_exception );
-            }
+            },
         );
         as.execute();
     } );

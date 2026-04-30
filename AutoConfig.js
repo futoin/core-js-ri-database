@@ -81,11 +81,10 @@ function create( as, ccm, name, options ) {
     if ( !ccm.db ) {
         /**
          * Retrieve database interface.
-         *
          * @name AdvancedCCM#db
-         * @param {string} [name=default] - connection name
+         * @param {string} [name] - connection name
          * @returns {object} FTN14 native face
-         * @note Monkey-patched only for related CCM
+         * Monkey-patched only for related CCM
          */
         ccm.db = function( name ) {
             return this.iface( '#db.' + ( name || "default" ) );
@@ -108,7 +107,7 @@ function create( as, ccm, name, options ) {
 }
 
 /**
- * @brief Automatically configure database connections
+ * @summary Automatically configure database connections
  *        and related internal Executors.
  *
  * For each config entry an instance of dedicated
@@ -154,14 +153,12 @@ function create( as, ccm, name, options ) {
  *      },
  *  })
  * ```
- *
  * @name AutoConfig
  * @param {AsyncSteps} as - async steps interface
  * @param {AdvancedCCM} ccm - CCM instance
- * @param {object} [config=null] - expected connection key => type map
- * @param {object} [env=process.env] - source of settings
- *
- * @note it also monkey patches CCM with #db(name="default") method
+ * @param {object} [config] - expected connection key => type map
+ * @param {object} [env] - source of settings
+ * It also monkey patches CCM with #db(name="default") method
  */
 module.exports = function( as, ccm, config=null, env=process.env ) {
     config = config || { default: {} };
@@ -219,7 +216,7 @@ module.exports = function( as, ccm, config=null, env=process.env ) {
  * Register database service type.
  * @name AutoConfig.register
  * @param {string} type - type of database
- * @param {string|callable|object} factory - module name, factory method
+ * @param {string|Function|object} factory - module name, factory method
  *      or a subclass of L1Service
  */
 module.exports.register = function( type, factory ) {

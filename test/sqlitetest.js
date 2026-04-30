@@ -80,7 +80,7 @@ describe( 'SQLiteService', () => {
             ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
-            }
+            },
         );
     } );
 
@@ -122,7 +122,7 @@ describe( 'SQLiteService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -146,7 +146,7 @@ describe( 'SQLiteService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add(
                 ( as ) => {
@@ -163,7 +163,7 @@ describe( 'SQLiteService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add(
                 ( as ) => {
@@ -181,7 +181,7 @@ describe( 'SQLiteService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );

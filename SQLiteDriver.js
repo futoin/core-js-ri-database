@@ -101,8 +101,7 @@ class SQLiteHelpers extends QueryBuilder.SQLHelpers {
 
 /**
  * SQLite driver for QueryBuilder
- *
- * @note It is normally automatically added when main.js is executed.
+ * It is normally automatically added when main.js is executed.
  * @private
  */
 class SQLiteDriver extends QueryBuilder.SQLDriver {

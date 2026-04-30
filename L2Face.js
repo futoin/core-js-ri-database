@@ -26,8 +26,8 @@ const XferBuilder = require( './XferBuilder' );
  * @class
  * @name XferQuery
  * @property {string} q - raw query
- * @property {interger|boolean|null} affected - expected count of rows to be affected
- * @property {interger|boolean|null} selected - expected count of rows to be selected
+ * @property {number|boolean|null} affected - expected count of rows to be affected
+ * @property {number|boolean|null} selected - expected count of rows to be selected
  * @property {boolean|null} result - mark to return result in response
  */
 
@@ -75,7 +75,7 @@ class L2Face extends L1Face {
 
     /**
      * Get new transcation builder.
-     * @param {string} [iso_level=RC] - RU, RC, RR or SRL
+     * @param {string} [iso_level] - RU, RC, RR or SRL
      * @see L2Face#READ_UNCOMMITTED
      * @see L2Face#READ_COMMITTED
      * @see L2Face#REPEATABL_READ
@@ -90,7 +90,7 @@ class L2Face extends L1Face {
     /**
      * Execute query list in transaction of specific isolation level
      * @name L2Face#xfer
-     * @param {array} query_list - list of XferQuery objects
+     * @param {Array} query_list - list of XferQuery objects
      * @param {string} isolation_level - isolation level
      */
 }

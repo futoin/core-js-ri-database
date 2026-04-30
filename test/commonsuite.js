@@ -95,7 +95,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -122,7 +122,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -151,7 +151,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -178,7 +178,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -206,7 +206,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -232,7 +232,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -254,7 +254,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
@@ -286,10 +286,10 @@ module.exports = function( describe, it, vars ) {
                     xfer.select( Tbl, { selected: true } )
                         .where( 'name', 'xfer2' );
                     xfer.delete( Tbl, { affected: 2 } ).where(
-                        [ 'OR', { name: 'xfer2' }, { name: 'xfer3' } ]
+                        [ 'OR', { name: 'xfer2' }, { name: 'xfer3' } ],
                     );
                     xfer.delete( Tbl, { affected: false } ).where(
-                        [ 'OR', { name: 'xfer2' }, { name: 'xfer3' } ]
+                        [ 'OR', { name: 'xfer2' }, { name: 'xfer3' } ],
                     );
 
                     if ( vars.haveStored ) {
@@ -314,7 +314,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -346,10 +346,10 @@ module.exports = function( describe, it, vars ) {
                     xfer.select( Tbl, { selected: true } )
                         .where( 'name', 'xfer2' );
                     xfer.delete( Tbl, { affected: 2 } ).where(
-                        [ 'OR', { name: 'xfer2' }, { name: nm } ]
+                        [ 'OR', { name: 'xfer2' }, { name: nm } ],
                     );
                     xfer.delete( Tbl, { affected: false } ).where(
-                        [ 'OR', { name: 'xfer2' }, { name: nm } ]
+                        [ 'OR', { name: 'xfer2' }, { name: nm } ],
                     );
 
                     if ( vars.haveStored ) {
@@ -406,14 +406,14 @@ module.exports = function( describe, it, vars ) {
                             if ( err === 'DeadLock' ) {
                                 as.success();
                             }
-                        }
+                        },
                     );
                 },
                 ( as, err ) => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
@@ -438,7 +438,7 @@ module.exports = function( describe, it, vars ) {
                         } else {
                             console.log( 'Cond #1' );
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -455,7 +455,7 @@ module.exports = function( describe, it, vars ) {
                         } else {
                             console.log( 'Cond #2' );
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -472,7 +472,7 @@ module.exports = function( describe, it, vars ) {
                         } else {
                             console.log( 'Cond #3' );
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -490,7 +490,7 @@ module.exports = function( describe, it, vars ) {
                         } else {
                             console.log( 'Cond #4' );
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -508,7 +508,7 @@ module.exports = function( describe, it, vars ) {
                         } else {
                             console.log( 'Cond #5' );
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -526,7 +526,7 @@ module.exports = function( describe, it, vars ) {
                         } else {
                             console.log( 'Cond #6' );
                         }
-                    }
+                    },
                 );
             }, ( as, err ) => {
                 console.log( as.state.error_info );
@@ -590,7 +590,7 @@ module.exports = function( describe, it, vars ) {
                                         ts: null },
                                 ],
                                 affected: 0,
-                            }
+                            },
                         );
                     } );
                 },
@@ -598,7 +598,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
@@ -625,7 +625,7 @@ module.exports = function( describe, it, vars ) {
                                 .to.equal( 'Invalid template query ID: 1' );
                             as.success();
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -642,7 +642,7 @@ module.exports = function( describe, it, vars ) {
                                 .to.equal( 'Empty query result for #0' );
                             as.success();
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -659,7 +659,7 @@ module.exports = function( describe, it, vars ) {
                                 .to.equal( 'Invalid template field "Missing" for #0' );
                             as.success();
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -676,7 +676,7 @@ module.exports = function( describe, it, vars ) {
                                 .to.equal( 'More than one row in result #0' );
                             as.success();
                         }
-                    }
+                    },
                 );
             }, ( as, err ) => {
                 console.log( as.state.error_info );
@@ -699,7 +699,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
@@ -726,7 +726,7 @@ module.exports = function( describe, it, vars ) {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
@@ -845,7 +845,7 @@ module.exports = function( describe, it, vars ) {
                     .get( 'f', helpers.escape( helpers.concat(
                         'START',
                         helpers.expr( '(33-22)' ),
-                        'END'
+                        'END',
                     ) ) )
                     .executeAssoc( as );
                 as.add( ( as, res ) => expect( res[0].f ).to.equal( 'START11END' ) );
@@ -958,7 +958,7 @@ module.exports = function( describe, it, vars ) {
                         console.log( as.state.error_info );
                         console.log( as.state.last_exception );
                         done( as.state.last_exception );
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -974,7 +974,7 @@ module.exports = function( describe, it, vars ) {
                         console.log( as.state.error_info );
                         console.log( as.state.last_exception );
                         done( as.state.last_exception );
-                    }
+                    },
                 );
                 as.add( ( as ) => done() );
                 as.execute();

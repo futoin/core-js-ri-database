@@ -52,14 +52,14 @@ class Expression {
  */
 class Prepared {
     /**
-     * @func
+     * @function
      * @name Prepared#execute
      * @param {AsyncSteps} as - step interface
      * @param {object} [params=null] - parameters to subsitute
      */
 
     /**
-     * @func
+     * @function
      * @name Prepared#executeAsync
      * @param {AsyncSteps} as - step interface
      * @param {object} [params=null] - parameters to subsitute
@@ -93,14 +93,14 @@ class Helpers {
 
     /**
      * Get DB-specific current timestamp expression
-     * @func
+     * @function
      * @name now
      * @returns {Expression} - current timestamp
      */
 
     /**
      * Convert native timestamp to DB format
-     * @func
+     * @function
      * @name date
      * @param {moment|string} value - native timestamp
      * @returns {Expression} - timestamp in DB format
@@ -108,7 +108,7 @@ class Helpers {
 
     /**
      * Convert DB timestamp to native format
-     * @func
+     * @function
      * @name nativeDate
      * @param {string} value - timestamp in DB format
      * @returns {moment} - timestamp in moment.js
@@ -117,7 +117,7 @@ class Helpers {
     /**
      * Create expression representing date modification of
      * input expression by specified number of seconds.
-     * @func
+     * @function
      * @name dateModify
      * @param {Expression|string} expr - source expression (e.g field name)
      * @param {seconds} seconds - number of seconds to add/subtract(negative)
@@ -126,34 +126,34 @@ class Helpers {
 
     /**
      * Concat arguments. Useful for in-query operation with unknown values.
-     * @func
+     * @function
      * @name concat
-     * @param {string|Expression} value... - String to escape or Expresion object
+     * @param {...(string|Expression)} value - String to escape or Expresion object
      * @returns {Expression} - concatenated argument expression
      */
 
     /**
      * Cast expression to type
-     * @func
+     * @function
      * @name cast
      * @param {string|Expression} value - String to escape or Expresion object
      * @param {type} type - target type
      * @returns {Expression} - cast expression
-     * @note implementation by implicitly substitute not supported types with acceptable
-     *  equiavelnt like JSON->TEXT/
+     * Implementation by implicitly substitution of not supported types with acceptable
+     *  equivalent like JSON->TEXT.
      */
 
     /**
      * Add arguments in query.
-     * @func
+     * @function
      * @name add
-     * @param {string|Expression} a... - arguments
+     * @param {...(string|Expression)} arguments
      * @returns {Expression} - addition expression
      */
 
     /**
      * Subtract arguments in query.
-     * @func
+     * @function
      * @name sub
      * @param {string|Expression} a - first arg
      * @param {string|Expression} b - second arg
@@ -162,15 +162,15 @@ class Helpers {
 
     /**
      * Multiply arguments in query.
-     * @func
+     * @function
      * @name mul
-     * @param {string|Expression} a... - arguments
+     * @param {...(string|Expression)} arguments
      * @returns {Expression} - multiplication expression
      */
 
     /**
      * Divide arguments in query.
-     * @func
+     * @function
      * @name div
      * @param {string|Expression} a - first arg
      * @param {string|Expression} b - second arg
@@ -179,7 +179,7 @@ class Helpers {
 
     /**
      * Reminder of division in query.
-     * @func
+     * @function
      * @name rem
      * @param {string|Expression} a - first arg
      * @param {string|Expression} b - second arg
@@ -188,17 +188,17 @@ class Helpers {
 
     /**
      * Get minimal value of arguments.
-     * @func
+     * @function
      * @name least
-     * @param {string|Expression} a... - arguments
+     * @param {...(string|Expression)} arguments
      * @returns {Expression} - addition expression
      */
 
     /**
      * Get maximal value of arguments.
-     * @func
+     * @function
      * @name greatest
-     * @param {string|Expression} a... - arguments
+     * @param {...(string|Expression)} arguments
      * @returns {Expression} - addition expression
      */
 }
@@ -264,7 +264,7 @@ class SQLHelpers extends Helpers {
         } else if ( entity instanceof Array ) {
             if ( entity.length !== 2 ) {
                 throw new Error(
-                    `Entity as array format is [name, alias]: ${entity}`
+                    `Entity as array format is [name, alias]: ${entity}`,
                 );
             }
 
@@ -285,7 +285,7 @@ class SQLHelpers extends Helpers {
             return null;
         } else if ( entity instanceof QueryBuilder ) {
             throw new Error(
-                `Entity as sub-query format is [QB, alias]: ${entity}`
+                `Entity as sub-query format is [QB, alias]: ${entity}`,
             );
         } else {
             throw new Error( `Unknown entity type: ${entity}` );
@@ -374,7 +374,7 @@ class SQLHelpers extends Helpers {
     concat( ...args ) {
         const escaped = args.map( ( v ) => this.escape( v ) );
         return new Expression(
-            this.expr( `(${escaped.join( '||' )})` )
+            this.expr( `(${escaped.join( '||' )})` ),
         );
     }
 
@@ -795,7 +795,7 @@ class QueryBuilder {
     /**
      * Register query builder driver implementation
      * @param {string} type - type of driver
-     * @param {IDriver|function|string|object} module - implementation
+     * @param {IDriver|Function|string|object} module - implementation
      */
     static addDriver( type, module ) {
         _driverImpl.set( type, module );
@@ -849,7 +849,7 @@ class QueryBuilder {
 
     /**
      * Escape value for embedding into raw query
-     * @param {*} value - value, array or sub-query to escape
+     * @param {any} value - value, array or sub-query to escape
      * @returns {string} driver-specific escape
      */
     escape( value ) {
@@ -868,7 +868,7 @@ class QueryBuilder {
     /**
      * Wrap raw expression to prevent escaping.
      * @param {string} expr - expression to wrap
-     * @return {Expression} wrapped expression
+     * @returns {Expression} wrapped expression
      */
     expr( expr ) {
         return this.helpers().expr( expr );
@@ -878,7 +878,7 @@ class QueryBuilder {
     /**
      * Wrap parameter name to prevent escaping.
      * @param {string} name - name to wrap
-     * @return {Expression} wrapped expression
+     * @returns {Expression} wrapped expression
      */
     param( name ) {
         return this.expr( `:${name}` );
@@ -896,18 +896,17 @@ class QueryBuilder {
      * Set fields to retrieve.
      *
      * Can be called multiple times for appending.
-     * @p fields can be a Map or object:
+     * `fields` can be a Map or object:
      * - keys are field names as is
      * - values - any expression which is not being escaped automatically
-     * @p fields can be a list of field names (array)
-     * - values - field names
-     * @p fields can be a single string
-     * - optional @p value is expresion
+     * `fields` can be a list of field names (array)
+     * - `values` - field names
+     * `fields` can be a single string
+     * - optional `value` is expression
      *
      * Value can be another QueryBuilder instance.
-     *
-     * @param {Map|object|string|array} fields - see concept for details
-     * @param {*} [value=undefined] - optional value for
+     * @param {Map | object | string | Array} fields - see concept for details
+     * @param {any} [value] - optional value for
      * @returns {QueryBuilder} self
      */
     get( fields, value=undefined ) {
@@ -951,7 +950,6 @@ class QueryBuilder {
      * is expected to always return '$id' field on insert.
      *
      * For others, it would build a valid RETURNING/OUTPUT clause.
-     *
      * @param {string} field - field name with auto-generated value
      * @returns {QueryBuilder} self
      */
@@ -994,15 +992,13 @@ class QueryBuilder {
 
     /**
      * Add fields to set in UPDATE query.
-     *
-     * @p fields can be Map or object to setup multiple fields at once.
+     * `fields` can be Map or object to setup multiple fields at once.
      * - keys - key name as is, no escape
      * - value - any value to be escaped or QueryBuilder instance
      *
      * Single field => value can be used as shortcut for object form.
-     *
      * @param {Map|object|string} field - field(s) to assign
-     * @param {string|number|null|QueryBuilder} [value=undefined] - value to assign
+     * @param {string|number|null|QueryBuilder} [value] - value to assign
      * @returns {QueryBuilder} self
      */
     set( field, value=undefined ) {
@@ -1050,8 +1046,8 @@ class QueryBuilder {
 
     /**
      * Control "WHERE" part
-     * @param {*} conditions - constraints to add
-     * @param {*} [value=undefined] - optional value for single field
+     * @param {any} conditions - constraints to add
+     * @param {any} [value] - optional value for single field
      * @returns {QueryBuilder} self
      */
     where( conditions, value=undefined ) {
@@ -1066,8 +1062,8 @@ class QueryBuilder {
 
     /**
      * Control "HAVING" part
-     * @param {*} conditions - constraints to add
-     * @param {*} [value=undefined] - optional value for single field
+     * @param {any} conditions - constraints to add
+     * @param {any} [value] - optional value for single field
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
@@ -1093,7 +1089,7 @@ class QueryBuilder {
     /**
      * Append order by
      * @param {string} field_expr - field or expressions
-     * @param {Boolean} [ascending=true] - ascending sorting, if true
+     * @param {boolean} [ascending] - ascending sorting, if true
      * @returns {QueryBuilder} self
      */
     order( field_expr, ascending=true ) {
@@ -1104,11 +1100,10 @@ class QueryBuilder {
 
     /**
      * Limit query output
-     *
-     * @param {integer} count - size
-     * @param {integer} [offset=0] - offset
+     * @param {number} count - size
+     * @param {number} [offset] - offset
      * @returns {QueryBuilder} self
-     * @note if @p count is omitted then @p start is used as count!
+     * If `count` is omitted then `start` is used as count!
      */
     limit( count, offset = undefined ) {
         this._state.limit = [ count, offset ];
@@ -1118,8 +1113,8 @@ class QueryBuilder {
     /**
      * Add "JOIN" part
      * @param {string} type - e.g. INNER, LEFT
-     * @param {string|array} entity - fornat is the same as of QueryBuilder
-     * @param {*} conditions - constraints to add
+     * @param {string | Array} entity - fornat is the same as of QueryBuilder
+     * @param {any} conditions - constraints to add
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
@@ -1142,8 +1137,8 @@ class QueryBuilder {
 
     /**
      * Add "INNER JOIN"
-     * @param {string|array} entity - fornat is the same as of QueryBuilder
-     * @param {*} conditions - constraints to add
+     * @param {string | Array} entity - fornat is the same as of QueryBuilder
+     * @param {any} conditions - constraints to add
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
@@ -1153,8 +1148,8 @@ class QueryBuilder {
 
     /**
      * Add "LEFT JOIN"
-     * @param {string|array} entity - fornat is the same as of QueryBuilder
-     * @param {*} conditions - constraints to add
+     * @param {string | Array} entity - fornat is the same as of QueryBuilder
+     * @param {any} conditions - constraints to add
      * @returns {QueryBuilder} self
      * @see QueryBuilder.where
      */
@@ -1165,7 +1160,7 @@ class QueryBuilder {
     /**
      * Complete query and execute through associated interface.
      * @param {AsyncSteps} as - steps interface
-     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
+     * @param {boolean} unsafe_dml - raise error, if DML without conditions
      * @see L1Face.query
      */
     execute( as, unsafe_dml=false ) {
@@ -1176,7 +1171,7 @@ class QueryBuilder {
     /**
      * Complete query and execute through associated interface.
      * @param {AsyncSteps} as - steps interface
-     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
+     * @param {boolean} unsafe_dml - raise error, if DML without conditions
      * @see L1Face.query
      * @see L1Face.associateResult
      */
@@ -1190,8 +1185,8 @@ class QueryBuilder {
 
     /**
      * Prepare statement for efficient execution multiple times
-     * @param {Boolean} unsafe_dml - raise error, if DML without conditions
-     * @returns {ExecPrepared} closue with prepared statement
+     * @param {boolean} unsafe_dml - raise error, if DML without conditions
+     * @returns {Prepared} instance with prepared statement
      */
     prepare( unsafe_dml=false ) {
         const q = this._toQuery( unsafe_dml );

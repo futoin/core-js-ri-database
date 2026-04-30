@@ -52,7 +52,7 @@ describe( 'L1Service', () => {
                         if ( err === 'NotImplemented' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -62,7 +62,7 @@ describe( 'L1Service', () => {
                         if ( err === 'NotImplemented' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
                 as.add(
                     ( as ) => {
@@ -72,7 +72,7 @@ describe( 'L1Service', () => {
                         if ( err === 'NotImplemented' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
                 as.add( ( as ) => {
                     ccm.close();
@@ -84,7 +84,7 @@ describe( 'L1Service', () => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
-            }
+            },
         );
         as.execute();
     } );
@@ -115,7 +115,7 @@ describe( 'L2Service', () => {
                         if ( err === 'NotImplemented' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
 
                 as.add( ( as ) => {
@@ -128,7 +128,7 @@ describe( 'L2Service', () => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
                 done( as.state.last_exception );
-            }
+            },
         );
         as.execute();
     } );

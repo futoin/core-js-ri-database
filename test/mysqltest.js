@@ -77,7 +77,7 @@ describe( 'MySQLService', () => {
             ( as, err ) => {
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
-            }
+            },
         );
     } );
 
@@ -122,7 +122,7 @@ describe( 'MySQLService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -146,7 +146,7 @@ describe( 'MySQLService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add(
                 ( as ) => {
@@ -163,7 +163,7 @@ describe( 'MySQLService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add(
                 ( as ) => {
@@ -181,7 +181,7 @@ describe( 'MySQLService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.execute();
         } );
@@ -206,7 +206,7 @@ describe( 'MySQLService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
@@ -234,7 +234,7 @@ describe( 'MySQLService', () => {
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();

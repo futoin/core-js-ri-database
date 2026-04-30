@@ -160,7 +160,7 @@ class L2Service extends L1Service {
                 } else {
                     return this._helpers.escape( qres.rows.map( v => v[field_id] ) );
                 }
-            }
+            },
         );
     }
 }

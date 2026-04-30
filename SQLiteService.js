@@ -34,13 +34,13 @@ const Mutex = require( 'futoin-asyncsteps/Mutex' );
 class SQLiteService extends L2Service {
     /**
      * Please use SQLiteService.register() for proper setup.
+     * Database filename is to supplied in options.port parameter.
      * @param {object} options - see SQLiteService.register() for common options
-     * @param {objecT} [options.raw={}] - raw options
-     * @param {string} [options.raw.filename=options.port] - database file
-     * @param {integer} [options.raw.mode=OPEN_READWRITE|OPEN_CREATE|SQLITE_OPEN_FULLMUTEX] - open mode
-     * @param {integer} [options.raw.busyTimeout=10000] - busyTimeout configuration value
-     * @param {array} [options.raw.pragma=[]] - list of pragma statements to execute on DB open
-     * @note database filename is to supplied in options.port parameter.
+     * @param {object} [options.raw] - raw options
+     * @param {string} [options.raw.filename] - database file
+     * @param {number} [options.raw.mode] - open mode, integer
+     * @param {number} [options.raw.busyTimeout] - busyTimeout configuration value, integer
+     * @param {Array} [options.raw.pragma] - list of pragma statements to execute on DB open
      */
     constructor( options ) {
         super( new SQLiteDriver );
@@ -89,7 +89,7 @@ class SQLiteService extends L2Service {
                                 this._db = db;
                                 as.success();
                             }
-                        }
+                        },
                     );
 
                     as.setCancel( ( as ) => {
@@ -285,7 +285,7 @@ class SQLiteService extends L2Service {
                 ( as, err ) => {
                     db.run( 'ROLLBACK' );
                     db.serialize();
-                }
+                },
             );
         } );
     }
